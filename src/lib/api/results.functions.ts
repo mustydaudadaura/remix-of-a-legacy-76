@@ -164,7 +164,7 @@ export const updateReportCardRemarks = createServerFn({ method: "POST" })
     if (Object.keys(update).length === 0) return { ok: true };
     const { error } = await supabaseAdmin
       .from("report_cards")
-      .update(update)
+      .update(update as never)
       .eq("id", data.report_card_id);
     if (error) throw new Error(error.message);
     return { ok: true };
