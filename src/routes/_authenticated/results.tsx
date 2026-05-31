@@ -1,6 +1,7 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth, hasRole } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
@@ -11,7 +12,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { FileDown } from "lucide-react";
+import { FileDown, Send } from "lucide-react";
+import { publishReportCards } from "@/lib/api/results.functions";
 
 export const Route = createFileRoute("/_authenticated/results")({
   head: () => ({ meta: [{ title: "Results — EduERP" }] }),
@@ -147,6 +149,23 @@ function ResultsPage() {
     );
   }
 
+  const publish = useServerFn(publishReportCards);
+  const publishMutation = useMutation({
+    mutationFn: () =>
+      publish({
+        data: {
+          class_id: filters.class_id,
+          session: filters.session,
+          term: filters.term,
+        },
+      }),
+    onSuccess: (r) => {
+      toast.success(`Published ${r.published} report card(s) for ${r.class_name}`);
+      qc.invalidateQueries({ queryKey: ["report-cards-list"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -154,7 +173,15 @@ function ResultsPage() {
           <h1 className="text-2xl font-bold tracking-tight">Results Entry</h1>
           <p className="text-sm text-muted-foreground">CA1 (max 20) · CA2 (max 20) · Exam (max 60). Grading is automatic.</p>
         </div>
-        <Button variant="outline" onClick={() => window.print()}><FileDown className="mr-2 h-4 w-4" /> Print / PDF</Button>
+        <div className="flex gap-2">
+          <Button asChild variant="outline"><Link to="/report-cards"><FileDown className="mr-2 h-4 w-4" /> Report cards</Link></Button>
+          <Button
+            disabled={!filters.class_id || publishMutation.isPending}
+            onClick={() => publishMutation.mutate()}
+          >
+            <Send className="mr-2 h-4 w-4" /> {publishMutation.isPending ? "Publishing…" : "Publish class report cards"}
+          </Button>
+        </div>
       </div>
 
       <Card>

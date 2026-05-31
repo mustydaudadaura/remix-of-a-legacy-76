@@ -12,12 +12,15 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as VerifyCodeRouteImport } from './routes/verify.$code'
 import { Route as AuthenticatedUsersRouteImport } from './routes/_authenticated/users'
 import { Route as AuthenticatedStudentsRouteImport } from './routes/_authenticated/students'
 import { Route as AuthenticatedSchoolsRouteImport } from './routes/_authenticated/schools'
 import { Route as AuthenticatedResultsRouteImport } from './routes/_authenticated/results'
+import { Route as AuthenticatedReportCardsRouteImport } from './routes/_authenticated/report-cards'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedClassesRouteImport } from './routes/_authenticated/classes'
+import { Route as AuthenticatedReportCardIdRouteImport } from './routes/_authenticated/report-card.$id'
 
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
@@ -31,6 +34,11 @@ const AuthenticatedRoute = AuthenticatedRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const VerifyCodeRoute = VerifyCodeRouteImport.update({
+  id: '/verify/$code',
+  path: '/verify/$code',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedUsersRoute = AuthenticatedUsersRouteImport.update({
@@ -53,6 +61,12 @@ const AuthenticatedResultsRoute = AuthenticatedResultsRouteImport.update({
   path: '/results',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedReportCardsRoute =
+  AuthenticatedReportCardsRouteImport.update({
+    id: '/report-cards',
+    path: '/report-cards',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
@@ -63,26 +77,38 @@ const AuthenticatedClassesRoute = AuthenticatedClassesRouteImport.update({
   path: '/classes',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedReportCardIdRoute =
+  AuthenticatedReportCardIdRouteImport.update({
+    id: '/report-card/$id',
+    path: '/report-card/$id',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/classes': typeof AuthenticatedClassesRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/report-cards': typeof AuthenticatedReportCardsRoute
   '/results': typeof AuthenticatedResultsRoute
   '/schools': typeof AuthenticatedSchoolsRoute
   '/students': typeof AuthenticatedStudentsRoute
   '/users': typeof AuthenticatedUsersRoute
+  '/verify/$code': typeof VerifyCodeRoute
+  '/report-card/$id': typeof AuthenticatedReportCardIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/classes': typeof AuthenticatedClassesRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/report-cards': typeof AuthenticatedReportCardsRoute
   '/results': typeof AuthenticatedResultsRoute
   '/schools': typeof AuthenticatedSchoolsRoute
   '/students': typeof AuthenticatedStudentsRoute
   '/users': typeof AuthenticatedUsersRoute
+  '/verify/$code': typeof VerifyCodeRoute
+  '/report-card/$id': typeof AuthenticatedReportCardIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -91,10 +117,13 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/_authenticated/classes': typeof AuthenticatedClassesRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/report-cards': typeof AuthenticatedReportCardsRoute
   '/_authenticated/results': typeof AuthenticatedResultsRoute
   '/_authenticated/schools': typeof AuthenticatedSchoolsRoute
   '/_authenticated/students': typeof AuthenticatedStudentsRoute
   '/_authenticated/users': typeof AuthenticatedUsersRoute
+  '/verify/$code': typeof VerifyCodeRoute
+  '/_authenticated/report-card/$id': typeof AuthenticatedReportCardIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -103,20 +132,26 @@ export interface FileRouteTypes {
     | '/auth'
     | '/classes'
     | '/dashboard'
+    | '/report-cards'
     | '/results'
     | '/schools'
     | '/students'
     | '/users'
+    | '/verify/$code'
+    | '/report-card/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/auth'
     | '/classes'
     | '/dashboard'
+    | '/report-cards'
     | '/results'
     | '/schools'
     | '/students'
     | '/users'
+    | '/verify/$code'
+    | '/report-card/$id'
   id:
     | '__root__'
     | '/'
@@ -124,16 +159,20 @@ export interface FileRouteTypes {
     | '/auth'
     | '/_authenticated/classes'
     | '/_authenticated/dashboard'
+    | '/_authenticated/report-cards'
     | '/_authenticated/results'
     | '/_authenticated/schools'
     | '/_authenticated/students'
     | '/_authenticated/users'
+    | '/verify/$code'
+    | '/_authenticated/report-card/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
   AuthRoute: typeof AuthRoute
+  VerifyCodeRoute: typeof VerifyCodeRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -157,6 +196,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/verify/$code': {
+      id: '/verify/$code'
+      path: '/verify/$code'
+      fullPath: '/verify/$code'
+      preLoaderRoute: typeof VerifyCodeRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/users': {
@@ -187,6 +233,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedResultsRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/report-cards': {
+      id: '/_authenticated/report-cards'
+      path: '/report-cards'
+      fullPath: '/report-cards'
+      preLoaderRoute: typeof AuthenticatedReportCardsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/dashboard': {
       id: '/_authenticated/dashboard'
       path: '/dashboard'
@@ -201,25 +254,36 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedClassesRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/report-card/$id': {
+      id: '/_authenticated/report-card/$id'
+      path: '/report-card/$id'
+      fullPath: '/report-card/$id'
+      preLoaderRoute: typeof AuthenticatedReportCardIdRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
   }
 }
 
 interface AuthenticatedRouteChildren {
   AuthenticatedClassesRoute: typeof AuthenticatedClassesRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedReportCardsRoute: typeof AuthenticatedReportCardsRoute
   AuthenticatedResultsRoute: typeof AuthenticatedResultsRoute
   AuthenticatedSchoolsRoute: typeof AuthenticatedSchoolsRoute
   AuthenticatedStudentsRoute: typeof AuthenticatedStudentsRoute
   AuthenticatedUsersRoute: typeof AuthenticatedUsersRoute
+  AuthenticatedReportCardIdRoute: typeof AuthenticatedReportCardIdRoute
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedClassesRoute: AuthenticatedClassesRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedReportCardsRoute: AuthenticatedReportCardsRoute,
   AuthenticatedResultsRoute: AuthenticatedResultsRoute,
   AuthenticatedSchoolsRoute: AuthenticatedSchoolsRoute,
   AuthenticatedStudentsRoute: AuthenticatedStudentsRoute,
   AuthenticatedUsersRoute: AuthenticatedUsersRoute,
+  AuthenticatedReportCardIdRoute: AuthenticatedReportCardIdRoute,
 }
 
 const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
@@ -230,6 +294,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
   AuthRoute: AuthRoute,
+  VerifyCodeRoute: VerifyCodeRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

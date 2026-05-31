@@ -141,6 +141,48 @@ export type Database = {
           },
         ]
       }
+      notifications: {
+        Row: {
+          body: string | null
+          channel: string
+          created_at: string
+          delivered: boolean | null
+          error: string | null
+          id: string
+          meta: Json | null
+          read_at: string | null
+          school_id: string
+          title: string
+          user_id: string | null
+        }
+        Insert: {
+          body?: string | null
+          channel?: string
+          created_at?: string
+          delivered?: boolean | null
+          error?: string | null
+          id?: string
+          meta?: Json | null
+          read_at?: string | null
+          school_id: string
+          title: string
+          user_id?: string | null
+        }
+        Update: {
+          body?: string | null
+          channel?: string
+          created_at?: string
+          delivered?: boolean | null
+          error?: string | null
+          id?: string
+          meta?: Json | null
+          read_at?: string | null
+          school_id?: string
+          title?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       parents: {
         Row: {
           address: string | null
@@ -228,49 +270,82 @@ export type Database = {
       }
       report_cards: {
         Row: {
+          affective: Json | null
           average: number | null
+          class_id: string | null
+          class_size: number | null
           created_at: string
+          days_absent: number | null
+          days_present: number | null
+          days_total: number | null
+          gpa: number | null
           id: string
+          next_resumption_date: string | null
           pdf_url: string | null
           position: number | null
           principal_remark: string | null
+          psychomotor: Json | null
           published: boolean | null
           school_id: string
           session: string
           student_id: string
+          subjects_count: number | null
           teacher_remark: string | null
           term: Database["public"]["Enums"]["term_name"]
           total_score: number | null
+          verification_code: string | null
         }
         Insert: {
+          affective?: Json | null
           average?: number | null
+          class_id?: string | null
+          class_size?: number | null
           created_at?: string
+          days_absent?: number | null
+          days_present?: number | null
+          days_total?: number | null
+          gpa?: number | null
           id?: string
+          next_resumption_date?: string | null
           pdf_url?: string | null
           position?: number | null
           principal_remark?: string | null
+          psychomotor?: Json | null
           published?: boolean | null
           school_id: string
           session: string
           student_id: string
+          subjects_count?: number | null
           teacher_remark?: string | null
           term: Database["public"]["Enums"]["term_name"]
           total_score?: number | null
+          verification_code?: string | null
         }
         Update: {
+          affective?: Json | null
           average?: number | null
+          class_id?: string | null
+          class_size?: number | null
           created_at?: string
+          days_absent?: number | null
+          days_present?: number | null
+          days_total?: number | null
+          gpa?: number | null
           id?: string
+          next_resumption_date?: string | null
           pdf_url?: string | null
           position?: number | null
           principal_remark?: string | null
+          psychomotor?: Json | null
           published?: boolean | null
           school_id?: string
           session?: string
           student_id?: string
+          subjects_count?: number | null
           teacher_remark?: string | null
           term?: Database["public"]["Enums"]["term_name"]
           total_score?: number | null
+          verification_code?: string | null
         }
         Relationships: [
           {
@@ -292,45 +367,72 @@ export type Database = {
       schools: {
         Row: {
           address: string | null
+          branch_name: string | null
           code: string
           created_at: string
           current_session: string | null
           current_term: Database["public"]["Enums"]["term_name"] | null
           email: string | null
+          facebook_url: string | null
           id: string
+          instagram_url: string | null
           logo_url: string | null
           motto: string | null
           name: string
           phone: string | null
+          principal_name: string | null
+          principal_signature_url: string | null
+          stamp_url: string | null
+          theme_color: string | null
+          twitter_url: string | null
           updated_at: string
+          website: string | null
         }
         Insert: {
           address?: string | null
+          branch_name?: string | null
           code: string
           created_at?: string
           current_session?: string | null
           current_term?: Database["public"]["Enums"]["term_name"] | null
           email?: string | null
+          facebook_url?: string | null
           id?: string
+          instagram_url?: string | null
           logo_url?: string | null
           motto?: string | null
           name: string
           phone?: string | null
+          principal_name?: string | null
+          principal_signature_url?: string | null
+          stamp_url?: string | null
+          theme_color?: string | null
+          twitter_url?: string | null
           updated_at?: string
+          website?: string | null
         }
         Update: {
           address?: string | null
+          branch_name?: string | null
           code?: string
           created_at?: string
           current_session?: string | null
           current_term?: Database["public"]["Enums"]["term_name"] | null
           email?: string | null
+          facebook_url?: string | null
           id?: string
+          instagram_url?: string | null
           logo_url?: string | null
           motto?: string | null
           name?: string
           phone?: string | null
+          principal_name?: string | null
+          principal_signature_url?: string | null
+          stamp_url?: string | null
+          theme_color?: string | null
+          twitter_url?: string | null
           updated_at?: string
+          website?: string | null
         }
         Relationships: []
       }
@@ -378,50 +480,83 @@ export type Database = {
       }
       students: {
         Row: {
+          address: string | null
           admission_date: string | null
           admission_no: string
+          blood_group: string | null
           class_id: string | null
           created_at: string
           dob: string | null
+          emergency_contact_name: string | null
+          emergency_contact_phone: string | null
           first_name: string
           gender: Database["public"]["Enums"]["gender_type"] | null
+          genotype: string | null
+          house: string | null
           id: string
           last_name: string
+          medical_notes: string | null
           middle_name: string | null
+          next_resumption_date: string | null
           photo_url: string | null
+          previous_school: string | null
+          religion: string | null
           school_id: string
+          state_of_origin: string | null
           updated_at: string
           user_id: string | null
         }
         Insert: {
+          address?: string | null
           admission_date?: string | null
           admission_no: string
+          blood_group?: string | null
           class_id?: string | null
           created_at?: string
           dob?: string | null
+          emergency_contact_name?: string | null
+          emergency_contact_phone?: string | null
           first_name: string
           gender?: Database["public"]["Enums"]["gender_type"] | null
+          genotype?: string | null
+          house?: string | null
           id?: string
           last_name: string
+          medical_notes?: string | null
           middle_name?: string | null
+          next_resumption_date?: string | null
           photo_url?: string | null
+          previous_school?: string | null
+          religion?: string | null
           school_id: string
+          state_of_origin?: string | null
           updated_at?: string
           user_id?: string | null
         }
         Update: {
+          address?: string | null
           admission_date?: string | null
           admission_no?: string
+          blood_group?: string | null
           class_id?: string | null
           created_at?: string
           dob?: string | null
+          emergency_contact_name?: string | null
+          emergency_contact_phone?: string | null
           first_name?: string
           gender?: Database["public"]["Enums"]["gender_type"] | null
+          genotype?: string | null
+          house?: string | null
           id?: string
           last_name?: string
+          medical_notes?: string | null
           middle_name?: string | null
+          next_resumption_date?: string | null
           photo_url?: string | null
+          previous_school?: string | null
+          religion?: string | null
           school_id?: string
+          state_of_origin?: string | null
           updated_at?: string
           user_id?: string | null
         }
@@ -538,6 +673,21 @@ export type Database = {
         Returns: boolean
       }
       is_super_admin: { Args: { _user_id: string }; Returns: boolean }
+      verify_report_card: {
+        Args: { _code: string }
+        Returns: {
+          admission_no: string
+          average: number
+          class_name: string
+          position: number
+          published: boolean
+          school_name: string
+          session: string
+          student_name: string
+          term: Database["public"]["Enums"]["term_name"]
+          total_score: number
+        }[]
+      }
     }
     Enums: {
       app_role:
