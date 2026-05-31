@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import {
   LayoutDashboard, Users, BookOpen, FileText, Building2, LogOut,
-  GraduationCap, UserCog, Menu, X
+  GraduationCap, UserCog, Menu, X, Award,
 } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
@@ -19,7 +19,8 @@ const NAV = [
   { to: "/schools", label: "Schools", icon: Building2, roles: ["super_admin"] },
   { to: "/students", label: "Students", icon: Users, roles: ["super_admin","school_admin","teacher"] },
   { to: "/classes", label: "Classes & Subjects", icon: BookOpen, roles: ["super_admin","school_admin","teacher"] },
-  { to: "/results", label: "Results", icon: FileText, roles: ["super_admin","school_admin","teacher","student","parent"] },
+  { to: "/results", label: "Results Entry", icon: FileText, roles: ["super_admin","school_admin","teacher"] },
+  { to: "/report-cards", label: "Report Cards", icon: Award, roles: ["super_admin","school_admin","teacher","student","parent"] },
   { to: "/users", label: "Users & Roles", icon: UserCog, roles: ["super_admin","school_admin"] },
 ] as const;
 
