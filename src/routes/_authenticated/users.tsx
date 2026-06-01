@@ -112,7 +112,7 @@ function UsersPage() {
                 <DialogTitle>
                   {isSuper ? "Register a school administrator" : "Invite school staff"}
                 </DialogTitle>
-              </DialogHeader></DialogHeader>OLD
+              </DialogHeader>
               <form
                 onSubmit={(e) => { e.preventDefault(); inviteMut.mutate(); }}
                 className="space-y-4"
