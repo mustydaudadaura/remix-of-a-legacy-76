@@ -36,6 +36,15 @@ export const inviteStaff = createServerFn({ method: "POST" })
       throw new Error("Not authorized to invite staff for this school");
     }
 
+    // Role boundary: super_admin assigns school_admin only;
+    // school_admin assigns teacher or accountant only.
+    if (isSuper && data.role !== "school_admin") {
+      throw new Error("Super admins can only assign the School Admin role");
+    }
+    if (!isSuper && isSchoolAdminHere && data.role === "school_admin") {
+      throw new Error("Only a super admin can assign the School Admin role");
+    }
+
     // Invite (or fetch existing) user
     let invitedUserId: string | null = null;
     const inviteRes = await supabaseAdmin.auth.admin.inviteUserByEmail(
