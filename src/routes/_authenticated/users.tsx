@@ -63,7 +63,7 @@ function UsersPage() {
   const [form, setForm] = useState({
     email: "",
     full_name: "",
-    role: "teacher" as StaffRole,
+    role: defaultRole,
     school_id: mySchoolId ?? "",
   });
 
@@ -72,7 +72,7 @@ function UsersPage() {
     onSuccess: () => {
       toast.success("Invitation sent");
       setOpen(false);
-      setForm({ email: "", full_name: "", role: "teacher", school_id: mySchoolId ?? "" });
+      setForm({ email: "", full_name: "", role: defaultRole, school_id: mySchoolId ?? "" });
       qc.invalidateQueries({ queryKey: ["all-profiles"] });
       qc.invalidateQueries({ queryKey: ["all-roles"] });
     },
