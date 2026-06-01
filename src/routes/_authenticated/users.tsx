@@ -30,6 +30,15 @@ function UsersPage() {
   const isSchoolAdmin = hasRole(myRoles, "school_admin");
   const canManage = isSuper || isSchoolAdmin;
 
+  // Super admins only assign school administrators.
+  // School admins only assign teachers and accountants (not more school admins).
+  const assignableRoles: StaffRole[] = isSuper
+    ? ["school_admin"]
+    : isSchoolAdmin
+      ? ["teacher", "accountant"]
+      : [];
+  const defaultRole: StaffRole = assignableRoles[0] ?? "teacher";
+
   const qc = useQueryClient();
   const invite = useServerFn(inviteStaff);
   const removeRole = useServerFn(removeStaffRole);
@@ -54,7 +63,7 @@ function UsersPage() {
   const [form, setForm] = useState({
     email: "",
     full_name: "",
-    role: "teacher" as StaffRole,
+    role: defaultRole,
     school_id: mySchoolId ?? "",
   });
 
@@ -63,7 +72,7 @@ function UsersPage() {
     onSuccess: () => {
       toast.success("Invitation sent");
       setOpen(false);
-      setForm({ email: "", full_name: "", role: "teacher", school_id: mySchoolId ?? "" });
+      setForm({ email: "", full_name: "", role: defaultRole, school_id: mySchoolId ?? "" });
       qc.invalidateQueries({ queryKey: ["all-profiles"] });
       qc.invalidateQueries({ queryKey: ["all-roles"] });
     },
@@ -84,15 +93,26 @@ function UsersPage() {
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Users & Roles</h1>
-          <p className="text-sm text-muted-foreground">Invite school staff and manage their access.</p>
+          <p className="text-sm text-muted-foreground">
+            {isSuper
+              ? "Register and assign school administrators. Each school admin then manages their own staff, classes and subjects."
+              : "Invite teachers and accountants for your school."}
+          </p>
         </div>
         {canManage && (
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-              <Button><UserPlus className="mr-2 h-4 w-4" />Invite staff</Button>
+              <Button>
+                <UserPlus className="mr-2 h-4 w-4" />
+                {isSuper ? "Invite school admin" : "Invite staff"}
+              </Button>
             </DialogTrigger>
             <DialogContent>
-              <DialogHeader><DialogTitle>Invite school staff</DialogTitle></DialogHeader>
+              <DialogHeader>
+                <DialogTitle>
+                  {isSuper ? "Register a school administrator" : "Invite school staff"}
+                </DialogTitle>
+              </DialogHeader>
               <form
                 onSubmit={(e) => { e.preventDefault(); inviteMut.mutate(); }}
                 className="space-y-4"
@@ -113,9 +133,11 @@ function UsersPage() {
                     <Select value={form.role} onValueChange={(v) => setForm({ ...form, role: v as StaffRole })}>
                       <SelectTrigger><SelectValue /></SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="school_admin">School Admin</SelectItem>
-                        <SelectItem value="teacher">Teacher</SelectItem>
-                        <SelectItem value="accountant">Accountant</SelectItem>
+                        {assignableRoles.map((r) => (
+                          <SelectItem key={r} value={r}>
+                            {r === "school_admin" ? "School Admin" : r === "teacher" ? "Teacher" : "Accountant"}
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   </div>
