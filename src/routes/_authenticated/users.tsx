@@ -109,14 +109,16 @@ function UsersPage() {
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>
-                  {isSuper ? "Register a school administrator" : "Invite school staff"}
-                </DialogTitle>
+                <DialogTitle>Assign a role</DialogTitle>
               </DialogHeader>
               <form
                 onSubmit={(e) => { e.preventDefault(); inviteMut.mutate(); }}
                 className="space-y-4"
               >
+                <p className="text-xs text-muted-foreground">
+                  Enter the email of a user who has already registered at the sign-up page. If
+                  they don't have an account yet, we'll send them an invitation email.
+                </p>
                 <div className="space-y-2">
                   <Label htmlFor="full_name">Full name</Label>
                   <Input id="full_name" required value={form.full_name}
@@ -157,12 +159,9 @@ function UsersPage() {
                     </Select>
                   </div>
                 </div>
-                <p className="text-xs text-muted-foreground">
-                  An invitation email will be sent. They'll set their password on first sign-in.
-                </p>
                 <DialogFooter>
                   <Button type="submit" disabled={inviteMut.isPending || !form.school_id}>
-                    {inviteMut.isPending ? "Sending…" : "Send invitation"}
+                    {inviteMut.isPending ? "Saving…" : "Assign role"}
                   </Button>
                 </DialogFooter>
               </form>
