@@ -30,10 +30,10 @@ function UsersPage() {
   const isSchoolAdmin = hasRole(myRoles, "school_admin");
   const canManage = isSuper || isSchoolAdmin;
 
-  // Super admins only assign school administrators.
-  // School admins only assign teachers and accountants (not more school admins).
+  // Super admins can assign any non-super role.
+  // School admins can only assign teachers and accountants within their school.
   const assignableRoles: StaffRole[] = isSuper
-    ? ["school_admin"]
+    ? ["school_admin", "teacher", "accountant"]
     : isSchoolAdmin
       ? ["teacher", "accountant"]
       : [];
