@@ -126,6 +126,19 @@ function AuthPage() {
                     <Input id="name" required value={fullName} onChange={(e) => setFullName(e.target.value)} />
                   </div>
                   <div className="space-y-2">
+                    <Label htmlFor="school_code">School code</Label>
+                    <Input
+                      id="school_code"
+                      required
+                      placeholder="e.g. HGA-001"
+                      value={schoolCode}
+                      onChange={(e) => setSchoolCode(e.target.value)}
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Get this from your school administrator. Your role will be assigned after sign-up.
+                    </p>
+                  </div>
+                  <div className="space-y-2">
                     <Label htmlFor="email2">Email</Label>
                     <Input id="email2" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
                   </div>
