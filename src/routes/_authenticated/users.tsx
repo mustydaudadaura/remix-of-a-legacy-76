@@ -102,10 +102,17 @@ function UsersPage() {
         {canManage && (
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-              <Button><UserPlus className="mr-2 h-4 w-4" />Invite staff</Button>
+              <Button>
+                <UserPlus className="mr-2 h-4 w-4" />
+                {isSuper ? "Invite school admin" : "Invite staff"}
+              </Button>
             </DialogTrigger>
             <DialogContent>
-              <DialogHeader><DialogTitle>Invite school staff</DialogTitle></DialogHeader>
+              <DialogHeader>
+                <DialogTitle>
+                  {isSuper ? "Register a school administrator" : "Invite school staff"}
+                </DialogTitle>
+              </DialogHeader></DialogHeader>OLD
               <form
                 onSubmit={(e) => { e.preventDefault(); inviteMut.mutate(); }}
                 className="space-y-4"
