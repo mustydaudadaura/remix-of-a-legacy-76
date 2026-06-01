@@ -20,6 +20,7 @@ function AuthPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
+  const [schoolCode, setSchoolCode] = useState("");
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -43,17 +44,44 @@ function AuthPage() {
   const signUp = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    const { error } = await supabase.auth.signUp({
+
+    const code = schoolCode.trim().toUpperCase();
+    const { data: school, error: schoolErr } = await supabase
+      .from("schools")
+      .select("id, name")
+      .eq("code", code)
+      .maybeSingle();
+    if (schoolErr || !school) {
+      setLoading(false);
+      toast.error("Invalid school code. Please contact your school administrator.");
+      return;
+    }
+
+    const { data: signUpData, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
         emailRedirectTo: `${window.location.origin}/dashboard`,
-        data: { full_name: fullName },
+        data: { full_name: fullName, school_code: code, school_id: school.id },
       },
     });
+    if (error) {
+      setLoading(false);
+      toast.error(error.message);
+      return;
+    }
+
+    if (signUpData.session?.user) {
+      await supabase
+        .from("profiles")
+        .update({ school_id: school.id, full_name: fullName })
+        .eq("user_id", signUpData.session.user.id);
+    }
+
     setLoading(false);
-    if (error) toast.error(error.message);
-    else toast.success("Account created! Check your email to verify.");
+    toast.success(
+      `Account created for ${school.name}. An administrator will assign your role.`,
+    );
   };
 
   return (
@@ -96,6 +124,19 @@ function AuthPage() {
                   <div className="space-y-2">
                     <Label htmlFor="name">Full name</Label>
                     <Input id="name" required value={fullName} onChange={(e) => setFullName(e.target.value)} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="school_code">School code</Label>
+                    <Input
+                      id="school_code"
+                      required
+                      placeholder="e.g. HGA-001"
+                      value={schoolCode}
+                      onChange={(e) => setSchoolCode(e.target.value)}
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Get this from your school administrator. Your role will be assigned after sign-up.
+                    </p>
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="email2">Email</Label>

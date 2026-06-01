@@ -30,10 +30,10 @@ function UsersPage() {
   const isSchoolAdmin = hasRole(myRoles, "school_admin");
   const canManage = isSuper || isSchoolAdmin;
 
-  // Super admins only assign school administrators.
-  // School admins only assign teachers and accountants (not more school admins).
+  // Super admins can assign any non-super role.
+  // School admins can only assign teachers and accountants within their school.
   const assignableRoles: StaffRole[] = isSuper
-    ? ["school_admin"]
+    ? ["school_admin", "teacher", "accountant"]
     : isSchoolAdmin
       ? ["teacher", "accountant"]
       : [];
@@ -94,9 +94,9 @@ function UsersPage() {
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Users & Roles</h1>
           <p className="text-sm text-muted-foreground">
-            {isSuper
-              ? "Register and assign school administrators. Each school admin then manages their own staff, classes and subjects."
-              : "Invite teachers and accountants for your school."}
+            Users register themselves at the sign-up page using your school code. As an{" "}
+            {isSuper ? "super admin" : "admin"}, assign each new account a role before they
+            can use the system.
           </p>
         </div>
         {canManage && (
@@ -104,19 +104,21 @@ function UsersPage() {
             <DialogTrigger asChild>
               <Button>
                 <UserPlus className="mr-2 h-4 w-4" />
-                {isSuper ? "Invite school admin" : "Invite staff"}
+                Assign role
               </Button>
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>
-                  {isSuper ? "Register a school administrator" : "Invite school staff"}
-                </DialogTitle>
+                <DialogTitle>Assign a role</DialogTitle>
               </DialogHeader>
               <form
                 onSubmit={(e) => { e.preventDefault(); inviteMut.mutate(); }}
                 className="space-y-4"
               >
+                <p className="text-xs text-muted-foreground">
+                  Enter the email of a user who has already registered at the sign-up page. If
+                  they don't have an account yet, we'll send them an invitation email.
+                </p>
                 <div className="space-y-2">
                   <Label htmlFor="full_name">Full name</Label>
                   <Input id="full_name" required value={form.full_name}
@@ -157,12 +159,9 @@ function UsersPage() {
                     </Select>
                   </div>
                 </div>
-                <p className="text-xs text-muted-foreground">
-                  An invitation email will be sent. They'll set their password on first sign-in.
-                </p>
                 <DialogFooter>
                   <Button type="submit" disabled={inviteMut.isPending || !form.school_id}>
-                    {inviteMut.isPending ? "Sending…" : "Send invitation"}
+                    {inviteMut.isPending ? "Saving…" : "Assign role"}
                   </Button>
                 </DialogFooter>
               </form>
