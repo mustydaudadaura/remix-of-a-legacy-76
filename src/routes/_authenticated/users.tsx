@@ -133,9 +133,11 @@ function UsersPage() {
                     <Select value={form.role} onValueChange={(v) => setForm({ ...form, role: v as StaffRole })}>
                       <SelectTrigger><SelectValue /></SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="school_admin">School Admin</SelectItem>
-                        <SelectItem value="teacher">Teacher</SelectItem>
-                        <SelectItem value="accountant">Accountant</SelectItem>
+                        {assignableRoles.map((r) => (
+                          <SelectItem key={r} value={r}>
+                            {r === "school_admin" ? "School Admin" : r === "teacher" ? "Teacher" : "Accountant"}
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   </div>
