@@ -36,11 +36,9 @@ export const inviteStaff = createServerFn({ method: "POST" })
       throw new Error("Not authorized to invite staff for this school");
     }
 
-    // Role boundary: super_admin assigns school_admin only;
-    // school_admin assigns teacher or accountant only.
-    if (isSuper && data.role !== "school_admin") {
-      throw new Error("Super admins can only assign the School Admin role");
-    }
+    // Role boundary:
+    //  - super_admin can assign any non-super role (school_admin, teacher, accountant)
+    //  - school_admin can assign teacher or accountant only (never school_admin)
     if (!isSuper && isSchoolAdminHere && data.role === "school_admin") {
       throw new Error("Only a super admin can assign the School Admin role");
     }
