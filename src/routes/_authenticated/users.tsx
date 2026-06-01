@@ -94,9 +94,9 @@ function UsersPage() {
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Users & Roles</h1>
           <p className="text-sm text-muted-foreground">
-            {isSuper
-              ? "Register and assign school administrators. Each school admin then manages their own staff, classes and subjects."
-              : "Invite teachers and accountants for your school."}
+            Users register themselves at the sign-up page using your school code. As an{" "}
+            {isSuper ? "super admin" : "admin"}, assign each new account a role before they
+            can use the system.
           </p>
         </div>
         {canManage && (
@@ -104,7 +104,7 @@ function UsersPage() {
             <DialogTrigger asChild>
               <Button>
                 <UserPlus className="mr-2 h-4 w-4" />
-                {isSuper ? "Invite school admin" : "Invite staff"}
+                Assign role
               </Button>
             </DialogTrigger>
             <DialogContent>
