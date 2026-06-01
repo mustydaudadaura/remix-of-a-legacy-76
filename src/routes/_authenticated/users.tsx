@@ -30,6 +30,15 @@ function UsersPage() {
   const isSchoolAdmin = hasRole(myRoles, "school_admin");
   const canManage = isSuper || isSchoolAdmin;
 
+  // Super admins only assign school administrators.
+  // School admins only assign teachers and accountants (not more school admins).
+  const assignableRoles: StaffRole[] = isSuper
+    ? ["school_admin"]
+    : isSchoolAdmin
+      ? ["teacher", "accountant"]
+      : [];
+  const defaultRole: StaffRole = assignableRoles[0] ?? "teacher";
+
   const qc = useQueryClient();
   const invite = useServerFn(inviteStaff);
   const removeRole = useServerFn(removeStaffRole);
