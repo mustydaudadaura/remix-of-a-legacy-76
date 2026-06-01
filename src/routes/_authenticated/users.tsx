@@ -93,7 +93,11 @@ function UsersPage() {
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Users & Roles</h1>
-          <p className="text-sm text-muted-foreground">Invite school staff and manage their access.</p>
+          <p className="text-sm text-muted-foreground">
+            {isSuper
+              ? "Register and assign school administrators. Each school admin then manages their own staff, classes and subjects."
+              : "Invite teachers and accountants for your school."}
+          </p>
         </div>
         {canManage && (
           <Dialog open={open} onOpenChange={setOpen}>
