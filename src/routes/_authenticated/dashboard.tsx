@@ -174,14 +174,14 @@ function Dashboard() {
 function SuperAdminView({ stats }: { stats: any }) {
   return (
     <>
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-3 grid-cols-2 sm:gap-4 lg:grid-cols-4">
         <GradientStat icon={Building2} label="Schools" value={stats?.schools ?? "—"} delta={12} gradient="var(--gradient-analytic-1)" />
         <GradientStat icon={Users} label="Total Students" value={stats?.students ?? "—"} delta={8} gradient="var(--gradient-analytic-2)" />
         <GradientStat icon={UserCheck} label="Staff" value={stats?.staff ?? "—"} delta={4} gradient="var(--gradient-analytic-3)" />
         <GradientStat icon={FileText} label="Assessments" value={stats?.assessments ?? "—"} delta={22} gradient="var(--gradient-analytic-1)" />
       </div>
 
-      <div className="grid gap-4 grid-cols-2 sm:grid-cols-4">
+      <div className="grid gap-3 grid-cols-2 sm:gap-4 sm:grid-cols-4">
         <DonutStat label="Active Schools" value={74} color={PINK} />
         <DonutStat label="Result Coverage" value={70} color={PURPLE} />
         <DonutStat label="Fee Collection" value={45} color={INDIGO} />
@@ -196,13 +196,13 @@ function SuperAdminView({ stats }: { stats: any }) {
 function SchoolAdminView({ stats }: { stats: any }) {
   return (
     <>
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-3 grid-cols-2 sm:gap-4 lg:grid-cols-4">
         <GradientStat icon={Users} label="Students" value={stats?.students ?? "—"} delta={6} gradient="var(--gradient-analytic-1)" />
         <GradientStat icon={BookOpen} label="Classes" value={stats?.classes ?? "—"} delta={2} gradient="var(--gradient-analytic-2)" />
         <GradientStat icon={UserCheck} label="Staff" value={stats?.staff ?? "—"} delta={3} gradient="var(--gradient-analytic-3)" />
         <GradientStat icon={ClipboardList} label="Assessments" value={stats?.assessments ?? "—"} delta={15} gradient="var(--gradient-analytic-1)" />
       </div>
-      <div className="grid gap-4 grid-cols-2 sm:grid-cols-4">
+      <div className="grid gap-3 grid-cols-2 sm:gap-4 sm:grid-cols-4">
         <DonutStat label="Attendance" value={92} color={PINK} />
         <DonutStat label="Pass Rate" value={81} color={PURPLE} />
         <DonutStat label="Fees Paid" value={67} color={INDIGO} />
@@ -217,13 +217,13 @@ function SchoolAdminView({ stats }: { stats: any }) {
 function TeacherView() {
   return (
     <>
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-3 grid-cols-2 sm:gap-4 lg:grid-cols-4">
         <GradientStat icon={BookOpen} label="My Classes" value={6} delta={0} gradient="var(--gradient-analytic-1)" />
         <GradientStat icon={Users} label="My Students" value={184} delta={5} gradient="var(--gradient-analytic-2)" />
         <GradientStat icon={ClipboardList} label="Pending Results" value={12} delta={-3} gradient="var(--gradient-analytic-3)" />
         <GradientStat icon={Award} label="Avg Class Score" value="74%" delta={4} gradient="var(--gradient-analytic-1)" />
       </div>
-      <div className="grid gap-4 grid-cols-2 sm:grid-cols-4">
+      <div className="grid gap-3 grid-cols-2 sm:gap-4 sm:grid-cols-4">
         <DonutStat label="Submissions" value={78} color={PINK} />
         <DonutStat label="Attendance" value={89} color={PURPLE} />
         <DonutStat label="Graded" value={64} color={INDIGO} />
@@ -237,13 +237,13 @@ function TeacherView() {
 function AccountantView() {
   return (
     <>
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-3 grid-cols-2 sm:gap-4 lg:grid-cols-4">
         <GradientStat icon={Wallet} label="Collected (NGN)" value="₦3.67M" delta={12} gradient="var(--gradient-analytic-1)" />
         <GradientStat icon={TrendingUp} label="Outstanding" value="₦1.24M" delta={-5} gradient="var(--gradient-analytic-2)" />
         <GradientStat icon={Users} label="Paid Students" value={345} delta={9} gradient="var(--gradient-analytic-3)" />
         <GradientStat icon={FileText} label="Invoices" value={246} delta={3} gradient="var(--gradient-analytic-1)" />
       </div>
-      <div className="grid gap-4 grid-cols-2 sm:grid-cols-4">
+      <div className="grid gap-3 grid-cols-2 sm:gap-4 sm:grid-cols-4">
         <DonutStat label="Collection" value={87} color={PINK} />
         <DonutStat label="Reconciled" value={64} color={PURPLE} />
         <DonutStat label="Scholarships" value={28} color={INDIGO} />
@@ -257,13 +257,13 @@ function AccountantView() {
 function ParentView() {
   return (
     <>
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-3 grid-cols-2 sm:gap-4 lg:grid-cols-4">
         <GradientStat icon={GraduationCap} label="Children" value={2} gradient="var(--gradient-analytic-1)" />
         <GradientStat icon={Award} label="Avg Score" value="76%" delta={3} gradient="var(--gradient-analytic-2)" />
         <GradientStat icon={UserCheck} label="Attendance" value="94%" delta={1} gradient="var(--gradient-analytic-3)" />
         <GradientStat icon={Wallet} label="Fees Due" value="₦45,000" gradient="var(--gradient-analytic-1)" />
       </div>
-      <div className="grid gap-4 grid-cols-2 sm:grid-cols-4">
+      <div className="grid gap-3 grid-cols-2 sm:gap-4 sm:grid-cols-4">
         <DonutStat label="Term Progress" value={68} color={PINK} />
         <DonutStat label="Assignments" value={82} color={PURPLE} />
         <DonutStat label="Fee Paid" value={55} color={INDIGO} />
@@ -277,13 +277,13 @@ function ParentView() {
 function StudentView() {
   return (
     <>
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-3 grid-cols-2 sm:gap-4 lg:grid-cols-4">
         <GradientStat icon={Award} label="Avg Score" value="78%" delta={6} gradient="var(--gradient-analytic-1)" />
         <GradientStat icon={BookOpen} label="Subjects" value={9} gradient="var(--gradient-analytic-2)" />
         <GradientStat icon={UserCheck} label="Attendance" value="96%" delta={2} gradient="var(--gradient-analytic-3)" />
         <GradientStat icon={ClipboardList} label="Position" value="4th" delta={3} gradient="var(--gradient-analytic-1)" />
       </div>
-      <div className="grid gap-4 grid-cols-2 sm:grid-cols-4">
+      <div className="grid gap-3 grid-cols-2 sm:gap-4 sm:grid-cols-4">
         <DonutStat label="Term Progress" value={72} color={PINK} />
         <DonutStat label="Assignments" value={88} color={PURPLE} />
         <DonutStat label="Quizzes" value={65} color={INDIGO} />
