@@ -138,22 +138,22 @@ function Dashboard() {
     : "My Learning";
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Header */}
       <div
-        className="flex flex-col gap-2 rounded-2xl p-6 text-white shadow-[var(--shadow-analytic)] sm:flex-row sm:items-center sm:justify-between"
+        className="flex flex-col gap-2 rounded-2xl p-4 sm:p-6 text-white shadow-[var(--shadow-analytic)] sm:flex-row sm:items-center sm:justify-between"
         style={{ background: "var(--gradient-analytic-1)" }}
       >
-        <div>
-          <p className="text-sm opacity-80">{title}</p>
-          <h1 className="text-2xl font-bold sm:text-3xl">
+        <div className="min-w-0">
+          <p className="text-xs sm:text-sm opacity-80">{title}</p>
+          <h1 className="text-xl font-bold sm:text-3xl truncate">
             Welcome{fullName ? `, ${fullName.split(" ")[0]}` : ""} 👋
           </h1>
-          <p className="mt-1 text-sm opacity-90">
+          <p className="mt-1 text-xs sm:text-sm opacity-90">
             {new Date().toLocaleDateString("en-NG", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
           </p>
         </div>
-        <Badge className="self-start bg-white/20 text-white hover:bg-white/30">
+        <Badge className="self-start bg-white/20 text-white hover:bg-white/30 text-[10px] sm:text-xs">
           {roles.length ? roles.join(" • ") : "Awaiting role"}
         </Badge>
       </div>
