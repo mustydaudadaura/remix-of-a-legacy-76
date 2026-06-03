@@ -109,7 +109,26 @@ function SchoolsPage() {
             <form onSubmit={create} className="space-y-3">
               <div className="grid grid-cols-2 gap-3">
                 <div><Label>Name</Label><Input required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} /></div>
-                <div><Label>Code</Label><Input required value={form.code} onChange={(e) => setForm({ ...form, code: e.target.value.toUpperCase() })} /></div>
+                <div>
+                  <Label>Code</Label>
+                  <div className="flex gap-1">
+                    <Input
+                      required
+                      placeholder="Auto-generated"
+                      value={form.code}
+                      onChange={(e) => setForm({ ...form, code: e.target.value.toUpperCase() })}
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      title="Generate code"
+                      onClick={async () => setForm({ ...form, code: await generateUniqueSchoolCode(form.name) })}
+                    >
+                      <Wand2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
                 <div><Label>Phone</Label><Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} /></div>
                 <div><Label>Email</Label><Input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} /></div>
                 <div className="col-span-2"><Label>Address</Label><Input value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} /></div>
