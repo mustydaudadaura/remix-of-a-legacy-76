@@ -160,7 +160,17 @@ function SchoolsPage() {
                       {s.logo_url && <img src={s.logo_url} className="h-7 w-7 object-contain rounded" alt="" />}
                       {s.name}
                     </TableCell>
-                    <TableCell>{s.code}</TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-1">
+                        <code className="px-1.5 py-0.5 rounded bg-muted text-xs font-mono">{s.code}</code>
+                        <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => copyCode(s.code)} title="Copy">
+                          <Copy className="h-3.5 w-3.5" />
+                        </Button>
+                        <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => regenerateCode(s)} title="Regenerate">
+                          <RefreshCw className="h-3.5 w-3.5" />
+                        </Button>
+                      </div>
+                    </TableCell>
                     <TableCell>{s.current_session ?? "—"}</TableCell>
                     <TableCell>{s.phone ?? "—"}</TableCell>
                     <TableCell>
