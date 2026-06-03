@@ -8,8 +8,29 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Plus, Settings2 } from "lucide-react";
+import { Plus, Settings2, RefreshCw, Copy, Wand2 } from "lucide-react";
 import { toast } from "sonner";
+
+// Build a school code like "HGA-001" from the school name.
+// Uses up to 3 initials + 3-digit random suffix, checks uniqueness in DB.
+async function generateUniqueSchoolCode(name: string): Promise<string> {
+  const initials =
+    (name || "SCH")
+      .replace(/[^A-Za-z\s]/g, "")
+      .trim()
+      .split(/\s+/)
+      .map((w) => w[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 3) || "SCH";
+  for (let attempt = 0; attempt < 12; attempt++) {
+    const suffix = String(Math.floor(Math.random() * 900) + 100);
+    const code = `${initials}-${suffix}`;
+    const { data } = await supabase.from("schools").select("id").eq("code", code).maybeSingle();
+    if (!data) return code;
+  }
+  return `${initials}-${Date.now().toString().slice(-4)}`;
+}
 
 export const Route = createFileRoute("/_authenticated/schools")({
   head: () => ({ meta: [{ title: "Schools — EduERP" }] }),
