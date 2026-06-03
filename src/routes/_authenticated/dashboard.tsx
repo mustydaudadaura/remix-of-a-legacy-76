@@ -32,18 +32,18 @@ function DonutStat({ label, value, color }: { label: string; value: number; colo
   const data = [{ name: label, value, fill: color }];
   return (
     <Card className="overflow-hidden border-0 shadow-[var(--shadow-analytic)]">
-      <CardContent className="p-4">
-        <div className="relative mx-auto h-28 w-28">
+      <CardContent className="p-3 sm:p-4">
+        <div className="relative mx-auto h-20 w-20 sm:h-28 sm:w-28">
           <ResponsiveContainer width="100%" height="100%">
             <RadialBarChart innerRadius="70%" outerRadius="100%" data={data} startAngle={90} endAngle={-270}>
               <RadialBar dataKey="value" cornerRadius={20} background={{ fill: "oklch(0.95 0.02 320)" }} />
             </RadialBarChart>
           </ResponsiveContainer>
-          <div className="absolute inset-0 flex items-center justify-center text-lg font-bold" style={{ color }}>
+          <div className="absolute inset-0 flex items-center justify-center text-sm sm:text-lg font-bold" style={{ color }}>
             {value}%
           </div>
         </div>
-        <p className="mt-2 text-center text-xs text-muted-foreground">{label}</p>
+        <p className="mt-2 text-center text-[11px] sm:text-xs text-muted-foreground line-clamp-1">{label}</p>
       </CardContent>
     </Card>
   );
@@ -55,19 +55,19 @@ function GradientStat({
   const up = (delta ?? 0) >= 0;
   return (
     <Card className="overflow-hidden border-0 text-white shadow-[var(--shadow-analytic)]" style={{ background: gradient }}>
-      <CardContent className="flex items-center justify-between p-5">
-        <div>
-          <p className="text-xs uppercase tracking-wide opacity-80">{label}</p>
-          <p className="mt-1 text-2xl font-bold">{value}</p>
+      <CardContent className="flex items-center justify-between p-4 sm:p-5">
+        <div className="min-w-0">
+          <p className="text-[10px] sm:text-xs uppercase tracking-wide opacity-80 truncate">{label}</p>
+          <p className="mt-1 text-xl sm:text-2xl font-bold truncate">{value}</p>
           {delta !== undefined && (
-            <p className="mt-1 flex items-center gap-1 text-xs opacity-90">
+            <p className="mt-1 flex items-center gap-1 text-[10px] sm:text-xs opacity-90">
               {up ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
               {up ? "+" : ""}{delta}% this term
             </p>
           )}
         </div>
-        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white/20 backdrop-blur">
-          <Icon className="h-6 w-6" />
+        <div className="flex h-10 w-10 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-full bg-white/20 backdrop-blur">
+          <Icon className="h-5 w-5 sm:h-6 sm:w-6" />
         </div>
       </CardContent>
     </Card>
@@ -138,22 +138,22 @@ function Dashboard() {
     : "My Learning";
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Header */}
       <div
-        className="flex flex-col gap-2 rounded-2xl p-6 text-white shadow-[var(--shadow-analytic)] sm:flex-row sm:items-center sm:justify-between"
+        className="flex flex-col gap-2 rounded-2xl p-4 sm:p-6 text-white shadow-[var(--shadow-analytic)] sm:flex-row sm:items-center sm:justify-between"
         style={{ background: "var(--gradient-analytic-1)" }}
       >
-        <div>
-          <p className="text-sm opacity-80">{title}</p>
-          <h1 className="text-2xl font-bold sm:text-3xl">
+        <div className="min-w-0">
+          <p className="text-xs sm:text-sm opacity-80">{title}</p>
+          <h1 className="text-xl font-bold sm:text-3xl truncate">
             Welcome{fullName ? `, ${fullName.split(" ")[0]}` : ""} 👋
           </h1>
-          <p className="mt-1 text-sm opacity-90">
+          <p className="mt-1 text-xs sm:text-sm opacity-90">
             {new Date().toLocaleDateString("en-NG", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
           </p>
         </div>
-        <Badge className="self-start bg-white/20 text-white hover:bg-white/30">
+        <Badge className="self-start bg-white/20 text-white hover:bg-white/30 text-[10px] sm:text-xs">
           {roles.length ? roles.join(" • ") : "Awaiting role"}
         </Badge>
       </div>
@@ -174,14 +174,14 @@ function Dashboard() {
 function SuperAdminView({ stats }: { stats: any }) {
   return (
     <>
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-3 grid-cols-2 sm:gap-4 lg:grid-cols-4">
         <GradientStat icon={Building2} label="Schools" value={stats?.schools ?? "—"} delta={12} gradient="var(--gradient-analytic-1)" />
         <GradientStat icon={Users} label="Total Students" value={stats?.students ?? "—"} delta={8} gradient="var(--gradient-analytic-2)" />
         <GradientStat icon={UserCheck} label="Staff" value={stats?.staff ?? "—"} delta={4} gradient="var(--gradient-analytic-3)" />
         <GradientStat icon={FileText} label="Assessments" value={stats?.assessments ?? "—"} delta={22} gradient="var(--gradient-analytic-1)" />
       </div>
 
-      <div className="grid gap-4 grid-cols-2 sm:grid-cols-4">
+      <div className="grid gap-3 grid-cols-2 sm:gap-4 sm:grid-cols-4">
         <DonutStat label="Active Schools" value={74} color={PINK} />
         <DonutStat label="Result Coverage" value={70} color={PURPLE} />
         <DonutStat label="Fee Collection" value={45} color={INDIGO} />
@@ -196,13 +196,13 @@ function SuperAdminView({ stats }: { stats: any }) {
 function SchoolAdminView({ stats }: { stats: any }) {
   return (
     <>
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-3 grid-cols-2 sm:gap-4 lg:grid-cols-4">
         <GradientStat icon={Users} label="Students" value={stats?.students ?? "—"} delta={6} gradient="var(--gradient-analytic-1)" />
         <GradientStat icon={BookOpen} label="Classes" value={stats?.classes ?? "—"} delta={2} gradient="var(--gradient-analytic-2)" />
         <GradientStat icon={UserCheck} label="Staff" value={stats?.staff ?? "—"} delta={3} gradient="var(--gradient-analytic-3)" />
         <GradientStat icon={ClipboardList} label="Assessments" value={stats?.assessments ?? "—"} delta={15} gradient="var(--gradient-analytic-1)" />
       </div>
-      <div className="grid gap-4 grid-cols-2 sm:grid-cols-4">
+      <div className="grid gap-3 grid-cols-2 sm:gap-4 sm:grid-cols-4">
         <DonutStat label="Attendance" value={92} color={PINK} />
         <DonutStat label="Pass Rate" value={81} color={PURPLE} />
         <DonutStat label="Fees Paid" value={67} color={INDIGO} />
@@ -217,13 +217,13 @@ function SchoolAdminView({ stats }: { stats: any }) {
 function TeacherView() {
   return (
     <>
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-3 grid-cols-2 sm:gap-4 lg:grid-cols-4">
         <GradientStat icon={BookOpen} label="My Classes" value={6} delta={0} gradient="var(--gradient-analytic-1)" />
         <GradientStat icon={Users} label="My Students" value={184} delta={5} gradient="var(--gradient-analytic-2)" />
         <GradientStat icon={ClipboardList} label="Pending Results" value={12} delta={-3} gradient="var(--gradient-analytic-3)" />
         <GradientStat icon={Award} label="Avg Class Score" value="74%" delta={4} gradient="var(--gradient-analytic-1)" />
       </div>
-      <div className="grid gap-4 grid-cols-2 sm:grid-cols-4">
+      <div className="grid gap-3 grid-cols-2 sm:gap-4 sm:grid-cols-4">
         <DonutStat label="Submissions" value={78} color={PINK} />
         <DonutStat label="Attendance" value={89} color={PURPLE} />
         <DonutStat label="Graded" value={64} color={INDIGO} />
@@ -237,13 +237,13 @@ function TeacherView() {
 function AccountantView() {
   return (
     <>
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-3 grid-cols-2 sm:gap-4 lg:grid-cols-4">
         <GradientStat icon={Wallet} label="Collected (NGN)" value="₦3.67M" delta={12} gradient="var(--gradient-analytic-1)" />
         <GradientStat icon={TrendingUp} label="Outstanding" value="₦1.24M" delta={-5} gradient="var(--gradient-analytic-2)" />
         <GradientStat icon={Users} label="Paid Students" value={345} delta={9} gradient="var(--gradient-analytic-3)" />
         <GradientStat icon={FileText} label="Invoices" value={246} delta={3} gradient="var(--gradient-analytic-1)" />
       </div>
-      <div className="grid gap-4 grid-cols-2 sm:grid-cols-4">
+      <div className="grid gap-3 grid-cols-2 sm:gap-4 sm:grid-cols-4">
         <DonutStat label="Collection" value={87} color={PINK} />
         <DonutStat label="Reconciled" value={64} color={PURPLE} />
         <DonutStat label="Scholarships" value={28} color={INDIGO} />
@@ -257,13 +257,13 @@ function AccountantView() {
 function ParentView() {
   return (
     <>
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-3 grid-cols-2 sm:gap-4 lg:grid-cols-4">
         <GradientStat icon={GraduationCap} label="Children" value={2} gradient="var(--gradient-analytic-1)" />
         <GradientStat icon={Award} label="Avg Score" value="76%" delta={3} gradient="var(--gradient-analytic-2)" />
         <GradientStat icon={UserCheck} label="Attendance" value="94%" delta={1} gradient="var(--gradient-analytic-3)" />
         <GradientStat icon={Wallet} label="Fees Due" value="₦45,000" gradient="var(--gradient-analytic-1)" />
       </div>
-      <div className="grid gap-4 grid-cols-2 sm:grid-cols-4">
+      <div className="grid gap-3 grid-cols-2 sm:gap-4 sm:grid-cols-4">
         <DonutStat label="Term Progress" value={68} color={PINK} />
         <DonutStat label="Assignments" value={82} color={PURPLE} />
         <DonutStat label="Fee Paid" value={55} color={INDIGO} />
@@ -277,13 +277,13 @@ function ParentView() {
 function StudentView() {
   return (
     <>
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-3 grid-cols-2 sm:gap-4 lg:grid-cols-4">
         <GradientStat icon={Award} label="Avg Score" value="78%" delta={6} gradient="var(--gradient-analytic-1)" />
         <GradientStat icon={BookOpen} label="Subjects" value={9} gradient="var(--gradient-analytic-2)" />
         <GradientStat icon={UserCheck} label="Attendance" value="96%" delta={2} gradient="var(--gradient-analytic-3)" />
         <GradientStat icon={ClipboardList} label="Position" value="4th" delta={3} gradient="var(--gradient-analytic-1)" />
       </div>
-      <div className="grid gap-4 grid-cols-2 sm:grid-cols-4">
+      <div className="grid gap-3 grid-cols-2 sm:gap-4 sm:grid-cols-4">
         <DonutStat label="Term Progress" value={72} color={PINK} />
         <DonutStat label="Assignments" value={88} color={PURPLE} />
         <DonutStat label="Quizzes" value={65} color={INDIGO} />
@@ -306,7 +306,7 @@ function ChartsRow({ seed, title, subtitle }: { seed: number; title: string; sub
           <CardTitle className="text-base">{title}</CardTitle>
           <p className="text-xs text-muted-foreground">{subtitle}</p>
         </CardHeader>
-        <CardContent className="h-72">
+        <CardContent className="h-56 sm:h-72 px-2 sm:px-6">
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={areaData} margin={{ left: -20, right: 10, top: 10 }}>
               <defs>
@@ -335,7 +335,7 @@ function ChartsRow({ seed, title, subtitle }: { seed: number; title: string; sub
           <CardTitle className="text-base">Subject Breakdown</CardTitle>
           <p className="text-xs text-muted-foreground">Average performance</p>
         </CardHeader>
-        <CardContent className="h-72">
+        <CardContent className="h-56 sm:h-72 px-2 sm:px-6">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={barData} margin={{ left: -20, right: 10, top: 10 }}>
               <defs>
