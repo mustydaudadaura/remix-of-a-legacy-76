@@ -306,7 +306,7 @@ function ChartsRow({ seed, title, subtitle }: { seed: number; title: string; sub
           <CardTitle className="text-base">{title}</CardTitle>
           <p className="text-xs text-muted-foreground">{subtitle}</p>
         </CardHeader>
-        <CardContent className="h-72">
+        <CardContent className="h-56 sm:h-72 px-2 sm:px-6">
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={areaData} margin={{ left: -20, right: 10, top: 10 }}>
               <defs>
@@ -335,7 +335,7 @@ function ChartsRow({ seed, title, subtitle }: { seed: number; title: string; sub
           <CardTitle className="text-base">Subject Breakdown</CardTitle>
           <p className="text-xs text-muted-foreground">Average performance</p>
         </CardHeader>
-        <CardContent className="h-72">
+        <CardContent className="h-56 sm:h-72 px-2 sm:px-6">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={barData} margin={{ left: -20, right: 10, top: 10 }}>
               <defs>
