@@ -32,18 +32,18 @@ function DonutStat({ label, value, color }: { label: string; value: number; colo
   const data = [{ name: label, value, fill: color }];
   return (
     <Card className="overflow-hidden border-0 shadow-[var(--shadow-analytic)]">
-      <CardContent className="p-4">
-        <div className="relative mx-auto h-28 w-28">
+      <CardContent className="p-3 sm:p-4">
+        <div className="relative mx-auto h-20 w-20 sm:h-28 sm:w-28">
           <ResponsiveContainer width="100%" height="100%">
             <RadialBarChart innerRadius="70%" outerRadius="100%" data={data} startAngle={90} endAngle={-270}>
               <RadialBar dataKey="value" cornerRadius={20} background={{ fill: "oklch(0.95 0.02 320)" }} />
             </RadialBarChart>
           </ResponsiveContainer>
-          <div className="absolute inset-0 flex items-center justify-center text-lg font-bold" style={{ color }}>
+          <div className="absolute inset-0 flex items-center justify-center text-sm sm:text-lg font-bold" style={{ color }}>
             {value}%
           </div>
         </div>
-        <p className="mt-2 text-center text-xs text-muted-foreground">{label}</p>
+        <p className="mt-2 text-center text-[11px] sm:text-xs text-muted-foreground line-clamp-1">{label}</p>
       </CardContent>
     </Card>
   );
@@ -55,19 +55,19 @@ function GradientStat({
   const up = (delta ?? 0) >= 0;
   return (
     <Card className="overflow-hidden border-0 text-white shadow-[var(--shadow-analytic)]" style={{ background: gradient }}>
-      <CardContent className="flex items-center justify-between p-5">
-        <div>
-          <p className="text-xs uppercase tracking-wide opacity-80">{label}</p>
-          <p className="mt-1 text-2xl font-bold">{value}</p>
+      <CardContent className="flex items-center justify-between p-4 sm:p-5">
+        <div className="min-w-0">
+          <p className="text-[10px] sm:text-xs uppercase tracking-wide opacity-80 truncate">{label}</p>
+          <p className="mt-1 text-xl sm:text-2xl font-bold truncate">{value}</p>
           {delta !== undefined && (
-            <p className="mt-1 flex items-center gap-1 text-xs opacity-90">
+            <p className="mt-1 flex items-center gap-1 text-[10px] sm:text-xs opacity-90">
               {up ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
               {up ? "+" : ""}{delta}% this term
             </p>
           )}
         </div>
-        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white/20 backdrop-blur">
-          <Icon className="h-6 w-6" />
+        <div className="flex h-10 w-10 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-full bg-white/20 backdrop-blur">
+          <Icon className="h-5 w-5 sm:h-6 sm:w-6" />
         </div>
       </CardContent>
     </Card>
