@@ -71,12 +71,28 @@ function SchoolsPage() {
 
   const create = async (e: React.FormEvent) => {
     e.preventDefault();
-    const { error } = await supabase.from("schools").insert(form);
+    let code = form.code.trim().toUpperCase();
+    if (!code) code = await generateUniqueSchoolCode(form.name);
+    const { error } = await supabase.from("schools").insert({ ...form, code });
     if (error) return toast.error(error.message);
-    toast.success("School created");
+    toast.success(`School created · code ${code}`);
     setOpen(false);
     setForm({ name: "", code: "", address: "", phone: "", email: "", motto: "", current_session: "2025/2026" });
     qc.invalidateQueries({ queryKey: ["schools"] });
+  };
+
+  const regenerateCode = async (s: School) => {
+    if (!confirm(`Regenerate code for ${s.name}? Users signing up with the old code (${s.code}) will fail.`)) return;
+    const code = await generateUniqueSchoolCode(s.name);
+    const { error } = await supabase.from("schools").update({ code }).eq("id", s.id);
+    if (error) return toast.error(error.message);
+    toast.success(`New code: ${code}`);
+    qc.invalidateQueries({ queryKey: ["schools"] });
+  };
+
+  const copyCode = async (code: string) => {
+    await navigator.clipboard.writeText(code);
+    toast.success(`Copied ${code}`);
   };
 
   return (
