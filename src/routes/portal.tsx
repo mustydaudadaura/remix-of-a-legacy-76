@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { GraduationCap, Home, CalendarCheck, Award, Wallet, Bell, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-export const Route = createFileRoute("/_portal")({
+export const Route = createFileRoute("/portal")({
   head: () => ({ meta: [{ title: "Parent Portal — EduERP" }] }),
   component: PortalLayout,
 });

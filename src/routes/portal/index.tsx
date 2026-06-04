@@ -6,7 +6,7 @@ import { getPortalSummary } from "@/lib/api/portal.functions";
 import { Card, CardContent } from "@/components/ui/card";
 import { CalendarCheck, Wallet, Award, Bell } from "lucide-react";
 
-export const Route = createFileRoute("/_portal/")({
+export const Route = createFileRoute("/portal/")({
   component: PortalHome,
 });
 

@@ -9,20 +9,35 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as PortalRouteImport } from './routes/portal'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as PortalIndexRouteImport } from './routes/portal/index'
 import { Route as VerifyCodeRouteImport } from './routes/verify.$code'
+import { Route as PortalReportCardsRouteImport } from './routes/portal/report-cards'
+import { Route as PortalNotificationsRouteImport } from './routes/portal/notifications'
+import { Route as PortalFeesRouteImport } from './routes/portal/fees'
+import { Route as PortalAttendanceRouteImport } from './routes/portal/attendance'
 import { Route as AuthenticatedUsersRouteImport } from './routes/_authenticated/users'
 import { Route as AuthenticatedStudentsRouteImport } from './routes/_authenticated/students'
 import { Route as AuthenticatedSchoolsRouteImport } from './routes/_authenticated/schools'
 import { Route as AuthenticatedResultsRouteImport } from './routes/_authenticated/results'
 import { Route as AuthenticatedReportCardsRouteImport } from './routes/_authenticated/report-cards'
+import { Route as AuthenticatedFeesRouteImport } from './routes/_authenticated/fees'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedClassesRouteImport } from './routes/_authenticated/classes'
+import { Route as AuthenticatedAttendanceRouteImport } from './routes/_authenticated/attendance'
+import { Route as AuthenticatedAnnouncementsRouteImport } from './routes/_authenticated/announcements'
+import { Route as PortalReceiptIdRouteImport } from './routes/portal/receipt.$id'
 import { Route as ApiPublicParentLoginRouteImport } from './routes/api/public/parent-login'
 import { Route as AuthenticatedReportCardIdRouteImport } from './routes/_authenticated/report-card.$id'
 
+const PortalRoute = PortalRouteImport.update({
+  id: '/portal',
+  path: '/portal',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
@@ -37,10 +52,35 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PortalIndexRoute = PortalIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => PortalRoute,
+} as any)
 const VerifyCodeRoute = VerifyCodeRouteImport.update({
   id: '/verify/$code',
   path: '/verify/$code',
   getParentRoute: () => rootRouteImport,
+} as any)
+const PortalReportCardsRoute = PortalReportCardsRouteImport.update({
+  id: '/report-cards',
+  path: '/report-cards',
+  getParentRoute: () => PortalRoute,
+} as any)
+const PortalNotificationsRoute = PortalNotificationsRouteImport.update({
+  id: '/notifications',
+  path: '/notifications',
+  getParentRoute: () => PortalRoute,
+} as any)
+const PortalFeesRoute = PortalFeesRouteImport.update({
+  id: '/fees',
+  path: '/fees',
+  getParentRoute: () => PortalRoute,
+} as any)
+const PortalAttendanceRoute = PortalAttendanceRouteImport.update({
+  id: '/attendance',
+  path: '/attendance',
+  getParentRoute: () => PortalRoute,
 } as any)
 const AuthenticatedUsersRoute = AuthenticatedUsersRouteImport.update({
   id: '/users',
@@ -68,6 +108,11 @@ const AuthenticatedReportCardsRoute =
     path: '/report-cards',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedFeesRoute = AuthenticatedFeesRouteImport.update({
+  id: '/fees',
+  path: '/fees',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
@@ -77,6 +122,22 @@ const AuthenticatedClassesRoute = AuthenticatedClassesRouteImport.update({
   id: '/classes',
   path: '/classes',
   getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedAttendanceRoute = AuthenticatedAttendanceRouteImport.update({
+  id: '/attendance',
+  path: '/attendance',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedAnnouncementsRoute =
+  AuthenticatedAnnouncementsRouteImport.update({
+    id: '/announcements',
+    path: '/announcements',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const PortalReceiptIdRoute = PortalReceiptIdRouteImport.update({
+  id: '/receipt/$id',
+  path: '/receipt/$id',
+  getParentRoute: () => PortalRoute,
 } as any)
 const ApiPublicParentLoginRoute = ApiPublicParentLoginRouteImport.update({
   id: '/api/public/parent-login',
@@ -93,103 +154,169 @@ const AuthenticatedReportCardIdRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/portal': typeof PortalRouteWithChildren
+  '/announcements': typeof AuthenticatedAnnouncementsRoute
+  '/attendance': typeof AuthenticatedAttendanceRoute
   '/classes': typeof AuthenticatedClassesRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/fees': typeof AuthenticatedFeesRoute
   '/report-cards': typeof AuthenticatedReportCardsRoute
   '/results': typeof AuthenticatedResultsRoute
   '/schools': typeof AuthenticatedSchoolsRoute
   '/students': typeof AuthenticatedStudentsRoute
   '/users': typeof AuthenticatedUsersRoute
+  '/portal/attendance': typeof PortalAttendanceRoute
+  '/portal/fees': typeof PortalFeesRoute
+  '/portal/notifications': typeof PortalNotificationsRoute
+  '/portal/report-cards': typeof PortalReportCardsRoute
   '/verify/$code': typeof VerifyCodeRoute
+  '/portal/': typeof PortalIndexRoute
   '/report-card/$id': typeof AuthenticatedReportCardIdRoute
   '/api/public/parent-login': typeof ApiPublicParentLoginRoute
+  '/portal/receipt/$id': typeof PortalReceiptIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/announcements': typeof AuthenticatedAnnouncementsRoute
+  '/attendance': typeof AuthenticatedAttendanceRoute
   '/classes': typeof AuthenticatedClassesRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/fees': typeof AuthenticatedFeesRoute
   '/report-cards': typeof AuthenticatedReportCardsRoute
   '/results': typeof AuthenticatedResultsRoute
   '/schools': typeof AuthenticatedSchoolsRoute
   '/students': typeof AuthenticatedStudentsRoute
   '/users': typeof AuthenticatedUsersRoute
+  '/portal/attendance': typeof PortalAttendanceRoute
+  '/portal/fees': typeof PortalFeesRoute
+  '/portal/notifications': typeof PortalNotificationsRoute
+  '/portal/report-cards': typeof PortalReportCardsRoute
   '/verify/$code': typeof VerifyCodeRoute
+  '/portal': typeof PortalIndexRoute
   '/report-card/$id': typeof AuthenticatedReportCardIdRoute
   '/api/public/parent-login': typeof ApiPublicParentLoginRoute
+  '/portal/receipt/$id': typeof PortalReceiptIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/auth': typeof AuthRoute
+  '/portal': typeof PortalRouteWithChildren
+  '/_authenticated/announcements': typeof AuthenticatedAnnouncementsRoute
+  '/_authenticated/attendance': typeof AuthenticatedAttendanceRoute
   '/_authenticated/classes': typeof AuthenticatedClassesRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/fees': typeof AuthenticatedFeesRoute
   '/_authenticated/report-cards': typeof AuthenticatedReportCardsRoute
   '/_authenticated/results': typeof AuthenticatedResultsRoute
   '/_authenticated/schools': typeof AuthenticatedSchoolsRoute
   '/_authenticated/students': typeof AuthenticatedStudentsRoute
   '/_authenticated/users': typeof AuthenticatedUsersRoute
+  '/portal/attendance': typeof PortalAttendanceRoute
+  '/portal/fees': typeof PortalFeesRoute
+  '/portal/notifications': typeof PortalNotificationsRoute
+  '/portal/report-cards': typeof PortalReportCardsRoute
   '/verify/$code': typeof VerifyCodeRoute
+  '/portal/': typeof PortalIndexRoute
   '/_authenticated/report-card/$id': typeof AuthenticatedReportCardIdRoute
   '/api/public/parent-login': typeof ApiPublicParentLoginRoute
+  '/portal/receipt/$id': typeof PortalReceiptIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
     | '/auth'
+    | '/portal'
+    | '/announcements'
+    | '/attendance'
     | '/classes'
     | '/dashboard'
+    | '/fees'
     | '/report-cards'
     | '/results'
     | '/schools'
     | '/students'
     | '/users'
+    | '/portal/attendance'
+    | '/portal/fees'
+    | '/portal/notifications'
+    | '/portal/report-cards'
     | '/verify/$code'
+    | '/portal/'
     | '/report-card/$id'
     | '/api/public/parent-login'
+    | '/portal/receipt/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/auth'
+    | '/announcements'
+    | '/attendance'
     | '/classes'
     | '/dashboard'
+    | '/fees'
     | '/report-cards'
     | '/results'
     | '/schools'
     | '/students'
     | '/users'
+    | '/portal/attendance'
+    | '/portal/fees'
+    | '/portal/notifications'
+    | '/portal/report-cards'
     | '/verify/$code'
+    | '/portal'
     | '/report-card/$id'
     | '/api/public/parent-login'
+    | '/portal/receipt/$id'
   id:
     | '__root__'
     | '/'
     | '/_authenticated'
     | '/auth'
+    | '/portal'
+    | '/_authenticated/announcements'
+    | '/_authenticated/attendance'
     | '/_authenticated/classes'
     | '/_authenticated/dashboard'
+    | '/_authenticated/fees'
     | '/_authenticated/report-cards'
     | '/_authenticated/results'
     | '/_authenticated/schools'
     | '/_authenticated/students'
     | '/_authenticated/users'
+    | '/portal/attendance'
+    | '/portal/fees'
+    | '/portal/notifications'
+    | '/portal/report-cards'
     | '/verify/$code'
+    | '/portal/'
     | '/_authenticated/report-card/$id'
     | '/api/public/parent-login'
+    | '/portal/receipt/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
   AuthRoute: typeof AuthRoute
+  PortalRoute: typeof PortalRouteWithChildren
   VerifyCodeRoute: typeof VerifyCodeRoute
   ApiPublicParentLoginRoute: typeof ApiPublicParentLoginRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/portal': {
+      id: '/portal'
+      path: '/portal'
+      fullPath: '/portal'
+      preLoaderRoute: typeof PortalRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/auth': {
       id: '/auth'
       path: '/auth'
@@ -211,12 +338,47 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/portal/': {
+      id: '/portal/'
+      path: '/'
+      fullPath: '/portal/'
+      preLoaderRoute: typeof PortalIndexRouteImport
+      parentRoute: typeof PortalRoute
+    }
     '/verify/$code': {
       id: '/verify/$code'
       path: '/verify/$code'
       fullPath: '/verify/$code'
       preLoaderRoute: typeof VerifyCodeRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/portal/report-cards': {
+      id: '/portal/report-cards'
+      path: '/report-cards'
+      fullPath: '/portal/report-cards'
+      preLoaderRoute: typeof PortalReportCardsRouteImport
+      parentRoute: typeof PortalRoute
+    }
+    '/portal/notifications': {
+      id: '/portal/notifications'
+      path: '/notifications'
+      fullPath: '/portal/notifications'
+      preLoaderRoute: typeof PortalNotificationsRouteImport
+      parentRoute: typeof PortalRoute
+    }
+    '/portal/fees': {
+      id: '/portal/fees'
+      path: '/fees'
+      fullPath: '/portal/fees'
+      preLoaderRoute: typeof PortalFeesRouteImport
+      parentRoute: typeof PortalRoute
+    }
+    '/portal/attendance': {
+      id: '/portal/attendance'
+      path: '/attendance'
+      fullPath: '/portal/attendance'
+      preLoaderRoute: typeof PortalAttendanceRouteImport
+      parentRoute: typeof PortalRoute
     }
     '/_authenticated/users': {
       id: '/_authenticated/users'
@@ -253,6 +415,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedReportCardsRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/fees': {
+      id: '/_authenticated/fees'
+      path: '/fees'
+      fullPath: '/fees'
+      preLoaderRoute: typeof AuthenticatedFeesRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/dashboard': {
       id: '/_authenticated/dashboard'
       path: '/dashboard'
@@ -266,6 +435,27 @@ declare module '@tanstack/react-router' {
       fullPath: '/classes'
       preLoaderRoute: typeof AuthenticatedClassesRouteImport
       parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/attendance': {
+      id: '/_authenticated/attendance'
+      path: '/attendance'
+      fullPath: '/attendance'
+      preLoaderRoute: typeof AuthenticatedAttendanceRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/announcements': {
+      id: '/_authenticated/announcements'
+      path: '/announcements'
+      fullPath: '/announcements'
+      preLoaderRoute: typeof AuthenticatedAnnouncementsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/portal/receipt/$id': {
+      id: '/portal/receipt/$id'
+      path: '/receipt/$id'
+      fullPath: '/portal/receipt/$id'
+      preLoaderRoute: typeof PortalReceiptIdRouteImport
+      parentRoute: typeof PortalRoute
     }
     '/api/public/parent-login': {
       id: '/api/public/parent-login'
@@ -285,8 +475,11 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedRouteChildren {
+  AuthenticatedAnnouncementsRoute: typeof AuthenticatedAnnouncementsRoute
+  AuthenticatedAttendanceRoute: typeof AuthenticatedAttendanceRoute
   AuthenticatedClassesRoute: typeof AuthenticatedClassesRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedFeesRoute: typeof AuthenticatedFeesRoute
   AuthenticatedReportCardsRoute: typeof AuthenticatedReportCardsRoute
   AuthenticatedResultsRoute: typeof AuthenticatedResultsRoute
   AuthenticatedSchoolsRoute: typeof AuthenticatedSchoolsRoute
@@ -296,8 +489,11 @@ interface AuthenticatedRouteChildren {
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
+  AuthenticatedAnnouncementsRoute: AuthenticatedAnnouncementsRoute,
+  AuthenticatedAttendanceRoute: AuthenticatedAttendanceRoute,
   AuthenticatedClassesRoute: AuthenticatedClassesRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedFeesRoute: AuthenticatedFeesRoute,
   AuthenticatedReportCardsRoute: AuthenticatedReportCardsRoute,
   AuthenticatedResultsRoute: AuthenticatedResultsRoute,
   AuthenticatedSchoolsRoute: AuthenticatedSchoolsRoute,
@@ -310,13 +506,45 @@ const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
   AuthenticatedRouteChildren,
 )
 
+interface PortalRouteChildren {
+  PortalAttendanceRoute: typeof PortalAttendanceRoute
+  PortalFeesRoute: typeof PortalFeesRoute
+  PortalNotificationsRoute: typeof PortalNotificationsRoute
+  PortalReportCardsRoute: typeof PortalReportCardsRoute
+  PortalIndexRoute: typeof PortalIndexRoute
+  PortalReceiptIdRoute: typeof PortalReceiptIdRoute
+}
+
+const PortalRouteChildren: PortalRouteChildren = {
+  PortalAttendanceRoute: PortalAttendanceRoute,
+  PortalFeesRoute: PortalFeesRoute,
+  PortalNotificationsRoute: PortalNotificationsRoute,
+  PortalReportCardsRoute: PortalReportCardsRoute,
+  PortalIndexRoute: PortalIndexRoute,
+  PortalReceiptIdRoute: PortalReceiptIdRoute,
+}
+
+const PortalRouteWithChildren =
+  PortalRoute._addFileChildren(PortalRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
   AuthRoute: AuthRoute,
+  PortalRoute: PortalRouteWithChildren,
   VerifyCodeRoute: VerifyCodeRoute,
   ApiPublicParentLoginRoute: ApiPublicParentLoginRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}

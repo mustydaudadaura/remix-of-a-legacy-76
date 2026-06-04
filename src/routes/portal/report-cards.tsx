@@ -6,7 +6,7 @@ import { getPortalReportCards } from "@/lib/api/portal.functions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
-export const Route = createFileRoute("/_portal/report-cards")({
+export const Route = createFileRoute("/portal/report-cards")({
   component: Page,
 });
 

@@ -5,7 +5,7 @@ import { getReceipt } from "@/lib/api/portal.functions";
 import { Button } from "@/components/ui/button";
 import { Printer } from "lucide-react";
 
-export const Route = createFileRoute("/_portal/receipt/$id")({
+export const Route = createFileRoute("/portal/receipt/$id")({
   component: Page,
 });
 

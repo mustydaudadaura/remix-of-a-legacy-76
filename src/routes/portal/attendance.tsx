@@ -6,7 +6,7 @@ import { getPortalAttendance } from "@/lib/api/portal.functions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
-export const Route = createFileRoute("/_portal/attendance")({
+export const Route = createFileRoute("/portal/attendance")({
   component: Page,
 });
 

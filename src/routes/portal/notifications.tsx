@@ -5,7 +5,7 @@ import { getPortalNotifications, markNotificationRead } from "@/lib/api/portal.f
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
-export const Route = createFileRoute("/_portal/notifications")({
+export const Route = createFileRoute("/portal/notifications")({
   component: Page,
 });
 
