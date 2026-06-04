@@ -86,6 +86,27 @@ function AuthPage() {
     );
   };
 
+  const parentLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const res = await fetch("/api/public/parent-login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phone: parentPhone }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || "Login failed");
+      setParentSession(json.token, json.parent);
+      toast.success(`Welcome, ${json.parent.full_name}`);
+      navigate({ to: "/portal" });
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Login failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="flex min-h-screen items-center justify-center bg-background p-4">
       <div className="w-full max-w-md">
