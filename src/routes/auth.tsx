@@ -122,11 +122,27 @@ function AuthPage() {
             <CardDescription>Sign in to your account or create a new one.</CardDescription>
           </CardHeader>
           <CardContent>
-            <Tabs defaultValue="signin">
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="signin">Sign in</TabsTrigger>
+            <Tabs defaultValue="parent">
+              <TabsList className="grid w-full grid-cols-3">
+                <TabsTrigger value="parent"><Phone className="mr-1 h-3.5 w-3.5" />Parent</TabsTrigger>
+                <TabsTrigger value="signin">Staff</TabsTrigger>
                 <TabsTrigger value="signup">Sign up</TabsTrigger>
               </TabsList>
+              <TabsContent value="parent">
+                <form onSubmit={parentLogin} className="space-y-4 pt-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="parent_phone">Phone number</Label>
+                    <Input id="parent_phone" type="tel" inputMode="tel" required placeholder="e.g. 08012345678"
+                      value={parentPhone} onChange={(e) => setParentPhone(e.target.value)} />
+                    <p className="text-xs text-muted-foreground">
+                      Use the phone number you gave the school when registering your child. No password needed.
+                    </p>
+                  </div>
+                  <Button type="submit" className="w-full" disabled={loading}>
+                    {loading ? "Checking…" : "Enter portal"}
+                  </Button>
+                </form>
+              </TabsContent>
               <TabsContent value="signin">
                 <form onSubmit={signIn} className="space-y-4 pt-4">
                   <div className="space-y-2">
