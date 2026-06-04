@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useParentAuth } from "@/hooks/useParentAuth";
-import { getActiveChildId } from "@/routes/_portal";
+import { getActiveChildId } from "@/routes/portal";
 import { getPortalReportCards } from "@/lib/api/portal.functions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";

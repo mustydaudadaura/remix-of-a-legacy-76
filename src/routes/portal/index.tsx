@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useParentAuth } from "@/hooks/useParentAuth";
-import { getActiveChildId } from "@/routes/_portal";
+import { getActiveChildId } from "@/routes/portal";
 import { getPortalSummary } from "@/lib/api/portal.functions";
 import { Card, CardContent } from "@/components/ui/card";
 import { CalendarCheck, Wallet, Award, Bell } from "lucide-react";
