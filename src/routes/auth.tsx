@@ -22,6 +22,7 @@ function AuthPage() {
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [schoolCode, setSchoolCode] = useState("");
+  const [parentPhone, setParentPhone] = useState("");
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
