@@ -20,6 +20,7 @@ import { Route as AuthenticatedResultsRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedReportCardsRouteImport } from './routes/_authenticated/report-cards'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedClassesRouteImport } from './routes/_authenticated/classes'
+import { Route as ApiPublicParentLoginRouteImport } from './routes/api/public/parent-login'
 import { Route as AuthenticatedReportCardIdRouteImport } from './routes/_authenticated/report-card.$id'
 
 const AuthRoute = AuthRouteImport.update({
@@ -77,6 +78,11 @@ const AuthenticatedClassesRoute = AuthenticatedClassesRouteImport.update({
   path: '/classes',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const ApiPublicParentLoginRoute = ApiPublicParentLoginRouteImport.update({
+  id: '/api/public/parent-login',
+  path: '/api/public/parent-login',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedReportCardIdRoute =
   AuthenticatedReportCardIdRouteImport.update({
     id: '/report-card/$id',
@@ -96,6 +102,7 @@ export interface FileRoutesByFullPath {
   '/users': typeof AuthenticatedUsersRoute
   '/verify/$code': typeof VerifyCodeRoute
   '/report-card/$id': typeof AuthenticatedReportCardIdRoute
+  '/api/public/parent-login': typeof ApiPublicParentLoginRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -109,6 +116,7 @@ export interface FileRoutesByTo {
   '/users': typeof AuthenticatedUsersRoute
   '/verify/$code': typeof VerifyCodeRoute
   '/report-card/$id': typeof AuthenticatedReportCardIdRoute
+  '/api/public/parent-login': typeof ApiPublicParentLoginRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -124,6 +132,7 @@ export interface FileRoutesById {
   '/_authenticated/users': typeof AuthenticatedUsersRoute
   '/verify/$code': typeof VerifyCodeRoute
   '/_authenticated/report-card/$id': typeof AuthenticatedReportCardIdRoute
+  '/api/public/parent-login': typeof ApiPublicParentLoginRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -139,6 +148,7 @@ export interface FileRouteTypes {
     | '/users'
     | '/verify/$code'
     | '/report-card/$id'
+    | '/api/public/parent-login'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -152,6 +162,7 @@ export interface FileRouteTypes {
     | '/users'
     | '/verify/$code'
     | '/report-card/$id'
+    | '/api/public/parent-login'
   id:
     | '__root__'
     | '/'
@@ -166,6 +177,7 @@ export interface FileRouteTypes {
     | '/_authenticated/users'
     | '/verify/$code'
     | '/_authenticated/report-card/$id'
+    | '/api/public/parent-login'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -173,6 +185,7 @@ export interface RootRouteChildren {
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
   AuthRoute: typeof AuthRoute
   VerifyCodeRoute: typeof VerifyCodeRoute
+  ApiPublicParentLoginRoute: typeof ApiPublicParentLoginRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -254,6 +267,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedClassesRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/api/public/parent-login': {
+      id: '/api/public/parent-login'
+      path: '/api/public/parent-login'
+      fullPath: '/api/public/parent-login'
+      preLoaderRoute: typeof ApiPublicParentLoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/report-card/$id': {
       id: '/_authenticated/report-card/$id'
       path: '/report-card/$id'
@@ -295,7 +315,18 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
   AuthRoute: AuthRoute,
   VerifyCodeRoute: VerifyCodeRoute,
+  ApiPublicParentLoginRoute: ApiPublicParentLoginRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
