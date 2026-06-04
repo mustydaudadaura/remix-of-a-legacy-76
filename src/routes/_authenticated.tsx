@@ -20,6 +20,10 @@ const NAV = [
   { to: "/students", label: "Students", icon: Users, roles: ["super_admin","school_admin","teacher"] },
   { to: "/classes", label: "Classes & Subjects", icon: BookOpen, roles: ["super_admin","school_admin","teacher"] },
   { to: "/results", label: "Results Entry", icon: FileText, roles: ["super_admin","school_admin","teacher"] },
+  { to: "/results", label: "Results Entry", icon: FileText, roles: ["super_admin","school_admin","teacher"] },
+  { to: "/attendance", label: "Attendance", icon: CalendarCheck, roles: ["super_admin","school_admin","teacher"] },
+  { to: "/fees", label: "Fees", icon: Wallet, roles: ["super_admin","school_admin","accountant"] },
+  { to: "/announcements", label: "Announcements", icon: Megaphone, roles: ["super_admin","school_admin"] },
   { to: "/report-cards", label: "Report Cards", icon: Award, roles: ["super_admin","school_admin","teacher","student","parent"] },
   { to: "/users", label: "Users & Roles", icon: UserCog, roles: ["super_admin","school_admin"] },
 ] as const;
