@@ -1,13 +1,14 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { setParentSession } from "@/hooks/useParentAuth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { GraduationCap } from "lucide-react";
+import { GraduationCap, Phone } from "lucide-react";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({ meta: [{ title: "Sign in — EduERP" }] }),
@@ -21,6 +22,7 @@ function AuthPage() {
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [schoolCode, setSchoolCode] = useState("");
+  const [parentPhone, setParentPhone] = useState("");
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -84,6 +86,27 @@ function AuthPage() {
     );
   };
 
+  const parentLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const res = await fetch("/api/public/parent-login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phone: parentPhone }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || "Login failed");
+      setParentSession(json.token, json.parent);
+      toast.success(`Welcome, ${json.parent.full_name}`);
+      navigate({ to: "/portal" });
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Login failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="flex min-h-screen items-center justify-center bg-background p-4">
       <div className="w-full max-w-md">
@@ -99,11 +122,27 @@ function AuthPage() {
             <CardDescription>Sign in to your account or create a new one.</CardDescription>
           </CardHeader>
           <CardContent>
-            <Tabs defaultValue="signin">
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="signin">Sign in</TabsTrigger>
+            <Tabs defaultValue="parent">
+              <TabsList className="grid w-full grid-cols-3">
+                <TabsTrigger value="parent"><Phone className="mr-1 h-3.5 w-3.5" />Parent</TabsTrigger>
+                <TabsTrigger value="signin">Staff</TabsTrigger>
                 <TabsTrigger value="signup">Sign up</TabsTrigger>
               </TabsList>
+              <TabsContent value="parent">
+                <form onSubmit={parentLogin} className="space-y-4 pt-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="parent_phone">Phone number</Label>
+                    <Input id="parent_phone" type="tel" inputMode="tel" required placeholder="e.g. 08012345678"
+                      value={parentPhone} onChange={(e) => setParentPhone(e.target.value)} />
+                    <p className="text-xs text-muted-foreground">
+                      Use the phone number you gave the school when registering your child. No password needed.
+                    </p>
+                  </div>
+                  <Button type="submit" className="w-full" disabled={loading}>
+                    {loading ? "Checking…" : "Enter portal"}
+                  </Button>
+                </form>
+              </TabsContent>
               <TabsContent value="signin">
                 <form onSubmit={signIn} className="space-y-4 pt-4">
                   <div className="space-y-2">
