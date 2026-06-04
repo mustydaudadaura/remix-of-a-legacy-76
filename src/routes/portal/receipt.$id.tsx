@@ -10,7 +10,7 @@ export const Route = createFileRoute("/portal/receipt/$id")({
 });
 
 function Page() {
-  const { id } = useParams({ from: "/_portal/receipt/$id" });
+  const { id } = useParams({ from: "/portal/receipt/$id" });
   const { token } = useParentAuth();
   const { data, isLoading } = useQuery({
     queryKey: ["receipt", token, id],
