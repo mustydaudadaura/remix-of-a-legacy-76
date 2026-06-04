@@ -103,6 +103,67 @@ export type Database = {
           },
         ]
       }
+      attendance: {
+        Row: {
+          class_id: string | null
+          created_at: string
+          date: string
+          id: string
+          marked_by: string | null
+          note: string | null
+          school_id: string
+          status: Database["public"]["Enums"]["attendance_status"]
+          student_id: string
+          updated_at: string
+        }
+        Insert: {
+          class_id?: string | null
+          created_at?: string
+          date: string
+          id?: string
+          marked_by?: string | null
+          note?: string | null
+          school_id: string
+          status?: Database["public"]["Enums"]["attendance_status"]
+          student_id: string
+          updated_at?: string
+        }
+        Update: {
+          class_id?: string | null
+          created_at?: string
+          date?: string
+          id?: string
+          marked_by?: string | null
+          note?: string | null
+          school_id?: string
+          status?: Database["public"]["Enums"]["attendance_status"]
+          student_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "attendance_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "attendance_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "attendance_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       classes: {
         Row: {
           arm: string | null
@@ -137,6 +198,197 @@ export type Database = {
             columns: ["school_id"]
             isOneToOne: false
             referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      fee_invoices: {
+        Row: {
+          amount_due: number
+          amount_paid: number
+          created_at: string
+          due_date: string | null
+          fee_item_id: string | null
+          id: string
+          school_id: string
+          session: string
+          status: Database["public"]["Enums"]["invoice_status"]
+          student_id: string
+          term: Database["public"]["Enums"]["term_name"]
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          amount_due: number
+          amount_paid?: number
+          created_at?: string
+          due_date?: string | null
+          fee_item_id?: string | null
+          id?: string
+          school_id: string
+          session: string
+          status?: Database["public"]["Enums"]["invoice_status"]
+          student_id: string
+          term: Database["public"]["Enums"]["term_name"]
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          amount_due?: number
+          amount_paid?: number
+          created_at?: string
+          due_date?: string | null
+          fee_item_id?: string | null
+          id?: string
+          school_id?: string
+          session?: string
+          status?: Database["public"]["Enums"]["invoice_status"]
+          student_id?: string
+          term?: Database["public"]["Enums"]["term_name"]
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fee_invoices_fee_item_id_fkey"
+            columns: ["fee_item_id"]
+            isOneToOne: false
+            referencedRelation: "fee_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fee_invoices_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fee_invoices_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      fee_items: {
+        Row: {
+          active: boolean
+          amount: number
+          class_id: string | null
+          created_at: string
+          id: string
+          name: string
+          school_id: string
+          session: string
+          term: Database["public"]["Enums"]["term_name"]
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          amount: number
+          class_id?: string | null
+          created_at?: string
+          id?: string
+          name: string
+          school_id: string
+          session: string
+          term: Database["public"]["Enums"]["term_name"]
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          amount?: number
+          class_id?: string | null
+          created_at?: string
+          id?: string
+          name?: string
+          school_id?: string
+          session?: string
+          term?: Database["public"]["Enums"]["term_name"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fee_items_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fee_items_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      fee_payments: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          invoice_id: string
+          method: string
+          notes: string | null
+          paid_at: string
+          receipt_no: string
+          recorded_by: string | null
+          reference: string | null
+          school_id: string
+          student_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          id?: string
+          invoice_id: string
+          method?: string
+          notes?: string | null
+          paid_at?: string
+          receipt_no?: string
+          recorded_by?: string | null
+          reference?: string | null
+          school_id: string
+          student_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          invoice_id?: string
+          method?: string
+          notes?: string | null
+          paid_at?: string
+          receipt_no?: string
+          recorded_by?: string | null
+          reference?: string | null
+          school_id?: string
+          student_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fee_payments_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "fee_invoices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fee_payments_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fee_payments_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
             referencedColumns: ["id"]
           },
         ]
@@ -182,6 +434,70 @@ export type Database = {
           user_id?: string | null
         }
         Relationships: []
+      }
+      parent_notifications: {
+        Row: {
+          body: string | null
+          created_at: string
+          created_by: string | null
+          id: string
+          meta: Json
+          parent_id: string | null
+          read_at: string | null
+          school_id: string
+          student_id: string | null
+          title: string
+          type: Database["public"]["Enums"]["parent_notification_type"]
+        }
+        Insert: {
+          body?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          meta?: Json
+          parent_id?: string | null
+          read_at?: string | null
+          school_id: string
+          student_id?: string | null
+          title: string
+          type?: Database["public"]["Enums"]["parent_notification_type"]
+        }
+        Update: {
+          body?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          meta?: Json
+          parent_id?: string | null
+          read_at?: string | null
+          school_id?: string
+          student_id?: string | null
+          title?: string
+          type?: Database["public"]["Enums"]["parent_notification_type"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "parent_notifications_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "parents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "parent_notifications_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "parent_notifications_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       parents: {
         Row: {
@@ -656,6 +972,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      find_parent_by_phone: {
+        Args: { _phone: string }
+        Returns: {
+          full_name: string
+          parent_id: string
+          school_id: string
+        }[]
+      }
       get_user_school: { Args: { _user_id: string }; Returns: string }
       has_role: {
         Args: {
@@ -673,6 +997,10 @@ export type Database = {
         Returns: boolean
       }
       is_super_admin: { Args: { _user_id: string }; Returns: boolean }
+      notify_fee_defaulters: {
+        Args: { _created_by: string; _school_id: string }
+        Returns: number
+      }
       verify_report_card: {
         Args: { _code: string }
         Returns: {
@@ -698,7 +1026,15 @@ export type Database = {
         | "parent"
         | "accountant"
       assessment_status: "draft" | "submitted" | "approved"
+      attendance_status: "present" | "absent" | "late" | "excused"
       gender_type: "male" | "female"
+      invoice_status: "unpaid" | "partial" | "paid" | "overdue"
+      parent_notification_type:
+        | "news"
+        | "fee_reminder"
+        | "defaulter"
+        | "message"
+        | "general"
       term_name: "first" | "second" | "third"
     }
     CompositeTypes: {
@@ -836,7 +1172,16 @@ export const Constants = {
         "accountant",
       ],
       assessment_status: ["draft", "submitted", "approved"],
+      attendance_status: ["present", "absent", "late", "excused"],
       gender_type: ["male", "female"],
+      invoice_status: ["unpaid", "partial", "paid", "overdue"],
+      parent_notification_type: [
+        "news",
+        "fee_reminder",
+        "defaulter",
+        "message",
+        "general",
+      ],
       term_name: ["first", "second", "third"],
     },
   },
