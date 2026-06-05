@@ -44,10 +44,13 @@ function ClassesPage() {
   const addClass = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!schoolId) return toast.error("Set up your school first");
-    const { error } = await supabase.from("classes").insert({ ...cls, school_id: schoolId });
+    const { error } = await supabase.from("classes").insert({
+      name: cls.name, level: cls.level || null, arm: cls.arm || null,
+      section: cls.section || null, school_id: schoolId,
+    });
     if (error) return toast.error(error.message);
     toast.success("Class created");
-    setCls({ name: "", level: "", arm: "" });
+    setCls({ name: "", level: "", arm: "", section: "" });
     qc.invalidateQueries({ queryKey: ["classes"] });
   };
 
