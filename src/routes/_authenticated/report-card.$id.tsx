@@ -94,8 +94,16 @@ function ReportCardPage() {
       </div>
 
       {/* A4 sheet */}
-      <div className="report-sheet mx-auto my-6 bg-white text-black shadow-lg print:shadow-none print:my-0">
-        <div className="border-[6px] border-double border-[var(--rc)] m-2 p-5">
+      <div
+        className="report-sheet mx-auto my-6 bg-white text-black shadow-lg print:shadow-none print:my-0 relative overflow-hidden"
+        style={{ ["--rc" as any]: THEME.c }}
+      >
+        {school?.logo_url && (
+          <div className="report-watermark pointer-events-none absolute inset-0 flex items-center justify-center print:flex">
+            <img src={school.logo_url} alt="" className="w-[70%] max-w-[480px] object-contain" />
+          </div>
+        )}
+        <div className="relative border-[6px] border-double border-[var(--rc)] m-2 p-5">
           {/* Header */}
           <div className="flex items-start gap-4 border-b-2 border-[var(--rc)] pb-3">
             {school?.logo_url ? (
