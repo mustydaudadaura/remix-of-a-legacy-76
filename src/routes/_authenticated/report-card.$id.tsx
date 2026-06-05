@@ -76,6 +76,13 @@ function ReportCardPage() {
   const psyMerged = { ...defaultPsy, ...psychomotor };
   const affMerged = { ...defaultAff, ...affective };
 
+  const section: "nursery" | "primary" | "secondary" = (klass?.section as any) || "secondary";
+  const THEME = {
+    nursery: { c: "#138a3f", soft: "#138a3f1a", label: "Nursery" },
+    primary: { c: "#1e57d1", soft: "#1e57d11a", label: "Primary" },
+    secondary: { c: "#4c1d95", soft: "#4c1d951a", label: "Secondary" },
+  }[section];
+
   return (
     <div className="bg-muted/30 min-h-screen">
       {/* Toolbar (hidden when printing) */}
