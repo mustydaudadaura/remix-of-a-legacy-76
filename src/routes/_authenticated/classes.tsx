@@ -106,11 +106,11 @@ function ClassesPage() {
           <Card>
             <CardContent className="pt-6">
               <Table>
-                <TableHeader><TableRow><TableHead>Name</TableHead><TableHead>Level</TableHead><TableHead>Arm</TableHead></TableRow></TableHeader>
+                <TableHeader><TableRow><TableHead>Name</TableHead><TableHead>Level</TableHead><TableHead>Arm</TableHead><TableHead>Section</TableHead></TableRow></TableHeader>
                 <TableBody>
-                  {classes?.length ? classes.map((c) => (
-                    <TableRow key={c.id}><TableCell className="font-medium">{c.name}</TableCell><TableCell>{c.level ?? "—"}</TableCell><TableCell>{c.arm ?? "—"}</TableCell></TableRow>
-                  )) : <TableRow><TableCell colSpan={3} className="text-center text-muted-foreground">No classes yet</TableCell></TableRow>}
+                  {classes?.length ? classes.map((c: any) => (
+                    <TableRow key={c.id}><TableCell className="font-medium">{c.name}</TableCell><TableCell>{c.level ?? "—"}</TableCell><TableCell>{c.arm ?? "—"}</TableCell><TableCell className="capitalize">{c.section ?? "—"}</TableCell></TableRow>
+                  )) : <TableRow><TableCell colSpan={4} className="text-center text-muted-foreground">No classes yet</TableCell></TableRow>}
                 </TableBody>
               </Table>
             </CardContent>
