@@ -18,6 +18,7 @@ import { Route as VerifyCodeRouteImport } from './routes/verify.$code'
 import { Route as PortalReportCardsRouteImport } from './routes/portal/report-cards'
 import { Route as PortalNotificationsRouteImport } from './routes/portal/notifications'
 import { Route as PortalFeesRouteImport } from './routes/portal/fees'
+import { Route as PortalChildrenRouteImport } from './routes/portal/children'
 import { Route as PortalAttendanceRouteImport } from './routes/portal/attendance'
 import { Route as AuthenticatedUsersRouteImport } from './routes/_authenticated/users'
 import { Route as AuthenticatedStudentsRouteImport } from './routes/_authenticated/students'
@@ -75,6 +76,11 @@ const PortalNotificationsRoute = PortalNotificationsRouteImport.update({
 const PortalFeesRoute = PortalFeesRouteImport.update({
   id: '/fees',
   path: '/fees',
+  getParentRoute: () => PortalRoute,
+} as any)
+const PortalChildrenRoute = PortalChildrenRouteImport.update({
+  id: '/children',
+  path: '/children',
   getParentRoute: () => PortalRoute,
 } as any)
 const PortalAttendanceRoute = PortalAttendanceRouteImport.update({
@@ -166,6 +172,7 @@ export interface FileRoutesByFullPath {
   '/students': typeof AuthenticatedStudentsRoute
   '/users': typeof AuthenticatedUsersRoute
   '/portal/attendance': typeof PortalAttendanceRoute
+  '/portal/children': typeof PortalChildrenRoute
   '/portal/fees': typeof PortalFeesRoute
   '/portal/notifications': typeof PortalNotificationsRoute
   '/portal/report-cards': typeof PortalReportCardsRoute
@@ -189,6 +196,7 @@ export interface FileRoutesByTo {
   '/students': typeof AuthenticatedStudentsRoute
   '/users': typeof AuthenticatedUsersRoute
   '/portal/attendance': typeof PortalAttendanceRoute
+  '/portal/children': typeof PortalChildrenRoute
   '/portal/fees': typeof PortalFeesRoute
   '/portal/notifications': typeof PortalNotificationsRoute
   '/portal/report-cards': typeof PortalReportCardsRoute
@@ -215,6 +223,7 @@ export interface FileRoutesById {
   '/_authenticated/students': typeof AuthenticatedStudentsRoute
   '/_authenticated/users': typeof AuthenticatedUsersRoute
   '/portal/attendance': typeof PortalAttendanceRoute
+  '/portal/children': typeof PortalChildrenRoute
   '/portal/fees': typeof PortalFeesRoute
   '/portal/notifications': typeof PortalNotificationsRoute
   '/portal/report-cards': typeof PortalReportCardsRoute
@@ -241,6 +250,7 @@ export interface FileRouteTypes {
     | '/students'
     | '/users'
     | '/portal/attendance'
+    | '/portal/children'
     | '/portal/fees'
     | '/portal/notifications'
     | '/portal/report-cards'
@@ -264,6 +274,7 @@ export interface FileRouteTypes {
     | '/students'
     | '/users'
     | '/portal/attendance'
+    | '/portal/children'
     | '/portal/fees'
     | '/portal/notifications'
     | '/portal/report-cards'
@@ -289,6 +300,7 @@ export interface FileRouteTypes {
     | '/_authenticated/students'
     | '/_authenticated/users'
     | '/portal/attendance'
+    | '/portal/children'
     | '/portal/fees'
     | '/portal/notifications'
     | '/portal/report-cards'
@@ -371,6 +383,13 @@ declare module '@tanstack/react-router' {
       path: '/fees'
       fullPath: '/portal/fees'
       preLoaderRoute: typeof PortalFeesRouteImport
+      parentRoute: typeof PortalRoute
+    }
+    '/portal/children': {
+      id: '/portal/children'
+      path: '/children'
+      fullPath: '/portal/children'
+      preLoaderRoute: typeof PortalChildrenRouteImport
       parentRoute: typeof PortalRoute
     }
     '/portal/attendance': {
@@ -508,6 +527,7 @@ const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
 
 interface PortalRouteChildren {
   PortalAttendanceRoute: typeof PortalAttendanceRoute
+  PortalChildrenRoute: typeof PortalChildrenRoute
   PortalFeesRoute: typeof PortalFeesRoute
   PortalNotificationsRoute: typeof PortalNotificationsRoute
   PortalReportCardsRoute: typeof PortalReportCardsRoute
@@ -517,6 +537,7 @@ interface PortalRouteChildren {
 
 const PortalRouteChildren: PortalRouteChildren = {
   PortalAttendanceRoute: PortalAttendanceRoute,
+  PortalChildrenRoute: PortalChildrenRoute,
   PortalFeesRoute: PortalFeesRoute,
   PortalNotificationsRoute: PortalNotificationsRoute,
   PortalReportCardsRoute: PortalReportCardsRoute,
