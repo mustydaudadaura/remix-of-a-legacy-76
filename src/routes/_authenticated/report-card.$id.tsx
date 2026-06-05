@@ -31,7 +31,7 @@ function ReportCardPage() {
           *,
           schools:school_id (name, motto, address, email, phone, logo_url, stamp_url, website, branch_name, principal_name, principal_signature_url, current_session, current_term),
           students:student_id (first_name, middle_name, last_name, admission_no, gender, dob, photo_url, house, next_resumption_date),
-          classes:class_id (name, arm, level)
+          classes:class_id (name, arm, level, section)
         `)
         .eq("id", id)
         .maybeSingle();
