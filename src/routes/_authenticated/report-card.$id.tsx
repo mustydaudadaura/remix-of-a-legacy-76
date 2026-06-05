@@ -95,30 +95,30 @@ function ReportCardPage() {
 
       {/* A4 sheet */}
       <div className="report-sheet mx-auto my-6 bg-white text-black shadow-lg print:shadow-none print:my-0">
-        <div className="border-[6px] border-double border-[#0a6d3b] m-2 p-5">
+        <div className="border-[6px] border-double border-[var(--rc)] m-2 p-5">
           {/* Header */}
-          <div className="flex items-start gap-4 border-b-2 border-[#0a6d3b] pb-3">
+          <div className="flex items-start gap-4 border-b-2 border-[var(--rc)] pb-3">
             {school?.logo_url ? (
               <img src={school.logo_url} alt="logo" className="h-20 w-20 object-contain" />
             ) : (
-              <div className="h-20 w-20 rounded-full bg-[#0a6d3b]/10 grid place-items-center text-xs text-[#0a6d3b]">LOGO</div>
+              <div className="h-20 w-20 rounded-full bg-[var(--rc)]/10 grid place-items-center text-xs text-[var(--rc)]">LOGO</div>
             )}
             <div className="flex-1 text-center">
-              <h1 className="text-2xl font-extrabold uppercase text-[#0a6d3b] tracking-wide">{school?.name || "School Name"}</h1>
+              <h1 className="text-2xl font-extrabold uppercase text-[var(--rc)] tracking-wide">{school?.name || "School Name"}</h1>
               {school?.motto && <p className="italic text-xs">— {school.motto} —</p>}
               <p className="text-xs mt-1">{school?.address}</p>
               <p className="text-[11px]">
                 {[school?.phone, school?.email, school?.website].filter(Boolean).join("  •  ")}
               </p>
               {school?.branch_name && <p className="text-[11px] font-semibold">Branch: {school.branch_name}</p>}
-              <p className="mt-2 inline-block bg-[#0a6d3b] text-white text-xs font-semibold uppercase tracking-wider px-3 py-1 rounded">
+              <p className="mt-2 inline-block bg-[var(--rc)] text-white text-xs font-semibold uppercase tracking-wider px-3 py-1 rounded">
                 Student Report Card — {rc.session} • {String(rc.term).toUpperCase()} TERM
               </p>
             </div>
             {student?.photo_url ? (
-              <img src={student.photo_url} alt="passport" className="h-24 w-20 object-cover border-2 border-[#0a6d3b]" />
+              <img src={student.photo_url} alt="passport" className="h-24 w-20 object-cover border-2 border-[var(--rc)]" />
             ) : (
-              <div className="h-24 w-20 border-2 border-dashed border-[#0a6d3b]/50 grid place-items-center text-[10px] text-muted-foreground">Passport</div>
+              <div className="h-24 w-20 border-2 border-dashed border-[var(--rc)]/50 grid place-items-center text-[10px] text-muted-foreground">Passport</div>
             )}
           </div>
 
@@ -138,14 +138,14 @@ function ReportCardPage() {
           {/* Scores table */}
           <table className="w-full mt-3 border-collapse text-[11px]">
             <thead>
-              <tr className="bg-[#0a6d3b] text-white">
-                <th className="border border-[#0a6d3b] px-2 py-1 text-left">Subject</th>
-                <th className="border border-[#0a6d3b] px-2 py-1">CA1 (20)</th>
-                <th className="border border-[#0a6d3b] px-2 py-1">CA2 (20)</th>
-                <th className="border border-[#0a6d3b] px-2 py-1">Exam (60)</th>
-                <th className="border border-[#0a6d3b] px-2 py-1">Total (100)</th>
-                <th className="border border-[#0a6d3b] px-2 py-1">Grade</th>
-                <th className="border border-[#0a6d3b] px-2 py-1 text-left">Remark</th>
+              <tr className="bg-[var(--rc)] text-white">
+                <th className="border border-[var(--rc)] px-2 py-1 text-left">Subject</th>
+                <th className="border border-[var(--rc)] px-2 py-1">CA1 (20)</th>
+                <th className="border border-[var(--rc)] px-2 py-1">CA2 (20)</th>
+                <th className="border border-[var(--rc)] px-2 py-1">Exam (60)</th>
+                <th className="border border-[var(--rc)] px-2 py-1">Total (100)</th>
+                <th className="border border-[var(--rc)] px-2 py-1">Grade</th>
+                <th className="border border-[var(--rc)] px-2 py-1 text-left">Remark</th>
               </tr>
             </thead>
             <tbody>
@@ -165,7 +165,7 @@ function ReportCardPage() {
               )}
             </tbody>
             <tfoot>
-              <tr className="bg-[#0a6d3b]/10 font-semibold">
+              <tr className="bg-[var(--rc)]/10 font-semibold">
                 <td className="border px-2 py-1">Total / Average</td>
                 <td className="border px-2 py-1 text-center" colSpan={3}>Subjects: {rc.subjects_count}</td>
                 <td className="border px-2 py-1 text-center">{rc.total_score}</td>
@@ -178,7 +178,7 @@ function ReportCardPage() {
           {/* Grading key + Psychomotor + Affective */}
           <div className="grid grid-cols-3 gap-3 mt-3 text-[11px]">
             <div>
-              <h3 className="font-bold text-[#0a6d3b] border-b border-[#0a6d3b] mb-1">Grading Key</h3>
+              <h3 className="font-bold text-[var(--rc)] border-b border-[var(--rc)] mb-1">Grading Key</h3>
               <ul className="space-y-0.5">
                 <li>A — 70–100 — Excellent</li>
                 <li>B — 60–69 — Very Good</li>
@@ -188,7 +188,7 @@ function ReportCardPage() {
               </ul>
             </div>
             <div>
-              <h3 className="font-bold text-[#0a6d3b] border-b border-[#0a6d3b] mb-1">Psychomotor (1–5)</h3>
+              <h3 className="font-bold text-[var(--rc)] border-b border-[var(--rc)] mb-1">Psychomotor (1–5)</h3>
               <table className="w-full">
                 <tbody>
                   {Object.entries(psyMerged).map(([k, v]) => (
@@ -198,7 +198,7 @@ function ReportCardPage() {
               </table>
             </div>
             <div>
-              <h3 className="font-bold text-[#0a6d3b] border-b border-[#0a6d3b] mb-1">Affective (1–5)</h3>
+              <h3 className="font-bold text-[var(--rc)] border-b border-[var(--rc)] mb-1">Affective (1–5)</h3>
               <table className="w-full">
                 <tbody>
                   {Object.entries(affMerged).map(([k, v]) => (
@@ -211,19 +211,19 @@ function ReportCardPage() {
 
           {/* Attendance */}
           <div className="grid grid-cols-4 gap-3 mt-3 text-[11px]">
-            <div className="border border-[#0a6d3b] p-2"><strong>Days Open:</strong> {rc.days_total ?? "—"}</div>
-            <div className="border border-[#0a6d3b] p-2"><strong>Present:</strong> {rc.days_present ?? "—"}</div>
-            <div className="border border-[#0a6d3b] p-2"><strong>Absent:</strong> {rc.days_absent ?? "—"}</div>
-            <div className="border border-[#0a6d3b] p-2"><strong>Next Resumption:</strong> {rc.next_resumption_date ?? student?.next_resumption_date ?? "—"}</div>
+            <div className="border border-[var(--rc)] p-2"><strong>Days Open:</strong> {rc.days_total ?? "—"}</div>
+            <div className="border border-[var(--rc)] p-2"><strong>Present:</strong> {rc.days_present ?? "—"}</div>
+            <div className="border border-[var(--rc)] p-2"><strong>Absent:</strong> {rc.days_absent ?? "—"}</div>
+            <div className="border border-[var(--rc)] p-2"><strong>Next Resumption:</strong> {rc.next_resumption_date ?? student?.next_resumption_date ?? "—"}</div>
           </div>
 
           {/* Remarks */}
           <div className="mt-3 space-y-2 text-[12px]">
-            <div className="border border-[#0a6d3b] p-2">
-              <strong className="text-[#0a6d3b]">Class Teacher's Remark:</strong> {rc.teacher_remark || "—"}
+            <div className="border border-[var(--rc)] p-2">
+              <strong className="text-[var(--rc)]">Class Teacher's Remark:</strong> {rc.teacher_remark || "—"}
             </div>
-            <div className="border border-[#0a6d3b] p-2">
-              <strong className="text-[#0a6d3b]">Principal's Remark:</strong> {rc.principal_remark || "—"}
+            <div className="border border-[var(--rc)] p-2">
+              <strong className="text-[var(--rc)]">Principal's Remark:</strong> {rc.principal_remark || "—"}
             </div>
           </div>
 
@@ -246,7 +246,7 @@ function ReportCardPage() {
                 <img src={qrDataUrl} className="h-20 w-20 mx-auto" alt="QR verify" />
               ) : <div className="h-20 w-20 mx-auto bg-muted" />}
               <div className="flex items-center justify-center gap-1 text-[10px] mt-1">
-                <ShieldCheck className="h-3 w-3 text-[#0a6d3b]" />
+                <ShieldCheck className="h-3 w-3 text-[var(--rc)]" />
                 Verify: {rc.verification_code}
               </div>
             </div>
