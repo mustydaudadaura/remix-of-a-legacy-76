@@ -4,7 +4,8 @@ import { useParentAuth } from "@/hooks/useParentAuth";
 import { getActiveChildId } from "@/routes/portal";
 import { getPortalSummary } from "@/lib/api/portal.functions";
 import { Card, CardContent } from "@/components/ui/card";
-import { CalendarCheck, Wallet, Award, Bell } from "lucide-react";
+import { CalendarCheck, Wallet, Award, Bell, Users } from "lucide-react";
+import { getPortalContext } from "@/lib/api/portal.functions";
 
 export const Route = createFileRoute("/portal/")({
   component: PortalHome,
@@ -19,12 +20,20 @@ function PortalHome() {
     enabled: !!token,
   });
 
+  const ctx = useQuery({
+    queryKey: ["portal-ctx", token],
+    queryFn: () => getPortalContext({ data: { token: token! } }),
+    enabled: !!token,
+  });
+  const kidsCount = ctx.data?.students?.length ?? 0;
+
   const att = data?.attendance;
   const pct = att && att.total > 0 ? Math.round((att.present / att.total) * 100) : 0;
 
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-2 gap-3">
+        <Tile to="/portal/children" icon={Users} title="My children" value={String(kidsCount)} hint="View & switch profiles" />
         <Tile to="/portal/attendance" icon={CalendarCheck} title="Attendance (30d)" value={`${pct}%`} hint={`${att?.present ?? 0}/${att?.total ?? 0} days`} />
         <Tile to="/portal/fees" icon={Wallet} title="Outstanding fees" value={`₦${(data?.balance ?? 0).toLocaleString()}`} hint="Tap to view invoices" />
         <Tile to="/portal/report-cards" icon={Award} title="Latest report" value={data?.latestReport ? `${data.latestReport.average?.toFixed?.(1) ?? data.latestReport.average}%` : "—"} hint={data?.latestReport ? `${data.latestReport.session} • ${data.latestReport.term}` : "No reports yet"} />

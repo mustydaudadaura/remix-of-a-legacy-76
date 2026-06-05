@@ -992,6 +992,14 @@ export type Database = {
         Args: { _school_id: string; _user_id: string }
         Returns: boolean
       }
+      is_parent_link_owner: {
+        Args: { _parent_id: string; _user_id: string }
+        Returns: boolean
+      }
+      is_parent_of_student: {
+        Args: { _student_id: string; _user_id: string }
+        Returns: boolean
+      }
       is_school_staff: {
         Args: { _school_id: string; _user_id: string }
         Returns: boolean
@@ -1001,6 +1009,7 @@ export type Database = {
         Args: { _created_by: string; _school_id: string }
         Returns: number
       }
+      student_school_id: { Args: { _student_id: string }; Returns: string }
       verify_report_card: {
         Args: { _code: string }
         Returns: {
