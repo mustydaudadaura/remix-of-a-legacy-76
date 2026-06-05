@@ -84,10 +84,21 @@ function ClassesPage() {
           <Card>
             <CardHeader><CardTitle>Add class</CardTitle></CardHeader>
             <CardContent>
-              <form onSubmit={addClass} className="grid grid-cols-1 gap-3 sm:grid-cols-4">
+              <form onSubmit={addClass} className="grid grid-cols-1 gap-3 sm:grid-cols-5">
                 <div><Label>Name</Label><Input required placeholder="JSS 1A" value={cls.name} onChange={(e) => setCls({ ...cls, name: e.target.value })} /></div>
                 <div><Label>Level</Label><Input placeholder="JSS" value={cls.level} onChange={(e) => setCls({ ...cls, level: e.target.value })} /></div>
                 <div><Label>Arm</Label><Input placeholder="A" value={cls.arm} onChange={(e) => setCls({ ...cls, arm: e.target.value })} /></div>
+                <div>
+                  <Label>Section</Label>
+                  <Select value={cls.section} onValueChange={(v) => setCls({ ...cls, section: v as any })}>
+                    <SelectTrigger><SelectValue placeholder="Select section" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="nursery">Nursery</SelectItem>
+                      <SelectItem value="primary">Primary</SelectItem>
+                      <SelectItem value="secondary">Secondary</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
                 <div className="flex items-end"><Button type="submit" className="w-full">Add</Button></div>
               </form>
             </CardContent>
