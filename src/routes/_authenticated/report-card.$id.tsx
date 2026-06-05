@@ -118,7 +118,7 @@ function ReportCardPage() {
             {student?.photo_url ? (
               <img src={student.photo_url} alt="passport" className="h-24 w-20 object-cover border-2 border-[var(--rc)]" />
             ) : (
-              <div className="h-24 w-20 border-2 border-dashed style-soft-border grid place-items-center text-[10px] text-muted-foreground">Passport</div>
+              <div className="h-24 w-20 border-2 border-dashed grid place-items-center text-[10px] text-muted-foreground" style={{ borderColor: `${THEME.c}80` }}>Passport</div>
             )}
           </div>
 
