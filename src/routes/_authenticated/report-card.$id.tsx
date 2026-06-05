@@ -101,7 +101,7 @@ function ReportCardPage() {
             {school?.logo_url ? (
               <img src={school.logo_url} alt="logo" className="h-20 w-20 object-contain" />
             ) : (
-              <div className="h-20 w-20 rounded-full bg-[var(--rc)]/10 grid place-items-center text-xs text-[var(--rc)]">LOGO</div>
+              <div className="h-20 w-20 rounded-full style-soft-bg grid place-items-center text-xs text-[var(--rc)]">LOGO</div>
             )}
             <div className="flex-1 text-center">
               <h1 className="text-2xl font-extrabold uppercase text-[var(--rc)] tracking-wide">{school?.name || "School Name"}</h1>
@@ -118,7 +118,7 @@ function ReportCardPage() {
             {student?.photo_url ? (
               <img src={student.photo_url} alt="passport" className="h-24 w-20 object-cover border-2 border-[var(--rc)]" />
             ) : (
-              <div className="h-24 w-20 border-2 border-dashed border-[var(--rc)]/50 grid place-items-center text-[10px] text-muted-foreground">Passport</div>
+              <div className="h-24 w-20 border-2 border-dashed style-soft-border grid place-items-center text-[10px] text-muted-foreground">Passport</div>
             )}
           </div>
 
@@ -165,7 +165,7 @@ function ReportCardPage() {
               )}
             </tbody>
             <tfoot>
-              <tr className="bg-[var(--rc)]/10 font-semibold">
+              <tr className="style-soft-bg font-semibold">
                 <td className="border px-2 py-1">Total / Average</td>
                 <td className="border px-2 py-1 text-center" colSpan={3}>Subjects: {rc.subjects_count}</td>
                 <td className="border px-2 py-1 text-center">{rc.total_score}</td>
