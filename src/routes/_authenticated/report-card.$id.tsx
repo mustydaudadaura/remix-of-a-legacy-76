@@ -165,7 +165,7 @@ function ReportCardPage() {
               )}
             </tbody>
             <tfoot>
-              <tr className="style-soft-bg font-semibold">
+              <tr className="font-semibold" style={{ background: THEME.soft }}>
                 <td className="border px-2 py-1">Total / Average</td>
                 <td className="border px-2 py-1 text-center" colSpan={3}>Subjects: {rc.subjects_count}</td>
                 <td className="border px-2 py-1 text-center">{rc.total_score}</td>
