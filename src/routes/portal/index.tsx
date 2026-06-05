@@ -33,6 +33,7 @@ function PortalHome() {
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-2 gap-3">
+        <Tile to="/portal/children" icon={Users} title="My children" value={String(kidsCount)} hint="View & switch profiles" />
         <Tile to="/portal/attendance" icon={CalendarCheck} title="Attendance (30d)" value={`${pct}%`} hint={`${att?.present ?? 0}/${att?.total ?? 0} days`} />
         <Tile to="/portal/fees" icon={Wallet} title="Outstanding fees" value={`₦${(data?.balance ?? 0).toLocaleString()}`} hint="Tap to view invoices" />
         <Tile to="/portal/report-cards" icon={Award} title="Latest report" value={data?.latestReport ? `${data.latestReport.average?.toFixed?.(1) ?? data.latestReport.average}%` : "—"} hint={data?.latestReport ? `${data.latestReport.session} • ${data.latestReport.term}` : "No reports yet"} />
