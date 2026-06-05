@@ -268,10 +268,13 @@ function ReportCardPage() {
 
       <style>{`
         .report-sheet { width: 210mm; min-height: 297mm; position: relative; }
+        .report-watermark { opacity: 0.06; z-index: 0; }
+        .report-sheet > div:not(.report-watermark) { position: relative; z-index: 1; }
         @media print {
           @page { size: A4; margin: 0; }
           body { background: white !important; }
           .report-sheet { width: 100%; min-height: 100vh; box-shadow: none; margin: 0; }
+          .report-watermark { opacity: 0.06 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
         }
       `}</style>
     </div>
