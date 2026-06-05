@@ -20,7 +20,7 @@ export const Route = createFileRoute("/_authenticated/classes")({
 function ClassesPage() {
   const { schoolId } = useAuth();
   const qc = useQueryClient();
-  const [cls, setCls] = useState({ name: "", level: "", arm: "" });
+  const [cls, setCls] = useState<{ name: string; level: string; arm: string; section: "nursery" | "primary" | "secondary" | "" }>({ name: "", level: "", arm: "", section: "" });
   const [sub, setSub] = useState({ name: "", code: "", class_id: "" });
 
   const { data: classes } = useQuery({
