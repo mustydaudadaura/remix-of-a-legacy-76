@@ -20,6 +20,13 @@ function PortalHome() {
     enabled: !!token,
   });
 
+  const ctx = useQuery({
+    queryKey: ["portal-ctx", token],
+    queryFn: () => getPortalContext({ data: { token: token! } }),
+    enabled: !!token,
+  });
+  const kidsCount = ctx.data?.students?.length ?? 0;
+
   const att = data?.attendance;
   const pct = att && att.total > 0 ? Math.round((att.present / att.total) * 100) : 0;
 
