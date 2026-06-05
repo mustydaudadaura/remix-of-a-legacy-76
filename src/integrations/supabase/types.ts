@@ -172,6 +172,7 @@ export type Database = {
           level: string | null
           name: string
           school_id: string
+          section: Database["public"]["Enums"]["class_section"] | null
           teacher_id: string | null
         }
         Insert: {
@@ -181,6 +182,7 @@ export type Database = {
           level?: string | null
           name: string
           school_id: string
+          section?: Database["public"]["Enums"]["class_section"] | null
           teacher_id?: string | null
         }
         Update: {
@@ -190,6 +192,7 @@ export type Database = {
           level?: string | null
           name?: string
           school_id?: string
+          section?: Database["public"]["Enums"]["class_section"] | null
           teacher_id?: string | null
         }
         Relationships: [
@@ -1036,6 +1039,7 @@ export type Database = {
         | "accountant"
       assessment_status: "draft" | "submitted" | "approved"
       attendance_status: "present" | "absent" | "late" | "excused"
+      class_section: "nursery" | "primary" | "secondary"
       gender_type: "male" | "female"
       invoice_status: "unpaid" | "partial" | "paid" | "overdue"
       parent_notification_type:
@@ -1182,6 +1186,7 @@ export const Constants = {
       ],
       assessment_status: ["draft", "submitted", "approved"],
       attendance_status: ["present", "absent", "late", "excused"],
+      class_section: ["nursery", "primary", "secondary"],
       gender_type: ["male", "female"],
       invoice_status: ["unpaid", "partial", "paid", "overdue"],
       parent_notification_type: [

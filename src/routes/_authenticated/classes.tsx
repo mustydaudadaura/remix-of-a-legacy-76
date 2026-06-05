@@ -20,7 +20,7 @@ export const Route = createFileRoute("/_authenticated/classes")({
 function ClassesPage() {
   const { schoolId } = useAuth();
   const qc = useQueryClient();
-  const [cls, setCls] = useState({ name: "", level: "", arm: "" });
+  const [cls, setCls] = useState<{ name: string; level: string; arm: string; section: "nursery" | "primary" | "secondary" | "" }>({ name: "", level: "", arm: "", section: "" });
   const [sub, setSub] = useState({ name: "", code: "", class_id: "" });
 
   const { data: classes } = useQuery({
@@ -44,10 +44,13 @@ function ClassesPage() {
   const addClass = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!schoolId) return toast.error("Set up your school first");
-    const { error } = await supabase.from("classes").insert({ ...cls, school_id: schoolId });
+    const { error } = await supabase.from("classes").insert({
+      name: cls.name, level: cls.level || null, arm: cls.arm || null,
+      section: cls.section || null, school_id: schoolId,
+    });
     if (error) return toast.error(error.message);
     toast.success("Class created");
-    setCls({ name: "", level: "", arm: "" });
+    setCls({ name: "", level: "", arm: "", section: "" });
     qc.invalidateQueries({ queryKey: ["classes"] });
   };
 
@@ -81,10 +84,21 @@ function ClassesPage() {
           <Card>
             <CardHeader><CardTitle>Add class</CardTitle></CardHeader>
             <CardContent>
-              <form onSubmit={addClass} className="grid grid-cols-1 gap-3 sm:grid-cols-4">
+              <form onSubmit={addClass} className="grid grid-cols-1 gap-3 sm:grid-cols-5">
                 <div><Label>Name</Label><Input required placeholder="JSS 1A" value={cls.name} onChange={(e) => setCls({ ...cls, name: e.target.value })} /></div>
                 <div><Label>Level</Label><Input placeholder="JSS" value={cls.level} onChange={(e) => setCls({ ...cls, level: e.target.value })} /></div>
                 <div><Label>Arm</Label><Input placeholder="A" value={cls.arm} onChange={(e) => setCls({ ...cls, arm: e.target.value })} /></div>
+                <div>
+                  <Label>Section</Label>
+                  <Select value={cls.section} onValueChange={(v) => setCls({ ...cls, section: v as any })}>
+                    <SelectTrigger><SelectValue placeholder="Select section" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="nursery">Nursery</SelectItem>
+                      <SelectItem value="primary">Primary</SelectItem>
+                      <SelectItem value="secondary">Secondary</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
                 <div className="flex items-end"><Button type="submit" className="w-full">Add</Button></div>
               </form>
             </CardContent>
@@ -92,11 +106,11 @@ function ClassesPage() {
           <Card>
             <CardContent className="pt-6">
               <Table>
-                <TableHeader><TableRow><TableHead>Name</TableHead><TableHead>Level</TableHead><TableHead>Arm</TableHead></TableRow></TableHeader>
+                <TableHeader><TableRow><TableHead>Name</TableHead><TableHead>Level</TableHead><TableHead>Arm</TableHead><TableHead>Section</TableHead></TableRow></TableHeader>
                 <TableBody>
-                  {classes?.length ? classes.map((c) => (
-                    <TableRow key={c.id}><TableCell className="font-medium">{c.name}</TableCell><TableCell>{c.level ?? "—"}</TableCell><TableCell>{c.arm ?? "—"}</TableCell></TableRow>
-                  )) : <TableRow><TableCell colSpan={3} className="text-center text-muted-foreground">No classes yet</TableCell></TableRow>}
+                  {classes?.length ? classes.map((c: any) => (
+                    <TableRow key={c.id}><TableCell className="font-medium">{c.name}</TableCell><TableCell>{c.level ?? "—"}</TableCell><TableCell>{c.arm ?? "—"}</TableCell><TableCell className="capitalize">{c.section ?? "—"}</TableCell></TableRow>
+                  )) : <TableRow><TableCell colSpan={4} className="text-center text-muted-foreground">No classes yet</TableCell></TableRow>}
                 </TableBody>
               </Table>
             </CardContent>
