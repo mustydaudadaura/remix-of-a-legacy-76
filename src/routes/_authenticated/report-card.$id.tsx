@@ -101,7 +101,7 @@ function ReportCardPage() {
             {school?.logo_url ? (
               <img src={school.logo_url} alt="logo" className="h-20 w-20 object-contain" />
             ) : (
-              <div className="h-20 w-20 rounded-full style-soft-bg grid place-items-center text-xs text-[var(--rc)]">LOGO</div>
+              <div className="h-20 w-20 rounded-full grid place-items-center text-xs text-[var(--rc)]" style={{ background: THEME.soft }}>LOGO</div>
             )}
             <div className="flex-1 text-center">
               <h1 className="text-2xl font-extrabold uppercase text-[var(--rc)] tracking-wide">{school?.name || "School Name"}</h1>
