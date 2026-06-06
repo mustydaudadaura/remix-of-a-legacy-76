@@ -96,6 +96,23 @@ function ResultsPage() {
     },
   });
 
+  const publish = useServerFn(publishReportCards);
+  const publishMutation = useMutation({
+    mutationFn: () =>
+      publish({
+        data: {
+          class_id: filters.class_id,
+          session: filters.session,
+          term: filters.term,
+        },
+      }),
+    onSuccess: (r) => {
+      toast.success(`Published ${r.published} report card(s) for ${r.class_name}`);
+      qc.invalidateQueries({ queryKey: ["report-cards-list"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
   if (!isStaff) {
     return (
       <div className="space-y-6">
