@@ -80,6 +80,33 @@ export const getPortalReportCards = createServerFn({ method: "POST" })
     return { rows: rows ?? [] };
   });
 
+export const getPortalReportCardDetail = createServerFn({ method: "POST" })
+  .inputValidator((d) => TokenOnly.extend({ id: z.string().uuid() }).parse(d))
+  .handler(async ({ data }) => {
+    const claims = await verify(data.token);
+    const db = await admin();
+    const { data: rc } = await db
+      .from("report_cards")
+      .select(`*,
+        schools:school_id (name, motto, address, email, phone, logo_url, stamp_url, website, branch_name, principal_name, principal_signature_url, current_session, current_term),
+        students:student_id (first_name, middle_name, last_name, admission_no, gender, dob, photo_url, house, next_resumption_date),
+        classes:class_id (name, arm, level, section)`)
+      .eq("id", data.id)
+      .eq("published", true)
+      .maybeSingle();
+    if (!rc) throw new Error("Report card not found");
+    const { data: ok } = await db.from("student_parents").select("student_id").eq("parent_id", claims.parent_id).eq("student_id", (rc as any).student_id).maybeSingle();
+    if (!ok) throw new Error("Not your child");
+    const { data: assessments } = await db
+      .from("assessments")
+      .select("id, ca1, ca2, exam, total, grade, remark, subjects:subject_id(name, code)")
+      .eq("student_id", (rc as any).student_id)
+      .eq("session", (rc as any).session)
+      .eq("term", (rc as any).term)
+      .order("created_at");
+    return { rc, assessments: assessments ?? [] };
+  });
+
 export const getPortalFees = createServerFn({ method: "POST" })
   .inputValidator((d) => WithChild.parse(d))
   .handler(async ({ data }) => {

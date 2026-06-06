@@ -34,7 +34,7 @@ function Page() {
               <div><div className="text-xl font-bold">{r.gpa ?? "—"}</div><div className="text-xs text-muted-foreground">GPA</div></div>
             </div>
             <Button asChild variant="outline" className="w-full">
-              <Link to="/report-card/$id" params={{ id: r.id }}>View report</Link>
+              <Link to="/portal/report-card/$id" params={{ id: r.id }}>View report</Link>
             </Button>
           </CardContent>
         </Card>

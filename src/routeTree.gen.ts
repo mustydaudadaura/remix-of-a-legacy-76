@@ -30,6 +30,7 @@ import { Route as AuthenticatedDashboardRouteImport } from './routes/_authentica
 import { Route as AuthenticatedClassesRouteImport } from './routes/_authenticated/classes'
 import { Route as AuthenticatedAttendanceRouteImport } from './routes/_authenticated/attendance'
 import { Route as AuthenticatedAnnouncementsRouteImport } from './routes/_authenticated/announcements'
+import { Route as PortalReportCardIdRouteImport } from './routes/portal/report-card.$id'
 import { Route as PortalReceiptIdRouteImport } from './routes/portal/receipt.$id'
 import { Route as ApiPublicParentLoginRouteImport } from './routes/api/public/parent-login'
 import { Route as AuthenticatedReportCardIdRouteImport } from './routes/_authenticated/report-card.$id'
@@ -140,6 +141,11 @@ const AuthenticatedAnnouncementsRoute =
     path: '/announcements',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const PortalReportCardIdRoute = PortalReportCardIdRouteImport.update({
+  id: '/report-card/$id',
+  path: '/report-card/$id',
+  getParentRoute: () => PortalRoute,
+} as any)
 const PortalReceiptIdRoute = PortalReceiptIdRouteImport.update({
   id: '/receipt/$id',
   path: '/receipt/$id',
@@ -181,6 +187,7 @@ export interface FileRoutesByFullPath {
   '/report-card/$id': typeof AuthenticatedReportCardIdRoute
   '/api/public/parent-login': typeof ApiPublicParentLoginRoute
   '/portal/receipt/$id': typeof PortalReceiptIdRoute
+  '/portal/report-card/$id': typeof PortalReportCardIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -205,6 +212,7 @@ export interface FileRoutesByTo {
   '/report-card/$id': typeof AuthenticatedReportCardIdRoute
   '/api/public/parent-login': typeof ApiPublicParentLoginRoute
   '/portal/receipt/$id': typeof PortalReceiptIdRoute
+  '/portal/report-card/$id': typeof PortalReportCardIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -232,6 +240,7 @@ export interface FileRoutesById {
   '/_authenticated/report-card/$id': typeof AuthenticatedReportCardIdRoute
   '/api/public/parent-login': typeof ApiPublicParentLoginRoute
   '/portal/receipt/$id': typeof PortalReceiptIdRoute
+  '/portal/report-card/$id': typeof PortalReportCardIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -259,6 +268,7 @@ export interface FileRouteTypes {
     | '/report-card/$id'
     | '/api/public/parent-login'
     | '/portal/receipt/$id'
+    | '/portal/report-card/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -283,6 +293,7 @@ export interface FileRouteTypes {
     | '/report-card/$id'
     | '/api/public/parent-login'
     | '/portal/receipt/$id'
+    | '/portal/report-card/$id'
   id:
     | '__root__'
     | '/'
@@ -309,6 +320,7 @@ export interface FileRouteTypes {
     | '/_authenticated/report-card/$id'
     | '/api/public/parent-login'
     | '/portal/receipt/$id'
+    | '/portal/report-card/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -469,6 +481,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAnnouncementsRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/portal/report-card/$id': {
+      id: '/portal/report-card/$id'
+      path: '/report-card/$id'
+      fullPath: '/portal/report-card/$id'
+      preLoaderRoute: typeof PortalReportCardIdRouteImport
+      parentRoute: typeof PortalRoute
+    }
     '/portal/receipt/$id': {
       id: '/portal/receipt/$id'
       path: '/receipt/$id'
@@ -533,6 +552,7 @@ interface PortalRouteChildren {
   PortalReportCardsRoute: typeof PortalReportCardsRoute
   PortalIndexRoute: typeof PortalIndexRoute
   PortalReceiptIdRoute: typeof PortalReceiptIdRoute
+  PortalReportCardIdRoute: typeof PortalReportCardIdRoute
 }
 
 const PortalRouteChildren: PortalRouteChildren = {
@@ -543,6 +563,7 @@ const PortalRouteChildren: PortalRouteChildren = {
   PortalReportCardsRoute: PortalReportCardsRoute,
   PortalIndexRoute: PortalIndexRoute,
   PortalReceiptIdRoute: PortalReceiptIdRoute,
+  PortalReportCardIdRoute: PortalReportCardIdRoute,
 }
 
 const PortalRouteWithChildren =
