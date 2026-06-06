@@ -76,7 +76,11 @@ function ReportCardPage() {
   const psyMerged = { ...defaultPsy, ...psychomotor };
   const affMerged = { ...defaultAff, ...affective };
 
-  const section: "nursery" | "primary" | "secondary" = (klass?.section as any) || "secondary";
+  const rawSection = (klass?.section as string | undefined)?.toLowerCase();
+  const section: "nursery" | "primary" | "secondary" =
+    rawSection === "nursery" || rawSection === "primary" || rawSection === "secondary"
+      ? rawSection
+      : "secondary";
   const THEME = {
     nursery: { c: "#138a3f", soft: "#138a3f1a", label: "Nursery" },
     primary: { c: "#1e57d1", soft: "#1e57d11a", label: "Primary" },

@@ -90,7 +90,7 @@ function ClassesPage() {
                 <div><Label>Arm</Label><Input placeholder="A" value={cls.arm} onChange={(e) => setCls({ ...cls, arm: e.target.value })} /></div>
                 <div>
                   <Label>Section</Label>
-                  <Select value={cls.section} onValueChange={(v) => setCls({ ...cls, section: v as any })}>
+                  <Select value={cls.section || undefined} onValueChange={(v) => setCls({ ...cls, section: v as any })}>
                     <SelectTrigger><SelectValue placeholder="Select section" /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="nursery">Nursery</SelectItem>
