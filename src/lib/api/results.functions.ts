@@ -98,11 +98,15 @@ export const getReportCardDetail = createServerFn({ method: "GET" })
     if (error) throw new Error(error.message);
     if (!rc) throw new Error("Report card not found");
 
-    const { data: staffOk } = await supabaseAdmin.rpc("is_school_staff", {
-      _user_id: userId,
-      _school_id: (rc as any).school_id,
-    });
-    if (!staffOk) throw new Error("Not authorized");
+    const [{ data: staffOk }, ownStudentIds] = await Promise.all([
+      supabaseAdmin.rpc("is_school_staff", {
+        _user_id: userId,
+        _school_id: (rc as any).school_id,
+      }),
+      getOwnStudentIds(userId),
+    ]);
+    const canViewOwnPublished = Boolean((rc as any).published) && ownStudentIds.includes((rc as any).student_id);
+    if (!staffOk && !canViewOwnPublished) throw new Error("Not authorized");
 
     const [{ data: school }, { data: student }, { data: klass }, { data: rawAssessments }] = await Promise.all([
       supabaseAdmin.from("schools").select("name, motto, address, email, phone, logo_url, stamp_url, website, branch_name, principal_name, principal_signature_url, current_session, current_term").eq("id", (rc as any).school_id).maybeSingle(),
