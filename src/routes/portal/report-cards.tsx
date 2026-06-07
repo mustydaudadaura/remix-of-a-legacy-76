@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useParentAuth } from "@/hooks/useParentAuth";
 import { getActiveChildId } from "@/routes/portal";
-import { getPortalReportCards } from "@/lib/api/portal.functions";
+import { getPortalContext, getPortalReportCards } from "@/lib/api/portal.functions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
@@ -12,7 +12,14 @@ export const Route = createFileRoute("/portal/report-cards")({
 
 function Page() {
   const { token } = useParentAuth();
-  const sid = getActiveChildId();
+  const { data: ctx } = useQuery({
+    queryKey: ["portal-ctx", token],
+    queryFn: () => getPortalContext({ data: { token: token! } }),
+    enabled: !!token,
+  });
+  const activeSid = getActiveChildId();
+  const kids = ctx?.students ?? [];
+  const sid = kids.some((k: any) => k.id === activeSid) ? activeSid : kids[0]?.id;
   const { data } = useQuery({
     queryKey: ["portal-rc", token, sid],
     queryFn: () => getPortalReportCards({ data: { token: token!, student_id: sid! } }),
