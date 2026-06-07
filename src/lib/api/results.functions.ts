@@ -27,18 +27,42 @@ async function getAuthorizedSchoolIds(userId: string) {
   return { isSuper: false, schoolIds };
 }
 
+async function getOwnStudentIds(userId: string) {
+  const [{ data: ownStudents }, { data: parents }] = await Promise.all([
+    supabaseAdmin.from("students").select("id").eq("user_id", userId),
+    supabaseAdmin.from("parents").select("id").eq("user_id", userId),
+  ]);
+  const parentIds = (parents ?? []).map((p: any) => p.id);
+  const { data: linkedStudents } = parentIds.length
+    ? await supabaseAdmin.from("student_parents").select("student_id").in("parent_id", parentIds)
+    : { data: [] };
+  return Array.from(new Set([
+    ...(ownStudents ?? []).map((s: any) => s.id),
+    ...(linkedStudents ?? []).map((s: any) => s.student_id),
+  ].filter(Boolean)));
+}
+
 export const getReportCardsList = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     const { userId } = context;
-    const { isSuper, schoolIds } = await getAuthorizedSchoolIds(userId);
-    if (!isSuper && schoolIds.length === 0) return { cards: [] };
+    const [{ isSuper, schoolIds }, ownStudentIds] = await Promise.all([
+      getAuthorizedSchoolIds(userId),
+      getOwnStudentIds(userId),
+    ]);
+    if (!isSuper && schoolIds.length === 0 && ownStudentIds.length === 0) return { cards: [] };
 
     let query = supabaseAdmin
       .from("report_cards")
       .select("id, school_id, student_id, class_id, session, term, total_score, average, gpa, position, class_size, published, verification_code, created_at")
       .order("created_at", { ascending: false });
-    if (!isSuper) query = query.in("school_id", schoolIds);
+    if (!isSuper && schoolIds.length > 0 && ownStudentIds.length > 0) {
+      query = query.or(`school_id.in.(${schoolIds.join(",")}),and(published.eq.true,student_id.in.(${ownStudentIds.join(",")}))`);
+    } else if (!isSuper && schoolIds.length > 0) {
+      query = query.in("school_id", schoolIds);
+    } else if (!isSuper) {
+      query = query.eq("published", true).in("student_id", ownStudentIds);
+    }
 
     const { data: rows, error } = await query;
     if (error) throw new Error(error.message);
