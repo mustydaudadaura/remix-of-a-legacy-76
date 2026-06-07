@@ -1,7 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { useServerFn } from "@tanstack/react-start";
 import { useAuth, hasRole } from "@/hooks/useAuth";
+import { getReportCardsList } from "@/lib/api/results.functions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
@@ -16,20 +17,13 @@ export const Route = createFileRoute("/_authenticated/report-cards")({
 function ReportCardsListPage() {
   const { roles } = useAuth();
   const isStaff = hasRole(roles, "super_admin", "school_admin", "teacher");
+  const loadCards = useServerFn(getReportCardsList);
 
   const { data: cards, isLoading } = useQuery({
     queryKey: ["report-cards-list"],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("report_cards")
-        .select(`
-          id, session, term, total_score, average, gpa, position, class_size, published, verification_code, created_at,
-          students:student_id (first_name, last_name, admission_no),
-          classes:class_id (name, arm)
-        `)
-        .order("created_at", { ascending: false });
-      if (error) throw error;
-      return data ?? [];
+      const data = await loadCards();
+      return data.cards ?? [];
     },
   });
 
