@@ -12,6 +12,123 @@ const PublishInput = z.object({
   principal_remark_default: z.string().max(500).optional(),
 });
 
+const ReportCardDetailInput = z.object({ id: z.string().uuid() });
+
+async function getAuthorizedSchoolIds(userId: string) {
+  const { data: isSuper } = await supabaseAdmin.rpc("is_super_admin", { _user_id: userId });
+  if (isSuper) return { isSuper: true, schoolIds: [] as string[] };
+
+  const { data: roles } = await supabaseAdmin
+    .from("user_roles")
+    .select("school_id")
+    .eq("user_id", userId)
+    .in("role", ["school_admin", "teacher", "accountant"]);
+  const schoolIds = Array.from(new Set((roles ?? []).map((r: any) => r.school_id).filter(Boolean)));
+  return { isSuper: false, schoolIds };
+}
+
+async function getOwnStudentIds(userId: string) {
+  const [{ data: ownStudents }, { data: parents }] = await Promise.all([
+    supabaseAdmin.from("students").select("id").eq("user_id", userId),
+    supabaseAdmin.from("parents").select("id").eq("user_id", userId),
+  ]);
+  const parentIds = (parents ?? []).map((p: any) => p.id);
+  const { data: linkedStudents } = parentIds.length
+    ? await supabaseAdmin.from("student_parents").select("student_id").in("parent_id", parentIds)
+    : { data: [] };
+  return Array.from(new Set([
+    ...(ownStudents ?? []).map((s: any) => s.id),
+    ...(linkedStudents ?? []).map((s: any) => s.student_id),
+  ].filter(Boolean)));
+}
+
+export const getReportCardsList = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { userId } = context;
+    const [{ isSuper, schoolIds }, ownStudentIds] = await Promise.all([
+      getAuthorizedSchoolIds(userId),
+      getOwnStudentIds(userId),
+    ]);
+    if (!isSuper && schoolIds.length === 0 && ownStudentIds.length === 0) return { cards: [] };
+
+    let query = supabaseAdmin
+      .from("report_cards")
+      .select("id, school_id, student_id, class_id, session, term, total_score, average, gpa, position, class_size, published, verification_code, created_at")
+      .order("created_at", { ascending: false });
+    if (!isSuper && schoolIds.length > 0 && ownStudentIds.length > 0) {
+      query = query.or(`school_id.in.(${schoolIds.join(",")}),and(published.eq.true,student_id.in.(${ownStudentIds.join(",")}))`);
+    } else if (!isSuper && schoolIds.length > 0) {
+      query = query.in("school_id", schoolIds);
+    } else if (!isSuper) {
+      query = query.eq("published", true).in("student_id", ownStudentIds);
+    }
+
+    const { data: rows, error } = await query;
+    if (error) throw new Error(error.message);
+
+    const studentIds = Array.from(new Set((rows ?? []).map((r: any) => r.student_id).filter(Boolean)));
+    const classIds = Array.from(new Set((rows ?? []).map((r: any) => r.class_id).filter(Boolean)));
+    const [{ data: students }, { data: classes }] = await Promise.all([
+      studentIds.length
+        ? supabaseAdmin.from("students").select("id, first_name, last_name, admission_no").in("id", studentIds)
+        : Promise.resolve({ data: [] }),
+      classIds.length
+        ? supabaseAdmin.from("classes").select("id, name, arm").in("id", classIds)
+        : Promise.resolve({ data: [] }),
+    ]);
+    const studentMap = new Map((students ?? []).map((s: any) => [s.id, s]));
+    const classMap = new Map((classes ?? []).map((c: any) => [c.id, c]));
+
+    return {
+      cards: (rows ?? []).map((r: any) => ({
+        ...r,
+        students: studentMap.get(r.student_id) ?? null,
+        classes: r.class_id ? classMap.get(r.class_id) ?? null : null,
+      })),
+    };
+  });
+
+export const getReportCardDetail = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d) => ReportCardDetailInput.parse(d))
+  .handler(async ({ data, context }) => {
+    const { userId } = context;
+    const { data: rc, error } = await supabaseAdmin.from("report_cards").select("*").eq("id", data.id).maybeSingle();
+    if (error) throw new Error(error.message);
+    if (!rc) throw new Error("Report card not found");
+
+    const [{ data: staffOk }, ownStudentIds] = await Promise.all([
+      supabaseAdmin.rpc("is_school_staff", {
+        _user_id: userId,
+        _school_id: (rc as any).school_id,
+      }),
+      getOwnStudentIds(userId),
+    ]);
+    const canViewOwnPublished = Boolean((rc as any).published) && ownStudentIds.includes((rc as any).student_id);
+    if (!staffOk && !canViewOwnPublished) throw new Error("Not authorized");
+
+    const [{ data: school }, { data: student }, { data: klass }, { data: rawAssessments }] = await Promise.all([
+      supabaseAdmin.from("schools").select("name, motto, address, email, phone, logo_url, stamp_url, website, branch_name, principal_name, principal_signature_url, current_session, current_term").eq("id", (rc as any).school_id).maybeSingle(),
+      supabaseAdmin.from("students").select("first_name, middle_name, last_name, admission_no, gender, dob, photo_url, house, next_resumption_date").eq("id", (rc as any).student_id).maybeSingle(),
+      (rc as any).class_id
+        ? supabaseAdmin.from("classes").select("name, arm, level, section").eq("id", (rc as any).class_id).maybeSingle()
+        : Promise.resolve({ data: null }),
+      supabaseAdmin.from("assessments").select("id, subject_id, ca1, ca2, exam, total, grade, remark, created_at").eq("student_id", (rc as any).student_id).eq("session", (rc as any).session).eq("term", (rc as any).term).order("created_at"),
+    ]);
+
+    const subjectIds = Array.from(new Set((rawAssessments ?? []).map((a: any) => a.subject_id).filter(Boolean)));
+    const { data: subjects } = subjectIds.length
+      ? await supabaseAdmin.from("subjects").select("id, name, code").in("id", subjectIds)
+      : { data: [] };
+    const subjectMap = new Map((subjects ?? []).map((s: any) => [s.id, { name: s.name, code: s.code }]));
+
+    return {
+      rc: { ...(rc as any), schools: school, students: student, classes: klass },
+      assessments: (rawAssessments ?? []).map((a: any) => ({ ...a, subjects: subjectMap.get(a.subject_id) ?? null })),
+    };
+  });
+
 /**
  * Publish report cards for a whole class: aggregates assessments,
  * computes total, average, GPA, position, and upserts report_cards rows.
