@@ -87,24 +87,26 @@ export const getPortalReportCardDetail = createServerFn({ method: "POST" })
     const db = await admin();
     const { data: rc } = await db
       .from("report_cards")
-      .select(`*,
-        schools:school_id (name, motto, address, email, phone, logo_url, stamp_url, website, branch_name, principal_name, principal_signature_url, current_session, current_term),
-        students:student_id (first_name, middle_name, last_name, admission_no, gender, dob, photo_url, house, next_resumption_date),
-        classes:class_id (name, arm, level, section)`)
+      .select("*")
       .eq("id", data.id)
       .eq("published", true)
       .maybeSingle();
     if (!rc) throw new Error("Report card not found");
     const { data: ok } = await db.from("student_parents").select("student_id").eq("parent_id", claims.parent_id).eq("student_id", (rc as any).student_id).maybeSingle();
     if (!ok) throw new Error("Not your child");
-    const { data: assessments } = await db
-      .from("assessments")
-      .select("id, ca1, ca2, exam, total, grade, remark, subjects:subject_id(name, code)")
-      .eq("student_id", (rc as any).student_id)
-      .eq("session", (rc as any).session)
-      .eq("term", (rc as any).term)
-      .order("created_at");
-    return { rc, assessments: assessments ?? [] };
+    const [{ data: school }, { data: student }, { data: klass }, { data: rawAssessments }] = await Promise.all([
+      db.from("schools").select("name, motto, address, email, phone, logo_url, stamp_url, website, branch_name, principal_name, principal_signature_url, current_session, current_term").eq("id", (rc as any).school_id).maybeSingle(),
+      db.from("students").select("first_name, middle_name, last_name, admission_no, gender, dob, photo_url, house, next_resumption_date").eq("id", (rc as any).student_id).maybeSingle(),
+      (rc as any).class_id ? db.from("classes").select("name, arm, level, section").eq("id", (rc as any).class_id).maybeSingle() : Promise.resolve({ data: null }),
+      db.from("assessments").select("id, subject_id, ca1, ca2, exam, total, grade, remark, created_at").eq("student_id", (rc as any).student_id).eq("session", (rc as any).session).eq("term", (rc as any).term).order("created_at"),
+    ]);
+    const subjectIds = Array.from(new Set((rawAssessments ?? []).map((a: any) => a.subject_id).filter(Boolean)));
+    const { data: subjects } = subjectIds.length ? await db.from("subjects").select("id, name, code").in("id", subjectIds) : { data: [] };
+    const subjectMap = new Map((subjects ?? []).map((s: any) => [s.id, { name: s.name, code: s.code }]));
+    return {
+      rc: { ...(rc as any), schools: school, students: student, classes: klass },
+      assessments: (rawAssessments ?? []).map((a: any) => ({ ...a, subjects: subjectMap.get(a.subject_id) ?? null })),
+    };
   });
 
 export const getPortalFees = createServerFn({ method: "POST" })
