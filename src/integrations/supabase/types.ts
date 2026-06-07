@@ -668,6 +668,13 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "report_cards_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "report_cards_school_id_fkey"
             columns: ["school_id"]
             isOneToOne: false
