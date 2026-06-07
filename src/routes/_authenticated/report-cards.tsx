@@ -15,7 +15,7 @@ export const Route = createFileRoute("/_authenticated/report-cards")({
 });
 
 function ReportCardsListPage() {
-  const { roles } = useAuth();
+  const { roles, loading } = useAuth();
   const isStaff = hasRole(roles, "super_admin", "school_admin", "teacher");
   const loadCards = useServerFn(getReportCardsList);
 
@@ -25,6 +25,7 @@ function ReportCardsListPage() {
       const data = await loadCards();
       return data.cards ?? [];
     },
+    enabled: !loading,
   });
 
   return (
