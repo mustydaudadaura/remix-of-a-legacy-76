@@ -19,6 +19,7 @@ const NAV = [
   { to: "/schools", label: "Schools", icon: Building2, roles: ["super_admin"] },
   { to: "/students", label: "Students", icon: Users, roles: ["super_admin","school_admin","teacher"] },
   { to: "/classes", label: "Classes & Subjects", icon: BookOpen, roles: ["super_admin","school_admin","teacher"] },
+  { to: "/promotion", label: "Promotion", icon: GraduationCap, roles: ["super_admin","school_admin"] },
   { to: "/results", label: "Results Entry", icon: FileText, roles: ["super_admin","school_admin","teacher"] },
   { to: "/attendance", label: "Attendance", icon: CalendarCheck, roles: ["super_admin","school_admin","teacher"] },
   { to: "/fees", label: "Fees", icon: Wallet, roles: ["super_admin","school_admin","accountant"] },
