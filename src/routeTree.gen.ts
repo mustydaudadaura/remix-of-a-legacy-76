@@ -25,6 +25,7 @@ import { Route as AuthenticatedStudentsRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedSchoolsRouteImport } from './routes/_authenticated/schools'
 import { Route as AuthenticatedResultsRouteImport } from './routes/_authenticated/results'
 import { Route as AuthenticatedReportCardsRouteImport } from './routes/_authenticated/report-cards'
+import { Route as AuthenticatedPromotionRouteImport } from './routes/_authenticated/promotion'
 import { Route as AuthenticatedFeesRouteImport } from './routes/_authenticated/fees'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedClassesRouteImport } from './routes/_authenticated/classes'
@@ -115,6 +116,11 @@ const AuthenticatedReportCardsRoute =
     path: '/report-cards',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedPromotionRoute = AuthenticatedPromotionRouteImport.update({
+  id: '/promotion',
+  path: '/promotion',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedFeesRoute = AuthenticatedFeesRouteImport.update({
   id: '/fees',
   path: '/fees',
@@ -172,6 +178,7 @@ export interface FileRoutesByFullPath {
   '/classes': typeof AuthenticatedClassesRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/fees': typeof AuthenticatedFeesRoute
+  '/promotion': typeof AuthenticatedPromotionRoute
   '/report-cards': typeof AuthenticatedReportCardsRoute
   '/results': typeof AuthenticatedResultsRoute
   '/schools': typeof AuthenticatedSchoolsRoute
@@ -197,6 +204,7 @@ export interface FileRoutesByTo {
   '/classes': typeof AuthenticatedClassesRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/fees': typeof AuthenticatedFeesRoute
+  '/promotion': typeof AuthenticatedPromotionRoute
   '/report-cards': typeof AuthenticatedReportCardsRoute
   '/results': typeof AuthenticatedResultsRoute
   '/schools': typeof AuthenticatedSchoolsRoute
@@ -225,6 +233,7 @@ export interface FileRoutesById {
   '/_authenticated/classes': typeof AuthenticatedClassesRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/fees': typeof AuthenticatedFeesRoute
+  '/_authenticated/promotion': typeof AuthenticatedPromotionRoute
   '/_authenticated/report-cards': typeof AuthenticatedReportCardsRoute
   '/_authenticated/results': typeof AuthenticatedResultsRoute
   '/_authenticated/schools': typeof AuthenticatedSchoolsRoute
@@ -253,6 +262,7 @@ export interface FileRouteTypes {
     | '/classes'
     | '/dashboard'
     | '/fees'
+    | '/promotion'
     | '/report-cards'
     | '/results'
     | '/schools'
@@ -278,6 +288,7 @@ export interface FileRouteTypes {
     | '/classes'
     | '/dashboard'
     | '/fees'
+    | '/promotion'
     | '/report-cards'
     | '/results'
     | '/schools'
@@ -305,6 +316,7 @@ export interface FileRouteTypes {
     | '/_authenticated/classes'
     | '/_authenticated/dashboard'
     | '/_authenticated/fees'
+    | '/_authenticated/promotion'
     | '/_authenticated/report-cards'
     | '/_authenticated/results'
     | '/_authenticated/schools'
@@ -446,6 +458,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedReportCardsRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/promotion': {
+      id: '/_authenticated/promotion'
+      path: '/promotion'
+      fullPath: '/promotion'
+      preLoaderRoute: typeof AuthenticatedPromotionRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/fees': {
       id: '/_authenticated/fees'
       path: '/fees'
@@ -518,6 +537,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedClassesRoute: typeof AuthenticatedClassesRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedFeesRoute: typeof AuthenticatedFeesRoute
+  AuthenticatedPromotionRoute: typeof AuthenticatedPromotionRoute
   AuthenticatedReportCardsRoute: typeof AuthenticatedReportCardsRoute
   AuthenticatedResultsRoute: typeof AuthenticatedResultsRoute
   AuthenticatedSchoolsRoute: typeof AuthenticatedSchoolsRoute
@@ -532,6 +552,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedClassesRoute: AuthenticatedClassesRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedFeesRoute: AuthenticatedFeesRoute,
+  AuthenticatedPromotionRoute: AuthenticatedPromotionRoute,
   AuthenticatedReportCardsRoute: AuthenticatedReportCardsRoute,
   AuthenticatedResultsRoute: AuthenticatedResultsRoute,
   AuthenticatedSchoolsRoute: AuthenticatedSchoolsRoute,

@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Plus, UserPlus } from "lucide-react";
 import { toast } from "sonner";
+import { BulkImportDialog } from "@/components/BulkImportDialog";
 
 export const Route = createFileRoute("/_authenticated/students")({
   head: () => ({ meta: [{ title: "Students — EduERP" }] }),
@@ -96,6 +97,8 @@ function StudentsPage() {
           <h1 className="text-2xl font-bold tracking-tight">Students</h1>
           <p className="text-sm text-muted-foreground">Admit and manage students. Parents are auto-linked.</p>
         </div>
+        <div className="flex flex-wrap gap-2">
+        <BulkImportDialog schoolId={schoolId} classes={classes ?? []} onDone={() => qc.invalidateQueries({ queryKey: ["students"] })} />
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild><Button><UserPlus className="mr-2 h-4 w-4" /> Admit student</Button></DialogTrigger>
           <DialogContent className="max-h-[90vh] overflow-y-auto">
@@ -139,6 +142,7 @@ function StudentsPage() {
             </form>
           </DialogContent>
         </Dialog>
+        </div>
       </div>
 
       <Card>
