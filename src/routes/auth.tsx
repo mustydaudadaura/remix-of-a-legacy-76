@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { GraduationCap, Phone } from "lucide-react";
+import { startDemo } from "@/lib/api/demo.functions";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({ meta: [{ title: "Sign in — EduERP" }] }),
@@ -122,6 +123,21 @@ function AuthPage() {
             <CardDescription>Sign in to your account or create a new one.</CardDescription>
           </CardHeader>
           <CardContent>
+            <div className="mb-4 rounded-md border border-primary/30 bg-primary/5 p-3 text-sm">
+              <p className="font-medium">Just looking around?</p>
+              <p className="mb-2 text-muted-foreground">Explore a demo school with students, results and fees already filled in.</p>
+              <Button type="button" variant="secondary" className="w-full" disabled={loading} onClick={async () => {
+                setLoading(true);
+                try {
+                  const c = await startDemo();
+                  const { error } = await supabase.auth.signInWithPassword(c);
+                  if (error) throw error;
+                  toast.success("Welcome to the demo school!");
+                } catch (e: any) { toast.error(e?.message ?? "Demo unavailable"); }
+                setLoading(false);
+              }}>{loading ? "Opening…" : "Try the demo school"}</Button>
+              <p className="mt-2 text-xs text-muted-foreground">Parent demo: Parent tab, phone 08090000001</p>
+            </div>
             <Tabs defaultValue="parent">
               <TabsList className="grid w-full grid-cols-3">
                 <TabsTrigger value="parent"><Phone className="mr-1 h-3.5 w-3.5" />Parent</TabsTrigger>
