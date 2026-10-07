@@ -30,7 +30,7 @@ export const startDemo = createServerFn({ method: "POST" }).handler(async () => 
       for (const [f, l] of names) {
         const { data: st } = await db.from("students").insert({
           school_id: sid, class_id: c.id, admission_no: `DEMO/${String(n).padStart(3, "0")}`,
-          first_name: f, last_name: l, gender: n % 2 ? "female" : "male",
+          first_name: f, last_name: l, gender: ["Aisha", "Zainab", "Halima"].includes(f) ? "female" : "male",
         }).select("id").single();
         const { data: p } = await db.from("parents").insert({ school_id: sid, full_name: `Mr/Mrs ${l}`, phone: `0809000${String(n).padStart(4, "0")}` }).select("id").single();
         if (st && p) await db.from("student_parents").insert({ student_id: st.id, parent_id: p.id, is_primary: true });
