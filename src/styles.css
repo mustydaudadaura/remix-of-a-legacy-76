@@ -63,6 +63,7 @@
 
 :root {
   --radius: 0.625rem;
+  --font-sans: "Source Sans 3", ui-sans-serif, system-ui, sans-serif;
   /* Trust Navy palette */
   --background: oklch(0.985 0.005 240);
   --foreground: oklch(0.18 0.05 250);
@@ -154,5 +155,6 @@
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
+    font-family: var(--font-sans);
   }
 }
