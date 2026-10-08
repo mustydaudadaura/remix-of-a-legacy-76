@@ -56,7 +56,7 @@ export const getReportCardDetail = createServerFn({ method: "GET" })
     if (!rc) throw new Error("Report card not found");
 
     const [{ data: school }, { data: student }, { data: klass }, { data: rawAssessments }] = await Promise.all([
-      db.from("schools").select("name, motto, address, email, phone, logo_url, stamp_url, website, branch_name, principal_name, principal_signature_url, current_session, current_term").eq("id", (rc as any).school_id).maybeSingle(),
+      db.from("schools").select("name, motto, address, email, phone, logo_url, stamp_url, website, branch_name, principal_name, principal_signature_url, report_template, current_session, current_term").eq("id", (rc as any).school_id).maybeSingle(),
       db.from("students").select("first_name, middle_name, last_name, admission_no, gender, dob, photo_url, house, next_resumption_date").eq("id", (rc as any).student_id).maybeSingle(),
       (rc as any).class_id
         ? db.from("classes").select("name, arm, level, section").eq("id", (rc as any).class_id).maybeSingle()
@@ -64,6 +64,9 @@ export const getReportCardDetail = createServerFn({ method: "GET" })
       db.from("assessments").select("id, subject_id, ca1, ca2, exam, total, grade, remark, created_at").eq("student_id", (rc as any).student_id).eq("session", (rc as any).session).eq("term", (rc as any).term).order("created_at"),
     ]);
 
+    const { data: subjectPositions, error: positionError } = await db.rpc("report_subject_positions", { _report_id: rc.id });
+    if (positionError) throw new Error(positionError.message);
+    const positionMap = new Map((subjectPositions ?? []).map(p => [p.subject_id, p.subject_position]));
     const subjectIds = Array.from(new Set((rawAssessments ?? []).map((a: any) => a.subject_id).filter(Boolean)));
     const { data: subjects } = subjectIds.length
       ? await db.from("subjects").select("id, name, code").in("id", subjectIds)
@@ -72,7 +75,7 @@ export const getReportCardDetail = createServerFn({ method: "GET" })
 
     return {
       rc: { ...(rc as any), schools: school, students: student, classes: klass },
-      assessments: (rawAssessments ?? []).map((a: any) => ({ ...a, subjects: subjectMap.get(a.subject_id) ?? null })),
+      assessments: (rawAssessments ?? []).map((a: any) => ({ ...a, subject_position: positionMap.get(a.subject_id) ?? null, subjects: subjectMap.get(a.subject_id) ?? null })),
     };
   });
 

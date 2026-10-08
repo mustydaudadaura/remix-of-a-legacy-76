@@ -1,9 +1,11 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type CSSProperties } from "react";
+import { resolveReportTemplate, positionVisibility } from "@/lib/report-template";
 import QRCode from "qrcode";
 import { ShieldCheck } from "lucide-react";
 
 type Assessment = {
   id: string;
+  subject_position?: number | null;
   ca1: number; ca2: number; exam: number; total: number;
   grade: string | null; remark: string | null;
   subjects: { name: string; code: string | null } | null;
@@ -28,11 +30,11 @@ export function ReportCardView({ rc, assessments }: { rc: any; assessments: Asse
     rawSection === "nursery" || rawSection === "primary" || rawSection === "secondary"
       ? rawSection
       : "secondary";
-  const THEME = {
-    nursery: { c: "#138a3f", soft: "#138a3f1a", label: "Nursery" },
-    primary: { c: "#1e57d1", soft: "#1e57d11a", label: "Primary" },
-    secondary: { c: "#4c1d95", soft: "#4c1d951a", label: "Secondary" },
-  }[section];
+  const template = resolveReportTemplate(school?.report_template, section);
+  const positions = positionVisibility(template.positions);
+  const themeStyle = Object.fromEntries(Object.entries(template).filter(([key]) => key !== 'positions').map(([key, value]) => [`--rc-${key}`, `var(--report-colour-${value})`])) as CSSProperties;
+  const THEME = { c: `var(--report-colour-${template.border})`, soft: `color-mix(in oklab, var(--report-colour-${template.border}) 10%, transparent)` };
+
 
   useEffect(() => {
     if (!rc?.verification_code || typeof window === "undefined") return;
@@ -42,16 +44,17 @@ export function ReportCardView({ rc, assessments }: { rc: any; assessments: Asse
 
   return (
     <>
+      <div className="max-w-full overflow-x-auto">
       <div
-        className="report-sheet mx-auto my-6 bg-white text-black shadow-lg print:shadow-none print:my-0 relative overflow-hidden"
-        style={{ ["--rc" as any]: THEME.c }}
+        className="report-sheet mx-auto my-6  shadow-lg print:shadow-none print:my-0 relative overflow-hidden"
+        style={{ ...themeStyle, "--rc": THEME.c } as CSSProperties}
       >
         {school?.logo_url && (
           <div className="report-watermark pointer-events-none absolute inset-0 flex items-center justify-center print:flex">
             <img src={school.logo_url} alt="" className="w-[70%] max-w-[480px] object-contain" />
           </div>
         )}
-        <div className="relative border-[6px] border-double border-[var(--rc)] m-2 p-5">
+        <div className="report-frame relative border-[6px] border-double border-[var(--rc)] m-2 p-5">
           <div className="flex items-start gap-4 border-b-2 border-[var(--rc)] pb-3">
             {school?.logo_url ? (
               <img src={school.logo_url} alt="logo" className="h-20 w-20 object-contain" />
@@ -59,42 +62,43 @@ export function ReportCardView({ rc, assessments }: { rc: any; assessments: Asse
               <div className="h-20 w-20 rounded-full grid place-items-center text-xs text-[var(--rc)]" style={{ background: THEME.soft }}>LOGO</div>
             )}
             <div className="flex-1 text-center">
-              <h1 className="text-2xl font-extrabold uppercase text-[var(--rc)] tracking-wide">{school?.name || "School Name"}</h1>
+              <h1 className="report-heading text-xl font-extrabold uppercase">{school?.name || "School Name"}</h1>
               {school?.motto && <p className="italic text-xs">— {school.motto} —</p>}
               <p className="text-xs mt-1">{school?.address}</p>
               <p className="text-[11px]">{[school?.phone, school?.email, school?.website].filter(Boolean).join("  •  ")}</p>
               {school?.branch_name && <p className="text-[11px] font-semibold">Branch: {school.branch_name}</p>}
-              <p className="mt-2 inline-block bg-[var(--rc)] text-white text-xs font-semibold uppercase tracking-wider px-3 py-1 rounded">
+              <p className="mt-2 inline-block bg-[var(--rc)] text-[var(--report-paper)] text-xs font-semibold uppercase tracking-wider px-3 py-1 rounded">
                 Student Report Card — {rc.session} • {String(rc.term).toUpperCase()} TERM
               </p>
             </div>
             {student?.photo_url ? (
               <img src={student.photo_url} alt="passport" className="h-24 w-20 object-cover border-2 border-[var(--rc)]" />
             ) : (
-              <div className="h-24 w-20 border-2 border-dashed grid place-items-center text-[10px] text-muted-foreground" style={{ borderColor: `${THEME.c}80` }}>Passport</div>
+              <div className="h-24 w-20 border-2 border-dashed grid place-items-center text-[10px] text-muted-foreground" style={{ borderColor: THEME.c }}>Passport</div>
             )}
           </div>
 
-          <div className="grid grid-cols-3 gap-x-4 gap-y-1 text-[12px] mt-3">
+          <div className="report-biodata grid grid-cols-3 gap-x-4 gap-y-1 text-[12px] mt-3">
             <div><strong>Name:</strong> {fullName.toUpperCase()}</div>
             <div><strong>Adm. No.:</strong> {student?.admission_no}</div>
             <div><strong>Class:</strong> {klass?.name} {klass?.arm}</div>
             <div><strong>Gender:</strong> {student?.gender}</div>
             <div><strong>D.O.B:</strong> {student?.dob}</div>
             <div><strong>House:</strong> {student?.house || "—"}</div>
-            <div><strong>Position:</strong> {rc.position} of {rc.class_size}</div>
+            {positions.class && <div><strong>Position:</strong> {rc.position} of {rc.class_size}</div>}
             <div><strong>Average:</strong> {rc.average}%</div>
             <div><strong>GPA:</strong> {rc.gpa}</div>
           </div>
 
-          <table className="w-full mt-3 border-collapse text-[11px]">
+          <table className="report-results w-full mt-3 border-collapse text-[11px]">
             <thead>
-              <tr className="bg-[var(--rc)] text-white">
+              <tr className="bg-[var(--rc)] text-[var(--report-paper)]">
                 <th className="border border-[var(--rc)] px-2 py-1 text-left">Subject</th>
                 <th className="border border-[var(--rc)] px-2 py-1">CA1 (20)</th>
                 <th className="border border-[var(--rc)] px-2 py-1">CA2 (20)</th>
                 <th className="border border-[var(--rc)] px-2 py-1">Exam (60)</th>
                 <th className="border border-[var(--rc)] px-2 py-1">Total (100)</th>
+                {positions.subject && <th className="border px-2 py-1">Position</th>}
                 <th className="border border-[var(--rc)] px-2 py-1">Grade</th>
                 <th className="border border-[var(--rc)] px-2 py-1 text-left">Remark</th>
               </tr>
@@ -107,26 +111,28 @@ export function ReportCardView({ rc, assessments }: { rc: any; assessments: Asse
                   <td className="border px-2 py-1 text-center">{a.ca2}</td>
                   <td className="border px-2 py-1 text-center">{a.exam}</td>
                   <td className="border px-2 py-1 text-center font-semibold">{a.total}</td>
+                  {positions.subject && <td className="border px-2 py-1 text-center">{a.subject_position ?? "—"}</td>}
                   <td className="border px-2 py-1 text-center font-bold">{a.grade}</td>
                   <td className="border px-2 py-1">{a.remark}</td>
                 </tr>
               ))}
               {!assessments?.length && (
-                <tr><td colSpan={7} className="border px-2 py-3 text-center text-muted-foreground">No subject assessments captured.</td></tr>
+                <tr><td colSpan={positions.subject ? 8 : 7} className="border px-2 py-3 text-center text-muted-foreground">No subject assessments captured.</td></tr>
               )}
             </tbody>
             <tfoot>
-              <tr className="font-semibold" style={{ background: THEME.soft }}>
+              <tr className="font-semibold">
                 <td className="border px-2 py-1">Total / Average</td>
                 <td className="border px-2 py-1 text-center" colSpan={3}>Subjects: {rc.subjects_count}</td>
                 <td className="border px-2 py-1 text-center">{rc.total_score}</td>
                 <td className="border px-2 py-1 text-center">{rc.average}%</td>
-                <td className="border px-2 py-1">Class position {rc.position}</td>
+                {positions.subject && <td className="border px-2 py-1" />}
+                <td className="border px-2 py-1">{positions.class ? `Class position ${rc.position}` : ""}</td>
               </tr>
             </tfoot>
           </table>
 
-          <div className="grid grid-cols-3 gap-3 mt-3 text-[11px]">
+          <div className="report-development grid grid-cols-3 gap-3 mt-3 text-[11px]">
             <div>
               <h3 className="font-bold text-[var(--rc)] border-b border-[var(--rc)] mb-1">Grading Key</h3>
               <ul className="space-y-0.5">
@@ -166,21 +172,21 @@ export function ReportCardView({ rc, assessments }: { rc: any; assessments: Asse
             <div className="border border-[var(--rc)] p-2"><strong>Next Resumption:</strong> {rc.next_resumption_date ?? student?.next_resumption_date ?? "—"}</div>
           </div>
 
-          <div className="mt-3 space-y-2 text-[12px]">
+          <div className="report-comments mt-3 space-y-2 text-[12px]">
             <div className="border border-[var(--rc)] p-2"><strong className="text-[var(--rc)]">Class Teacher's Remark:</strong> {rc.teacher_remark || "—"}</div>
             <div className="border border-[var(--rc)] p-2"><strong className="text-[var(--rc)]">Principal's Remark:</strong> {rc.principal_remark || "—"}</div>
           </div>
 
           <div className="grid grid-cols-3 gap-4 mt-5 items-end text-[11px]">
             <div className="text-center">
-              <div className="h-10 border-b border-dotted border-black/60 mb-1" />
+              <div className="h-10 border-b border-dotted border-[var(--report-grid)] mb-1" />
               <div>Class Teacher's Signature</div>
             </div>
             <div className="text-center">
               {school?.principal_signature_url ? (
                 <img src={school.principal_signature_url} className="h-10 mx-auto object-contain" alt="sign" />
               ) : (
-                <div className="h-10 border-b border-dotted border-black/60 mb-1" />
+                <div className="h-10 border-b border-dotted border-[var(--report-grid)] mb-1" />
               )}
               <div>{school?.principal_name || "Principal"}</div>
             </div>
@@ -201,6 +207,7 @@ export function ReportCardView({ rc, assessments }: { rc: any; assessments: Asse
         </div>
       </div>
 
+      </div>
       <style>{`
         .report-sheet { width: 210mm; min-height: 297mm; position: relative; }
         .report-watermark { opacity: 0.06; z-index: 0; }

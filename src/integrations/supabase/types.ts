@@ -1164,6 +1164,7 @@ export type Database = {
           phone: string | null
           principal_name: string | null
           principal_signature_url: string | null
+          report_template: Json
           stamp_url: string | null
           theme_color: string | null
           twitter_url: string | null
@@ -1187,6 +1188,7 @@ export type Database = {
           phone?: string | null
           principal_name?: string | null
           principal_signature_url?: string | null
+          report_template?: Json
           stamp_url?: string | null
           theme_color?: string | null
           twitter_url?: string | null
@@ -1210,6 +1212,7 @@ export type Database = {
           phone?: string | null
           principal_name?: string | null
           principal_signature_url?: string | null
+          report_template?: Json
           stamp_url?: string | null
           theme_color?: string | null
           twitter_url?: string | null
@@ -1672,6 +1675,13 @@ export type Database = {
       parent_has_child_in_class: {
         Args: { _class_id: string; _user_id: string }
         Returns: boolean
+      }
+      report_subject_positions: {
+        Args: { _report_id: string }
+        Returns: {
+          subject_id: string
+          subject_position: number
+        }[]
       }
       school_module_enabled: {
         Args: { _module: string; _school_id: string }
