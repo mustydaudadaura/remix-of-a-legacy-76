@@ -26,6 +26,7 @@ export const Route = createFileRoute('/_authenticated/settings')({
     { property: 'og:description', content: 'School configuration and authorized staff access.' },
     { property: 'og:type', content: 'website' }, { name: 'twitter:card', content: 'summary' },
   ] }),
+  validateSearch: (s: Record<string, unknown>): { tab?: string } => (typeof s.tab === 'string' ? { tab: s.tab } : {}),
   component: SettingsPage,
 });
 
@@ -82,7 +83,7 @@ function SchoolSettings({ schoolId }: { schoolId: string }) {
   const { school, controls, customRoles, assignments, profiles, audit } = data.data;
   const modules = controls?.enabled_modules ?? SCHOOL_MODULES.map(m => m.id);
   const sections = controls?.enabled_sections ?? ['nursery', 'primary', 'secondary'];
-  return <Tabs defaultValue="details" className="space-y-6">
+  return <Tabs defaultValue={Route.useSearch().tab ?? "details"} className="space-y-6">
     <TabsList className="grid h-auto w-full grid-cols-2 sm:grid-cols-3 lg:grid-cols-6">
       <TabsTrigger value="details"><Settings2 className="mr-2 h-4 w-4" />Details</TabsTrigger>
       <TabsTrigger value="modules">Modules</TabsTrigger>

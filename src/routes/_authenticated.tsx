@@ -35,6 +35,7 @@ const NAV = [
   { to: "/announcements", label: "Announcements", icon: Megaphone, roles: ["super_admin","school_admin"] },
   { to: "/report-cards", label: "Report Cards", icon: Award, roles: ["super_admin","school_admin","teacher","student","parent"] },
   { to: "/users", label: "Users & Roles", icon: UserCog, roles: ["super_admin","school_admin"] },
+  { to: "/settings", search: { tab: "reports" }, label: "Report Card Design", icon: Award, roles: ["super_admin","school_admin"] },
   { to: "/settings", label: "School Settings", icon: Settings2, roles: ["super_admin","school_admin"] },
 ] as const;
 
