@@ -91,12 +91,13 @@ function AuthedLayout() {
         </div>
         <nav className="space-y-1 p-3">
           {visibleNav.map((n) => {
-            const active = location.pathname.startsWith(n.to);
+            const active = location.pathname.startsWith(n.to) && ("search" in n ? location.search.includes("reports") : !location.search.includes("reports"));
             const Icon = n.icon;
             return (
               <Link
-                key={n.to}
+                key={n.label}
                 to={n.to}
+                search={"search" in n ? n.search : undefined}
                 onClick={() => setOpen(false)}
                 className={cn(
                   "flex items-center gap-3 rounded-md px-3 py-2 text-sm transition",
