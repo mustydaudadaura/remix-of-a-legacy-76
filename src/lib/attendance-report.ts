@@ -1,19 +1,27 @@
 /** Pure, browser-safe helpers for the weekly attendance report sent to families. */
 
-/** Titles families are often registered under ("Mr/Mrs Hauwa Bello") — never used as the greeting name. */
+/** Titles families are often registered under ("Mr/Mrs Hauwa Bello") — never used on their own as the greeting. */
 const HONORIFICS = new Set([
   "mr", "mrs", "ms", "miss", "dr", "prof", "engr", "rev", "hon", "chief",
   "barr", "sol", "alhaji", "hajia", "haji", "sir", "madam", "dame", "lord",
 ]);
 
-/** The name to greet an adult by: their first real name, skipping any leading titles. */
-export function preferredName(fullName: string): string {
-  for (const raw of fullName.trim().split(/[\s/]+/)) {
-    const token = raw.replace(/\.$/, "");
-    if (!token) continue;
-    if (!HONORIFICS.has(token.toLowerCase())) return token;
-  }
-  return "Parent";
+const isTitle = (token: string) =>
+  token.split("/").every((p) => HONORIFICS.has(p.replace(/\.$/, "").toLowerCase()));
+
+/**
+ * The name to greet an adult by. With a full name it is their own first name
+ * ("Mr/Mrs Hauwa Bello" → "Hauwa"); with only a surname saved it keeps the title
+ * so the message still reads politely ("Mr/Mrs Bello" → "Mr/Mrs Bello").
+ */
+export function greetingName(fullName: string): string {
+  const parts = fullName.trim().split(/\s+/).filter(Boolean);
+  let i = 0;
+  while (i < parts.length && isTitle(parts[i])) i++;
+  const names = parts.slice(i);
+  if (!names.length) return "Parent";
+  const title = parts.slice(0, i).join(" ");
+  return names.length === 1 && title ? `${title} ${names[0]}` : names[0];
 }
 
 export const ATT_STATUSES = ["present", "absent", "late", "excused"] as const;
@@ -116,7 +124,7 @@ export function buildAttendanceMessage(input: {
   end: string;
   children: Summary[];
 }): string {
-  const parent = preferredName(input.parentName) || "Parent";
+  const parent = greetingName(input.parentName) || "Parent";
   const lines = input.children.map(
     (c) => `${c.name}: ${c.present} present, ${c.absent} absent, ${c.late} late, ${c.excused} excused`,
   );

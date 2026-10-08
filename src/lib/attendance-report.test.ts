@@ -2,19 +2,24 @@ import { expect, test } from "bun:test";
 import {
   SMS_LIMIT,
   buildAttendanceMessage,
+  greetingName,
   groupByParent,
-  preferredName,
   summariseAttendance,
   weekRange,
 } from "./attendance-report";
 
-test("preferredName skips titles and greets the adult by their own name", () => {
-  expect(preferredName("Mr/Mrs Hauwa Bello")).toBe("Hauwa");
-  expect(preferredName("Dr. Ibrahim Kola")).toBe("Ibrahim");
-  expect(preferredName("Alhaji Musa")).toBe("Musa");
-  expect(preferredName("Hauwa Bello")).toBe("Hauwa");
-  expect(preferredName("Mr/Mrs")).toBe("Parent");
-  expect(preferredName("   ")).toBe("Parent");
+test("greetingName uses the adult's own name when there is one", () => {
+  expect(greetingName("Mr/Mrs Hauwa Bello")).toBe("Hauwa");
+  expect(greetingName("Dr. Ibrahim Kola")).toBe("Ibrahim");
+  expect(greetingName("Alhaji Musa")).toBe("Musa");
+  expect(greetingName("Hauwa Bello")).toBe("Hauwa");
+});
+
+test("greetingName keeps the title when only a surname is saved", () => {
+  expect(greetingName("Mr/Mrs Bello")).toBe("Mr/Mrs Bello");
+  expect(greetingName("Mrs Hauwa")).toBe("Mrs Hauwa");
+  expect(greetingName("Mr/Mrs")).toBe("Parent");
+  expect(greetingName("   ")).toBe("Parent");
 });
 
 const students = [
