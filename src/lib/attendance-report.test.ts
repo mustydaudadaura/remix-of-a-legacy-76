@@ -11,13 +11,13 @@ import {
 test("greetingName uses the adult's own name when there is one", () => {
   expect(greetingName("Mr/Mrs Hauwa Bello")).toBe("Hauwa");
   expect(greetingName("Dr. Ibrahim Kola")).toBe("Ibrahim");
-  expect(greetingName("Alhaji Musa")).toBe("Alhaji Musa"); // one name left after the title keeps it
   expect(greetingName("Hauwa Bello")).toBe("Hauwa");
 });
 
 test("greetingName keeps the title when only a surname is saved", () => {
   expect(greetingName("Mr/Mrs Bello")).toBe("Mr/Mrs Bello");
   expect(greetingName("Mrs Hauwa")).toBe("Mrs Hauwa");
+  expect(greetingName("Alhaji Musa")).toBe("Alhaji Musa"); // one name left after the title keeps it
   expect(greetingName("Mr/Mrs")).toBe("Parent");
   expect(greetingName("   ")).toBe("Parent");
 });
