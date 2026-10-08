@@ -130,36 +130,36 @@ export function ScholarshipManager() {
             <DialogContent>
               <DialogHeader><DialogTitle>Give a student a scholarship</DialogTitle></DialogHeader>
               <form onSubmit={submit} className="space-y-3">
-                <div><Label>Student</Label>
+                <div><Label htmlFor="sch_student">Student</Label>
                   <Select value={form.student_id} onValueChange={(v) => setForm({ ...form, student_id: v })}>
-                    <SelectTrigger><SelectValue placeholder="Choose a student" /></SelectTrigger>
+                    <SelectTrigger id="sch_student"><SelectValue placeholder="Choose a student" /></SelectTrigger>
                     <SelectContent>{students.map((s: any) => (
                       <SelectItem key={s.id} value={s.id}>{s.first_name} {s.last_name} ({s.admission_no})</SelectItem>
                     ))}</SelectContent>
                   </Select></div>
-                <div><Label>Name of the award</Label>
-                  <Input required placeholder="e.g. Staff child discount" value={form.label}
+                <div><Label htmlFor="sch_label">Name of the award</Label>
+                  <Input id="sch_label" required placeholder="e.g. Staff child discount" value={form.label}
                     onChange={(e) => setForm({ ...form, label: e.target.value })} /></div>
                 <div className="grid grid-cols-2 gap-3">
-                  <div><Label>Discount type</Label>
+                  <div><Label htmlFor="sch_type">Discount type</Label>
                     <Select value={form.discount_type} onValueChange={(v) => setForm({ ...form, discount_type: v })}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectTrigger id="sch_type"><SelectValue /></SelectTrigger>
                       <SelectContent>
                         <SelectItem value="percent">Percentage of fee</SelectItem>
                         <SelectItem value="flat">Fixed amount (₦)</SelectItem>
                       </SelectContent>
                     </Select></div>
-                  <div><Label>{form.discount_type === "percent" ? "Percent (%)" : "Amount (₦)"}</Label>
-                    <Input type="number" min="1" required value={form.discount_value}
+                  <div><Label htmlFor="sch_value">{form.discount_type === "percent" ? "Percent (%)" : "Amount (₦)"}</Label>
+                    <Input id="sch_value" type="number" min="1" required value={form.discount_value}
                       onChange={(e) => setForm({ ...form, discount_value: e.target.value })} /></div>
                 </div>
                 <div className="grid grid-cols-2 gap-3">
-                  <div><Label>Session</Label>
-                    <Input required placeholder="2025/2026" value={form.session}
+                  <div><Label htmlFor="sch_session">Session</Label>
+                    <Input id="sch_session" required placeholder="2025/2026" value={form.session}
                       onChange={(e) => setForm({ ...form, session: e.target.value })} /></div>
-                  <div><Label>Term</Label>
+                  <div><Label htmlFor="sch_term">Term</Label>
                     <Select value={form.term} onValueChange={(v) => setForm({ ...form, term: v })}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectTrigger id="sch_term"><SelectValue /></SelectTrigger>
                       <SelectContent>
                         <SelectItem value={ANY_TERM}>All terms</SelectItem>
                         <SelectItem value="first">First term</SelectItem>

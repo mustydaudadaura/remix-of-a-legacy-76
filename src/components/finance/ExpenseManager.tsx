@@ -95,31 +95,31 @@ export function ExpenseManager() {
             <DialogContent className="max-h-[90vh] overflow-y-auto">
               <DialogHeader><DialogTitle>Record an expense</DialogTitle></DialogHeader>
               <form onSubmit={submit} className="space-y-3">
-                <div><Label>What was it for</Label>
-                  <Input required value={form.title} placeholder="e.g. Purchase of chalk and duster"
+                <div><Label htmlFor="exp_title">What was it for</Label>
+                  <Input id="exp_title" required value={form.title} placeholder="e.g. Purchase of chalk and duster"
                     onChange={(e) => setForm({ ...form, title: e.target.value })} /></div>
                 <div className="grid grid-cols-2 gap-3">
-                  <div><Label>Category</Label>
+                  <div><Label htmlFor="exp_category">Category</Label>
                     <Select value={form.category} onValueChange={(v) => setForm({ ...form, category: v })}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectTrigger id="exp_category"><SelectValue /></SelectTrigger>
                       <SelectContent>{CATEGORIES.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}</SelectContent>
                     </Select></div>
-                  <div><Label>Amount (₦)</Label>
-                    <Input type="number" min="1" required value={form.amount}
+                  <div><Label htmlFor="exp_amount">Amount (₦)</Label>
+                    <Input id="exp_amount" type="number" min="1" required value={form.amount}
                       onChange={(e) => setForm({ ...form, amount: e.target.value })} /></div>
                 </div>
                 <div className="grid grid-cols-2 gap-3">
-                  <div><Label>Date spent</Label>
-                    <Input type="date" required value={form.spent_on}
+                  <div><Label htmlFor="exp_date">Date spent</Label>
+                    <Input id="exp_date" type="date" required value={form.spent_on}
                       onChange={(e) => setForm({ ...form, spent_on: e.target.value })} /></div>
-                  <div><Label>Paid to</Label>
-                    <Input value={form.paid_to} placeholder="Vendor or staff name"
+                  <div><Label htmlFor="exp_paid_to">Paid to</Label>
+                    <Input id="exp_paid_to" value={form.paid_to} placeholder="Vendor or staff name"
                       onChange={(e) => setForm({ ...form, paid_to: e.target.value })} /></div>
                 </div>
                 <div className="grid grid-cols-2 gap-3">
-                  <div><Label>Method</Label>
+                  <div><Label htmlFor="exp_method">Method</Label>
                     <Select value={form.method} onValueChange={(v) => setForm({ ...form, method: v })}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectTrigger id="exp_method"><SelectValue /></SelectTrigger>
                       <SelectContent>
                         <SelectItem value="cash">Cash</SelectItem>
                         <SelectItem value="bank_transfer">Bank transfer</SelectItem>
@@ -127,12 +127,12 @@ export function ExpenseManager() {
                         <SelectItem value="pos">POS</SelectItem>
                       </SelectContent>
                     </Select></div>
-                  <div><Label>Reference</Label>
-                    <Input value={form.reference} placeholder="Receipt or teller no"
+                  <div><Label htmlFor="exp_reference">Reference</Label>
+                    <Input id="exp_reference" value={form.reference} placeholder="Receipt or teller no"
                       onChange={(e) => setForm({ ...form, reference: e.target.value })} /></div>
                 </div>
-                <div><Label>Notes</Label>
-                  <Textarea rows={2} value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} /></div>
+                <div><Label htmlFor="exp_notes">Notes</Label>
+                  <Textarea id="exp_notes" rows={2} value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} /></div>
                 <Button type="submit" className="w-full">Save expense</Button>
               </form>
             </DialogContent>
