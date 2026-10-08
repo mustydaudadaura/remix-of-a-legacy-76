@@ -17,7 +17,7 @@ BEGIN
  INSERT INTO public.school_controls(school_id,enabled_modules) VALUES(sid,ARRAY['students','academics']);
  ASSERT NOT public.school_permission(teacher_uid,sid,'results.edit'), 'Disabled results denied';
  ASSERT NOT public.school_permission(admin_uid,sid,'results.publish'), 'Disabled module also blocks admin publishing';
- UPDATE public.school_controls SET enabled_modules=ARRAY['students','academics','results','fees'] WHERE school_id=sid;
+ UPDATE public.school_controls SET enabled_modules=ARRAY['students','academics','results','fees','attendance'] WHERE school_id=sid;
  ASSERT public.school_permission(teacher_uid,sid,'results.edit'), 'Reenabled results accessible';
  DELETE FROM public.user_roles WHERE user_id=teacher_uid AND school_id=sid AND role='teacher';
  INSERT INTO public.user_roles(user_id,school_id,role) VALUES(teacher_uid,sid,'accountant');
