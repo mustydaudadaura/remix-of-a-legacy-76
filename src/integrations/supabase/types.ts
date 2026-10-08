@@ -121,6 +121,9 @@ export type Database = {
           grade: string | null
           id: string
           remark: string | null
+          review_remark: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
           school_id: string
           session: string
           status: Database["public"]["Enums"]["assessment_status"]
@@ -140,6 +143,9 @@ export type Database = {
           grade?: string | null
           id?: string
           remark?: string | null
+          review_remark?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
           school_id: string
           session: string
           status?: Database["public"]["Enums"]["assessment_status"]
@@ -159,6 +165,9 @@ export type Database = {
           grade?: string | null
           id?: string
           remark?: string | null
+          review_remark?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
           school_id?: string
           session?: string
           status?: Database["public"]["Enums"]["assessment_status"]
