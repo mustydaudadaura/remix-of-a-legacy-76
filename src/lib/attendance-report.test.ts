@@ -3,9 +3,19 @@ import {
   SMS_LIMIT,
   buildAttendanceMessage,
   groupByParent,
+  preferredName,
   summariseAttendance,
   weekRange,
 } from "./attendance-report";
+
+test("preferredName skips titles and greets the adult by their own name", () => {
+  expect(preferredName("Mr/Mrs Hauwa Bello")).toBe("Hauwa");
+  expect(preferredName("Dr. Ibrahim Kola")).toBe("Ibrahim");
+  expect(preferredName("Alhaji Musa")).toBe("Musa");
+  expect(preferredName("Hauwa Bello")).toBe("Hauwa");
+  expect(preferredName("Mr/Mrs")).toBe("Parent");
+  expect(preferredName("   ")).toBe("Parent");
+});
 
 const students = [
   { id: "s1", first_name: "Aisha", last_name: "Bello" },
