@@ -96,7 +96,7 @@ function SchoolSettings({ schoolId }: { schoolId: string }) {
       }}>
         <h2 className="text-lg font-semibold">{school.name}</h2>
         <div className="grid gap-4 sm:grid-cols-2">
-          {[['name', 'School name', school.name], ['phone', 'Phone', school.phone], ['motto', 'Motto', school.motto], ['principal_name', 'Principal', school.principal_name], ['address', 'Address', school.address], ['current_session', 'Academic session', school.current_session]].map(([id, label, value]) => <div key={id}><Label htmlFor={id}>{label}</Label><Input id={id} name={id} defaultValue={value ?? ''} required={id === 'name' || id === 'current_session'} /></div>)}
+          {([['name', 'School name', school.name], ['phone', 'Phone', school.phone], ['motto', 'Motto', school.motto], ['principal_name', 'Principal', school.principal_name], ['address', 'Address', school.address], ['current_session', 'Academic session', school.current_session]] as [string, string, string | null][]).map(([id, label, value]) => <div key={id}><Label htmlFor={id}>{label}</Label><Input id={id} name={id} defaultValue={value ?? ''} required={id === 'name' || id === 'current_session'} /></div>)}
           <div><Label htmlFor="current_term">Current term</Label><select id="current_term" name="current_term" defaultValue={school.current_term ?? 'first'} className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"><option value="first">First term</option><option value="second">Second term</option><option value="third">Third term</option></select></div>
           <div><Label>School code</Label><Input readOnly value={school.code} /></div>
         </div>
