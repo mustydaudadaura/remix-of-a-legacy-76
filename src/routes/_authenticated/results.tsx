@@ -32,6 +32,17 @@ function ResultsPage() {
   });
   const [scores, setScores] = useState<Record<string, { ca1: number; ca2: number; exam: number }>>({});
 
+  const canApprove = access.can("results.publish");
+  const [remarks, setRemarks] = useState<Record<string, string>>({});
+  const review = async (ids: string[], status: "approved" | "draft", remark?: string) => {
+    if (!ids.length) return toast.info("Nothing to review");
+    if (status === "draft" && !remark?.trim()) return toast.error("Write a remark before returning");
+    const { error } = await supabase.from("assessments").update({ status, review_remark: remark?.trim() || null }).in("id", ids);
+    if (error) return toast.error(error.message);
+    toast.success(status === "approved" ? `Approved ${ids.length} result(s)` : "Returned to teacher for correction");
+    qc.invalidateQueries({ queryKey: ["assessments"] });
+  };
+
   const { data: classes } = useQuery({
     queryKey: ["res-classes"],
     queryFn: async () => (await supabase.from("classes").select("id, name").order("name")).data ?? [],
@@ -176,7 +187,7 @@ function ResultsPage() {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Results Entry</h1>
-          <p className="text-sm text-muted-foreground">CA1 (max 20) · CA2 (max 20) · Exam (max 60). Grading is automatic.</p>
+          <p className="text-sm text-muted-foreground">CA1 (max 20) · CA2 (max 20) · Exam (max 60). Grading is automatic. Results must be approved before report cards can be published.</p>
         </div>
         <div className="flex gap-2">
           <Button asChild variant="outline"><Link to="/report-cards"><FileDown className="mr-2 h-4 w-4" /> Report cards</Link></Button>
@@ -223,13 +234,20 @@ function ResultsPage() {
 
       {filters.class_id && filters.subject_id && (
         <Card>
-          <CardHeader><CardTitle>Scoresheet</CardTitle></CardHeader>
+          <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-2">
+            <CardTitle>Scoresheet</CardTitle>
+            {canApprove && (
+              <Button size="sm" variant="secondary" onClick={() => review(Object.values(existing ?? {}).filter((a: any) => a.status === "submitted").map((a: any) => a.id), "approved")}>
+                Approve all submitted
+              </Button>
+            )}
+          </CardHeader>
           <CardContent>
             <Table>
               <TableHeader><TableRow>
                 <TableHead>Adm. No.</TableHead><TableHead>Student</TableHead>
                 <TableHead>CA1</TableHead><TableHead>CA2</TableHead><TableHead>Exam</TableHead>
-                <TableHead>Total</TableHead><TableHead>Grade</TableHead><TableHead></TableHead>
+                <TableHead>Total</TableHead><TableHead>Grade</TableHead><TableHead>Status</TableHead><TableHead></TableHead>
               </TableRow></TableHeader>
               <TableBody>
                 {students?.length ? students.map((st) => {
@@ -244,10 +262,26 @@ function ResultsPage() {
                       <TableCell><Input type="number" min={0} max={60} className="w-20" value={cur.exam} onChange={(e) => setScores({ ...scores, [st.id]: { ...cur, exam: +e.target.value } })} /></TableCell>
                       <TableCell className="font-semibold">{(cur.ca1 || 0) + (cur.ca2 || 0) + (cur.exam || 0)}</TableCell>
                       <TableCell>{ex?.grade ? <Badge>{ex.grade}</Badge> : <span className="text-muted-foreground">—</span>}</TableCell>
-                      <TableCell><Button size="sm" onClick={() => saveScore(st.id)}>Save</Button></TableCell>
+                      <TableCell className="min-w-[140px]">
+                        {!ex ? <span className="text-xs text-muted-foreground">Not entered</span>
+                          : ex.status === "approved" ? <Badge className="bg-success text-success-foreground">Approved</Badge>
+                          : ex.status === "submitted" ? <Badge variant="secondary">Awaiting approval</Badge>
+                          : <Badge variant="destructive">Returned</Badge>}
+                        {ex?.review_remark && <p className="mt-1 text-xs text-muted-foreground">Remark: {ex.review_remark}</p>}
+                      </TableCell>
+                      <TableCell className="space-y-1 min-w-[160px]">
+                        <Button size="sm" disabled={ex?.status === "approved" && !canApprove} onClick={() => saveScore(st.id)}>{ex?.status === "draft" ? "Resubmit" : "Save"}</Button>
+                        {canApprove && ex && (
+                          <div className="flex flex-col gap-1">
+                            {ex.status !== "approved" && <Button size="sm" variant="outline" onClick={() => review([ex.id], "approved")}>Approve</Button>}
+                            <Input placeholder="Remark" className="h-8 text-xs" value={remarks[ex.id] ?? ""} onChange={(e) => setRemarks({ ...remarks, [ex.id]: e.target.value })} />
+                            <Button size="sm" variant="ghost" onClick={() => review([ex.id], "draft", remarks[ex.id])}>Return for correction</Button>
+                          </div>
+                        )}
+                      </TableCell>
                     </TableRow>
                   );
-                }) : <TableRow><TableCell colSpan={8} className="text-center text-muted-foreground">No students in this class</TableCell></TableRow>}
+                }) : <TableRow><TableCell colSpan={9} className="text-center text-muted-foreground">No students in this class</TableCell></TableRow>}
               </TableBody>
             </Table>
           </CardContent>
