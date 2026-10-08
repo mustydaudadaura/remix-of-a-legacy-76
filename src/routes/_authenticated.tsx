@@ -19,7 +19,7 @@ export const Route = createFileRoute("/_authenticated")({
   component: AuthedLayout,
 });
 
-const PAGE_ACCESS: Record<string, SchoolPermission> = { "/students": "students.view", "/admissions": "students.view", "/classes": "academics.view", "/promotion": "promotion.edit", "/results": "results.edit", "/attendance": "attendance.view", "/fees": "fees.view", "/announcements": "communication.view", "/report-cards": "results.view", "/users": "users.edit", "/settings": "settings.edit" };
+const PAGE_ACCESS: Record<string, SchoolPermission> = { "/students": "students.view", "/admissions": "students.view", "/classes": "academics.view", "/academics": "academics.view", "/promotion": "promotion.edit", "/results": "results.edit", "/attendance": "attendance.view", "/fees": "fees.view", "/announcements": "communication.view", "/report-cards": "results.view", "/users": "users.edit", "/settings": "settings.edit" };
 
 const NAV = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard, roles: ["super_admin","school_admin","teacher","accountant","student","parent"] },
@@ -27,6 +27,7 @@ const NAV = [
   { to: "/admissions", label: "Admissions", icon: UserCog, roles: ["super_admin","school_admin"] },
   { to: "/students", label: "Students", icon: Users, roles: ["super_admin","school_admin","teacher"] },
   { to: "/classes", label: "Classes & Subjects", icon: BookOpen, roles: ["super_admin","school_admin","teacher"] },
+  { to: "/academics", label: "Teaching & Timetable", icon: CalendarCheck, roles: ["super_admin","school_admin","teacher"] },
   { to: "/promotion", label: "Promotion", icon: GraduationCap, roles: ["super_admin","school_admin"] },
   { to: "/results", label: "Results Entry", icon: FileText, roles: ["super_admin","school_admin","teacher"] },
   { to: "/attendance", label: "Attendance", icon: CalendarCheck, roles: ["super_admin","school_admin","teacher"] },
