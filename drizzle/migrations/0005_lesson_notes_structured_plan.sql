@@ -1,0 +1,1 @@
+ALTER TABLE public.lesson_notes ADD COLUMN IF NOT EXISTS plan jsonb, ADD COLUMN IF NOT EXISTS header jsonb, ADD COLUMN IF NOT EXISTS lesson_date date;
