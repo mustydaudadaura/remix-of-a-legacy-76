@@ -44,7 +44,7 @@ export const getPortalSummary = createServerFn({ method: "POST" })
     const [{ data: att }, { data: invs }, { data: notifs }, { data: rc }] = await Promise.all([
       db.from("attendance").select("status").eq("student_id", sid).gte("date", since.toISOString().slice(0, 10)),
       db.from("fee_invoices").select("amount_due, amount_paid, status").eq("student_id", sid),
-      db.from("parent_notifications").select("id", { count: "exact", head: true }).eq("parent_id", claims.parent_id).is("read_at", null),
+      db.from("parent_notifications").select("id", { count: "exact", head: true }).eq("parent_id", claims.parent_id).is("read_at", null).lte("visible_from", new Date().toISOString()),
       db.from("report_cards").select("id, session, term, average, position, class_size, published").eq("student_id", sid).eq("published", true).order("created_at", { ascending: false }).limit(1),
     ]);
     const present = (att ?? []).filter((a: any) => a.status === "present" || a.status === "late").length;
@@ -131,7 +131,7 @@ export const getPortalNotifications = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const claims = await verify(data.token);
     const db = await admin();
-    const { data: rows } = await db.from("parent_notifications").select("id, type, title, body, meta, read_at, created_at, student_id").eq("parent_id", claims.parent_id).order("created_at", { ascending: false }).limit(100);
+    const { data: rows } = await db.from("parent_notifications").select("id, type, title, body, meta, read_at, created_at, visible_from, student_id").eq("parent_id", claims.parent_id).lte("visible_from", new Date().toISOString()).order("visible_from", { ascending: false }).limit(100);
     return { rows: rows ?? [] };
   });
 
@@ -160,4 +160,25 @@ export const getReceipt = createServerFn({ method: "POST" })
       db.from("schools").select("name, address, phone, logo_url, motto").eq("id", p.school_id).maybeSingle(),
     ]);
     return { payment: p, invoice: inv, student: stu, school: sch };
+  });
+
+export const getParentPreferences = createServerFn({ method: "POST" })
+  .inputValidator((d) => TokenOnly.parse(d))
+  .handler(async ({ data }) => {
+    const claims = await verify(data.token);
+    const db = await admin();
+    const { data: row } = await db.from("parent_preferences").select("muted_types").eq("parent_id", claims.parent_id).maybeSingle();
+    return { muted_types: row?.muted_types ?? [] };
+  });
+
+export const saveParentPreferences = createServerFn({ method: "POST" })
+  .inputValidator((d) => TokenOnly.extend({ muted_types: z.array(z.enum(["news", "general"])).max(2) }).parse(d))
+  .handler(async ({ data }) => {
+    const claims = await verify(data.token);
+    const db = await admin();
+    const { data: parent } = await db.from("parents").select("school_id").eq("id", claims.parent_id).maybeSingle();
+    if (!parent) throw new Error("Parent not found");
+    const { error } = await db.from("parent_preferences").upsert({ parent_id: claims.parent_id, school_id: parent.school_id, muted_types: Array.from(new Set(data.muted_types)), updated_at: new Date().toISOString() });
+    if (error) throw new Error(error.message);
+    return { ok: true };
   });

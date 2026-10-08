@@ -1,7 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useParentAuth } from "@/hooks/useParentAuth";
-import { getPortalNotifications, markNotificationRead } from "@/lib/api/portal.functions";
+import { getPortalNotifications, markNotificationRead, getParentPreferences, saveParentPreferences } from "@/lib/api/portal.functions";
+import { Switch } from "@/components/ui/switch";
+import { toast } from "sonner";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
@@ -24,8 +26,28 @@ function Page() {
     qc.invalidateQueries({ queryKey: ["portal-notifs"] });
     qc.invalidateQueries({ queryKey: ["portal-summary"] });
   };
+  const { data: prefs } = useQuery({
+    queryKey: ["portal-prefs", token],
+    queryFn: () => getParentPreferences({ data: { token: token! } }),
+    enabled: !!token,
+  });
+  const muted: string[] = prefs?.muted_types ?? [];
+  const toggle = async (type: "news" | "general", on: boolean) => {
+    const next = (on ? muted.filter((t) => t !== type) : [...muted, type]) as ("news" | "general")[];
+    try {
+      await saveParentPreferences({ data: { token: token!, muted_types: next } });
+      qc.invalidateQueries({ queryKey: ["portal-prefs"] });
+      toast.success("Alert choices saved");
+    } catch (e: any) { toast.error(e.message); }
+  };
   return (
     <div className="space-y-2">
+      <Card><CardContent className="space-y-3 p-4">
+        <div className="text-sm font-medium">What alerts do you want?</div>
+        <label htmlFor="pref_news" className="flex items-center justify-between gap-3 text-sm">Newsletters & school news<Switch id="pref_news" checked={!muted.includes("news")} onCheckedChange={(v) => toggle("news", v)} /></label>
+        <label htmlFor="pref_general" className="flex items-center justify-between gap-3 text-sm">General notices<Switch id="pref_general" checked={!muted.includes("general")} onCheckedChange={(v) => toggle("general", v)} /></label>
+        <p className="text-xs text-muted-foreground">Fee reminders and direct messages from the school always arrive.</p>
+      </CardContent></Card>
       {rows.length === 0 && <Card><CardContent className="p-6 text-center text-sm text-muted-foreground">No notifications.</CardContent></Card>}
       {rows.map((n: any) => (
         <Card key={n.id} className={n.read_at ? "opacity-70" : ""} onClick={() => !n.read_at && mark(n.id)}>
@@ -35,7 +57,7 @@ function Page() {
                 <div className="flex items-center gap-2"><Badge variant="outline" className="capitalize">{n.type.replace("_", " ")}</Badge>{!n.read_at && <span className="text-xs text-primary">• new</span>}</div>
                 <div className="mt-1 font-medium">{n.title}</div>
                 {n.body && <div className="mt-1 text-sm text-muted-foreground whitespace-pre-wrap">{n.body}</div>}
-                <div className="mt-1 text-xs text-muted-foreground">{new Date(n.created_at).toLocaleString()}</div>
+                <div className="mt-1 text-xs text-muted-foreground">{new Date(n.visible_from ?? n.created_at).toLocaleString()}</div>
               </div>
             </div>
           </CardContent>
