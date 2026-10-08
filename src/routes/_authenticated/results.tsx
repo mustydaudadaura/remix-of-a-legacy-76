@@ -264,7 +264,7 @@ function ResultsPage() {
                       <TableCell>{ex?.grade ? <Badge>{ex.grade}</Badge> : <span className="text-muted-foreground">—</span>}</TableCell>
                       <TableCell className="min-w-[140px]">
                         {!ex ? <span className="text-xs text-muted-foreground">Not entered</span>
-                          : ex.status === "approved" ? <Badge className="bg-success text-success-foreground">Approved</Badge>
+                          : ex.status === "approved" ? <Badge>Approved</Badge>
                           : ex.status === "submitted" ? <Badge variant="secondary">Awaiting approval</Badge>
                           : <Badge variant="destructive">Returned</Badge>}
                         {ex?.review_remark && <p className="mt-1 text-xs text-muted-foreground">Remark: {ex.review_remark}</p>}
