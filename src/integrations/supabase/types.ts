@@ -425,6 +425,11 @@ export type Database = {
           amount_due: number
           amount_paid: number
           created_at: string
+          discount_amount: number
+          discount_approved_at: string | null
+          discount_approved_by: string | null
+          discount_kind: string | null
+          discount_reason: string | null
           due_date: string | null
           fee_item_id: string | null
           id: string
@@ -440,6 +445,11 @@ export type Database = {
           amount_due: number
           amount_paid?: number
           created_at?: string
+          discount_amount?: number
+          discount_approved_at?: string | null
+          discount_approved_by?: string | null
+          discount_kind?: string | null
+          discount_reason?: string | null
           due_date?: string | null
           fee_item_id?: string | null
           id?: string
@@ -455,6 +465,11 @@ export type Database = {
           amount_due?: number
           amount_paid?: number
           created_at?: string
+          discount_amount?: number
+          discount_approved_at?: string | null
+          discount_approved_by?: string | null
+          discount_kind?: string | null
+          discount_reason?: string | null
           due_date?: string | null
           fee_item_id?: string | null
           id?: string
@@ -1155,6 +1170,65 @@ export type Database = {
           },
         ]
       }
+      school_expenses: {
+        Row: {
+          amount: number
+          category: string
+          created_at: string
+          expense_no: string
+          id: string
+          method: string
+          notes: string | null
+          paid_to: string | null
+          recorded_by: string | null
+          reference: string | null
+          school_id: string
+          spent_on: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          category?: string
+          created_at?: string
+          expense_no: string
+          id?: string
+          method?: string
+          notes?: string | null
+          paid_to?: string | null
+          recorded_by?: string | null
+          reference?: string | null
+          school_id: string
+          spent_on?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          category?: string
+          created_at?: string
+          expense_no?: string
+          id?: string
+          method?: string
+          notes?: string | null
+          paid_to?: string | null
+          recorded_by?: string | null
+          reference?: string | null
+          school_id?: string
+          spent_on?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "school_expenses_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       school_role_assignments: {
         Row: {
           created_at: string
@@ -1269,6 +1343,109 @@ export type Database = {
         }
         Relationships: []
       }
+      staff_salaries: {
+        Row: {
+          allowances: number
+          basic: number
+          created_at: string
+          deductions: number
+          id: string
+          method: string | null
+          month: string
+          net: number
+          notes: string | null
+          paid_at: string | null
+          paid_by: string | null
+          payslip_no: string
+          recorded_by: string | null
+          reference: string | null
+          school_id: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          allowances?: number
+          basic?: number
+          created_at?: string
+          deductions?: number
+          id?: string
+          method?: string | null
+          month: string
+          net?: number
+          notes?: string | null
+          paid_at?: string | null
+          paid_by?: string | null
+          payslip_no: string
+          recorded_by?: string | null
+          reference?: string | null
+          school_id: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          allowances?: number
+          basic?: number
+          created_at?: string
+          deductions?: number
+          id?: string
+          method?: string | null
+          month?: string
+          net?: number
+          notes?: string | null
+          paid_at?: string | null
+          paid_by?: string | null
+          payslip_no?: string
+          recorded_by?: string | null
+          reference?: string | null
+          school_id?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "staff_salaries_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      staff_salary_settings: {
+        Row: {
+          allowances: number
+          basic: number
+          id: string
+          school_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          allowances?: number
+          basic?: number
+          id?: string
+          school_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          allowances?: number
+          basic?: number
+          id?: string
+          school_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "staff_salary_settings_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       student_enrollments: {
         Row: {
           class_id: string | null
@@ -1359,6 +1536,63 @@ export type Database = {
           },
           {
             foreignKeyName: "student_parents_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      student_scholarships: {
+        Row: {
+          approved_by: string | null
+          created_at: string
+          discount_type: string
+          discount_value: number
+          id: string
+          label: string
+          school_id: string
+          session: string
+          status: string
+          student_id: string
+          term: Database["public"]["Enums"]["term_name"] | null
+        }
+        Insert: {
+          approved_by?: string | null
+          created_at?: string
+          discount_type?: string
+          discount_value: number
+          id?: string
+          label: string
+          school_id: string
+          session: string
+          status?: string
+          student_id: string
+          term?: Database["public"]["Enums"]["term_name"] | null
+        }
+        Update: {
+          approved_by?: string | null
+          created_at?: string
+          discount_type?: string
+          discount_value?: number
+          id?: string
+          label?: string
+          school_id?: string
+          session?: string
+          status?: string
+          student_id?: string
+          term?: Database["public"]["Enums"]["term_name"] | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "student_scholarships_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "student_scholarships_student_id_fkey"
             columns: ["student_id"]
             isOneToOne: false
             referencedRelation: "students"
@@ -1716,6 +1950,10 @@ export type Database = {
         Returns: boolean
       }
       is_super_admin: { Args: { _user_id: string }; Returns: boolean }
+      manages_school_finance: {
+        Args: { _school_id: string; _user_id: string }
+        Returns: boolean
+      }
       notify_fee_defaulters: {
         Args: { _created_by: string; _school_id: string }
         Returns: number
