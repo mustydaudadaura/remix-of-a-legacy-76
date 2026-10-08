@@ -14,10 +14,12 @@ export const sendAnnouncement = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
 
+    const { data: allowed, error: accessError } = await supabase.rpc("school_permission", { _user_id: userId, _school_id: data.school_id, _permission: "communication.edit" });
+    if (accessError || !allowed) throw new Error("Not authorized to send school announcements");
     // resolve target parents
     let parentIds: string[] = [];
     if (data.class_id) {
-      const { data: studs } = await supabase.from("students").select("id").eq("class_id", data.class_id);
+      const { data: studs } = await supabase.from("students").select("id").eq("class_id", data.class_id).eq("school_id", data.school_id);
       const ids = (studs ?? []).map((s: any) => s.id);
       if (ids.length) {
         const { data: links } = await supabase.from("student_parents").select("parent_id").in("student_id", ids);

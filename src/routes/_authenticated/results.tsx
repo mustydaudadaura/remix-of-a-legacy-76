@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
+import { useSchoolAccess } from "@/hooks/useSchoolAccess";
 import { useAuth, hasRole } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,14 +17,15 @@ import { FileDown, Send } from "lucide-react";
 import { publishReportCards } from "@/lib/api/results.functions";
 
 export const Route = createFileRoute("/_authenticated/results")({
-  head: () => ({ meta: [{ title: "Results — EduERP" }] }),
+  head: () => ({ meta: [{ title: "Results — EduERP" }, { name: "description", content: "Results for authorized school accounts and families in EduERP." }, { property: "og:title", content: "Results — EduERP" }, { property: "og:description", content: "Results for authorized school accounts and families in EduERP." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: ResultsPage,
 });
 
 function ResultsPage() {
   const { roles, schoolId } = useAuth();
   const qc = useQueryClient();
-  const isStaff = hasRole(roles, "super_admin", "school_admin", "teacher");
+  const access = useSchoolAccess();
+  const isStaff = access.can("results.edit");
 
   const [filters, setFilters] = useState({
     class_id: "", subject_id: "", session: "2025/2026", term: "first" as "first"|"second"|"third",
@@ -179,7 +181,7 @@ function ResultsPage() {
         <div className="flex gap-2">
           <Button asChild variant="outline"><Link to="/report-cards"><FileDown className="mr-2 h-4 w-4" /> Report cards</Link></Button>
           <Button
-            disabled={!filters.class_id || publishMutation.isPending}
+            disabled={!access.can("results.publish") || !filters.class_id || publishMutation.isPending}
             onClick={() => publishMutation.mutate()}
           >
             <Send className="mr-2 h-4 w-4" /> {publishMutation.isPending ? "Publishing…" : "Publish class report cards"}

@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Download } from "lucide-react";
 
 export const Route = createFileRoute("/portal/fees")({
+  head: () => ({ meta: [{ title: "Child Fees — EduERP Parent Portal" }, { name: "description", content: "Child Fees for authorized school accounts and families in EduERP." }, { property: "og:title", content: "Child Fees — EduERP Parent Portal" }, { property: "og:description", content: "Child Fees for authorized school accounts and families in EduERP." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: Page,
 });
 

@@ -15,7 +15,7 @@ import { toast } from "sonner";
 import { BulkImportDialog } from "@/components/BulkImportDialog";
 
 export const Route = createFileRoute("/_authenticated/students")({
-  head: () => ({ meta: [{ title: "Students — EduERP" }] }),
+  head: () => ({ meta: [{ title: "Students — EduERP" }, { name: "description", content: "Students for authorized school accounts and families in EduERP." }, { property: "og:title", content: "Students — EduERP" }, { property: "og:description", content: "Students for authorized school accounts and families in EduERP." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: StudentsPage,
 });
 

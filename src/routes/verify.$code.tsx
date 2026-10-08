@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ShieldCheck, ShieldX, GraduationCap } from "lucide-react";
 
 export const Route = createFileRoute("/verify/$code")({
-  head: () => ({ meta: [{ title: "Verify Result — EduERP" }] }),
+  head: () => ({ meta: [{ title: "Verify Result — EduERP" }, { name: "description", content: "Verify Result for authorized school accounts and families in EduERP." }, { property: "og:title", content: "Verify Result — EduERP" }, { property: "og:description", content: "Verify Result for authorized school accounts and families in EduERP." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: VerifyPage,
 });
 

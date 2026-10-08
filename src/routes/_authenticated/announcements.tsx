@@ -14,7 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/announcements")({
-  head: () => ({ meta: [{ title: "Announcements — EduERP" }] }),
+  head: () => ({ meta: [{ title: "Announcements — EduERP" }, { name: "description", content: "Announcements for authorized school accounts and families in EduERP." }, { property: "og:title", content: "Announcements — EduERP" }, { property: "og:description", content: "Announcements for authorized school accounts and families in EduERP." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: Page,
 });
 

@@ -17,7 +17,7 @@ import { Plus, BellRing } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/fees")({
-  head: () => ({ meta: [{ title: "Fees — EduERP" }] }),
+  head: () => ({ meta: [{ title: "Fees — EduERP" }, { name: "description", content: "Fees for authorized school accounts and families in EduERP." }, { property: "og:title", content: "Fees — EduERP" }, { property: "og:description", content: "Fees for authorized school accounts and families in EduERP." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: Page,
 });
 

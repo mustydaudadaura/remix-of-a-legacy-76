@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Printer } from "lucide-react";
 
 export const Route = createFileRoute("/portal/receipt/$id")({
+  head: () => ({ meta: [{ title: "Payment Receipt — EduERP Parent Portal" }, { name: "description", content: "Payment Receipt for authorized school accounts and families in EduERP." }, { property: "og:title", content: "Payment Receipt — EduERP Parent Portal" }, { property: "og:description", content: "Payment Receipt for authorized school accounts and families in EduERP." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: Page,
 });
 

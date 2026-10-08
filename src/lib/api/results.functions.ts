@@ -1,7 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
 const PublishInput = z.object({
   class_id: z.string().uuid(),
@@ -14,55 +13,13 @@ const PublishInput = z.object({
 
 const ReportCardDetailInput = z.object({ id: z.string().uuid() });
 
-async function getAuthorizedSchoolIds(userId: string) {
-  const { data: isSuper } = await supabaseAdmin.rpc("is_super_admin", { _user_id: userId });
-  if (isSuper) return { isSuper: true, schoolIds: [] as string[] };
-
-  const { data: roles } = await supabaseAdmin
-    .from("user_roles")
-    .select("school_id")
-    .eq("user_id", userId)
-    .in("role", ["school_admin", "teacher", "accountant"]);
-  const schoolIds = Array.from(new Set((roles ?? []).map((r: any) => r.school_id).filter(Boolean)));
-  return { isSuper: false, schoolIds };
-}
-
-async function getOwnStudentIds(userId: string) {
-  const [{ data: ownStudents }, { data: parents }] = await Promise.all([
-    supabaseAdmin.from("students").select("id").eq("user_id", userId),
-    supabaseAdmin.from("parents").select("id").eq("user_id", userId),
-  ]);
-  const parentIds = (parents ?? []).map((p: any) => p.id);
-  const { data: linkedStudents } = parentIds.length
-    ? await supabaseAdmin.from("student_parents").select("student_id").in("parent_id", parentIds)
-    : { data: [] };
-  return Array.from(new Set([
-    ...(ownStudents ?? []).map((s: any) => s.id),
-    ...(linkedStudents ?? []).map((s: any) => s.student_id),
-  ].filter(Boolean)));
-}
-
 export const getReportCardsList = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const { userId } = context;
-    const [{ isSuper, schoolIds }, ownStudentIds] = await Promise.all([
-      getAuthorizedSchoolIds(userId),
-      getOwnStudentIds(userId),
-    ]);
-    if (!isSuper && schoolIds.length === 0 && ownStudentIds.length === 0) return { cards: [] };
-
-    let query = supabaseAdmin
-      .from("report_cards")
+    const db = context.supabase;
+    const query = db.from("report_cards")
       .select("id, school_id, student_id, class_id, session, term, total_score, average, gpa, position, class_size, published, verification_code, created_at")
-      .order("created_at", { ascending: false });
-    if (!isSuper && schoolIds.length > 0 && ownStudentIds.length > 0) {
-      query = query.or(`school_id.in.(${schoolIds.join(",")}),and(published.eq.true,student_id.in.(${ownStudentIds.join(",")}))`);
-    } else if (!isSuper && schoolIds.length > 0) {
-      query = query.in("school_id", schoolIds);
-    } else if (!isSuper) {
-      query = query.eq("published", true).in("student_id", ownStudentIds);
-    }
+      .order("created_at", { ascending: false }).limit(500);
 
     const { data: rows, error } = await query;
     if (error) throw new Error(error.message);
@@ -71,10 +28,10 @@ export const getReportCardsList = createServerFn({ method: "GET" })
     const classIds = Array.from(new Set((rows ?? []).map((r: any) => r.class_id).filter(Boolean)));
     const [{ data: students }, { data: classes }] = await Promise.all([
       studentIds.length
-        ? supabaseAdmin.from("students").select("id, first_name, last_name, admission_no").in("id", studentIds)
+        ? db.from("students").select("id, first_name, last_name, admission_no").in("id", studentIds)
         : Promise.resolve({ data: [] }),
       classIds.length
-        ? supabaseAdmin.from("classes").select("id, name, arm").in("id", classIds)
+        ? db.from("classes").select("id, name, arm").in("id", classIds)
         : Promise.resolve({ data: [] }),
     ]);
     const studentMap = new Map((students ?? []).map((s: any) => [s.id, s]));
@@ -93,33 +50,23 @@ export const getReportCardDetail = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d) => ReportCardDetailInput.parse(d))
   .handler(async ({ data, context }) => {
-    const { userId } = context;
-    const { data: rc, error } = await supabaseAdmin.from("report_cards").select("*").eq("id", data.id).maybeSingle();
+    const { userId, supabase: db } = context;
+    const { data: rc, error } = await db.from("report_cards").select("*").eq("id", data.id).maybeSingle();
     if (error) throw new Error(error.message);
     if (!rc) throw new Error("Report card not found");
 
-    const [{ data: staffOk }, ownStudentIds] = await Promise.all([
-      supabaseAdmin.rpc("is_school_staff", {
-        _user_id: userId,
-        _school_id: (rc as any).school_id,
-      }),
-      getOwnStudentIds(userId),
-    ]);
-    const canViewOwnPublished = Boolean((rc as any).published) && ownStudentIds.includes((rc as any).student_id);
-    if (!staffOk && !canViewOwnPublished) throw new Error("Not authorized");
-
     const [{ data: school }, { data: student }, { data: klass }, { data: rawAssessments }] = await Promise.all([
-      supabaseAdmin.from("schools").select("name, motto, address, email, phone, logo_url, stamp_url, website, branch_name, principal_name, principal_signature_url, current_session, current_term").eq("id", (rc as any).school_id).maybeSingle(),
-      supabaseAdmin.from("students").select("first_name, middle_name, last_name, admission_no, gender, dob, photo_url, house, next_resumption_date").eq("id", (rc as any).student_id).maybeSingle(),
+      db.from("schools").select("name, motto, address, email, phone, logo_url, stamp_url, website, branch_name, principal_name, principal_signature_url, current_session, current_term").eq("id", (rc as any).school_id).maybeSingle(),
+      db.from("students").select("first_name, middle_name, last_name, admission_no, gender, dob, photo_url, house, next_resumption_date").eq("id", (rc as any).student_id).maybeSingle(),
       (rc as any).class_id
-        ? supabaseAdmin.from("classes").select("name, arm, level, section").eq("id", (rc as any).class_id).maybeSingle()
+        ? db.from("classes").select("name, arm, level, section").eq("id", (rc as any).class_id).maybeSingle()
         : Promise.resolve({ data: null }),
-      supabaseAdmin.from("assessments").select("id, subject_id, ca1, ca2, exam, total, grade, remark, created_at").eq("student_id", (rc as any).student_id).eq("session", (rc as any).session).eq("term", (rc as any).term).order("created_at"),
+      db.from("assessments").select("id, subject_id, ca1, ca2, exam, total, grade, remark, created_at").eq("student_id", (rc as any).student_id).eq("session", (rc as any).session).eq("term", (rc as any).term).order("created_at"),
     ]);
 
     const subjectIds = Array.from(new Set((rawAssessments ?? []).map((a: any) => a.subject_id).filter(Boolean)));
     const { data: subjects } = subjectIds.length
-      ? await supabaseAdmin.from("subjects").select("id, name, code").in("id", subjectIds)
+      ? await db.from("subjects").select("id, name, code").in("id", subjectIds)
       : { data: [] };
     const subjectMap = new Map((subjects ?? []).map((s: any) => [s.id, { name: s.name, code: s.code }]));
 
@@ -138,31 +85,32 @@ export const publishReportCards = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d) => PublishInput.parse(d))
   .handler(async ({ data, context }) => {
-    const { userId } = context;
+    const { userId, supabase: db } = context;
 
     // Verify the caller is staff on the class's school
-    const { data: cls, error: clsErr } = await supabaseAdmin
+    const { data: cls, error: clsErr } = await db
       .from("classes")
       .select("id, school_id, name")
       .eq("id", data.class_id)
       .maybeSingle();
     if (clsErr || !cls) throw new Error("Class not found");
 
-    const { data: staffOk } = await supabaseAdmin.rpc("is_school_staff", {
+    const { data: staffOk } = await db.rpc("school_permission", {
       _user_id: userId,
       _school_id: cls.school_id,
+      _permission: "results.publish",
     });
     if (!staffOk) throw new Error("Not authorized for this school");
 
     // Fetch students in the class
-    const { data: students } = await supabaseAdmin
+    const { data: students } = await db
       .from("students")
       .select("id")
       .eq("class_id", data.class_id);
     if (!students?.length) throw new Error("No students in this class");
 
     // Fetch all assessments for this class/session/term
-    const { data: assess } = await supabaseAdmin
+    const { data: assess } = await db
       .from("assessments")
       .select("student_id, total")
       .eq("class_id", data.class_id)
@@ -218,7 +166,7 @@ export const publishReportCards = createServerFn({ method: "POST" })
       };
 
       // Find existing
-      const { data: existing } = await supabaseAdmin
+      const { data: existing } = await db
         .from("report_cards")
         .select("id")
         .eq("student_id", r.student_id)
@@ -227,9 +175,11 @@ export const publishReportCards = createServerFn({ method: "POST" })
         .maybeSingle();
 
       if (existing) {
-        await supabaseAdmin.from("report_cards").update(payload).eq("id", existing.id);
+        const { error } = await db.from("report_cards").update(payload).eq("id", existing.id);
+        if (error) throw new Error(error.message);
       } else {
-        await supabaseAdmin.from("report_cards").insert(payload);
+        const { error } = await db.from("report_cards").insert(payload);
+        if (error) throw new Error(error.message);
       }
       written++;
     }
@@ -252,17 +202,18 @@ export const updateReportCardRemarks = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d) => UpdateRemarksInput.parse(d))
   .handler(async ({ data, context }) => {
-    const { userId } = context;
-    const { data: rc } = await supabaseAdmin
+    const { userId, supabase: db } = context;
+    const { data: rc } = await db
       .from("report_cards")
       .select("school_id")
       .eq("id", data.report_card_id)
       .maybeSingle();
     if (!rc) throw new Error("Report card not found");
 
-    const { data: staffOk } = await supabaseAdmin.rpc("is_school_staff", {
+    const { data: staffOk } = await db.rpc("school_permission", {
       _user_id: userId,
       _school_id: rc.school_id,
+      _permission: "results.publish",
     });
     if (!staffOk) throw new Error("Not authorized");
 
@@ -279,7 +230,7 @@ export const updateReportCardRemarks = createServerFn({ method: "POST" })
       if (data[k] !== undefined) update[k] = data[k];
     }
     if (Object.keys(update).length === 0) return { ok: true };
-    const { error } = await supabaseAdmin
+    const { error } = await db
       .from("report_cards")
       .update(update as never)
       .eq("id", data.report_card_id);

@@ -33,7 +33,7 @@ async function generateUniqueSchoolCode(name: string): Promise<string> {
 }
 
 export const Route = createFileRoute("/_authenticated/schools")({
-  head: () => ({ meta: [{ title: "Schools — EduERP" }] }),
+  head: () => ({ meta: [{ title: "Schools — EduERP" }, { name: "description", content: "Schools for authorized school accounts and families in EduERP." }, { property: "og:title", content: "Schools — EduERP" }, { property: "og:description", content: "Schools for authorized school accounts and families in EduERP." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: SchoolsPage,
 });
 

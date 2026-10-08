@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
 export const Route = createFileRoute("/portal/attendance")({
+  head: () => ({ meta: [{ title: "Child Attendance — EduERP Parent Portal" }, { name: "description", content: "Child Attendance for authorized school accounts and families in EduERP." }, { property: "og:title", content: "Child Attendance — EduERP Parent Portal" }, { property: "og:description", content: "Child Attendance for authorized school accounts and families in EduERP." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: Page,
 });
 

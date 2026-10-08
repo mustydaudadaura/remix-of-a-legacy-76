@@ -8,11 +8,18 @@ import {
   GraduationCap, UserCog, Menu, X, Award, CalendarCheck, Wallet, Megaphone,
 } from "lucide-react";
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { useSchoolAccess } from "@/hooks/useSchoolAccess";
+import { selectSchool, type SchoolPermission } from "@/lib/school-access";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Settings2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated")({
   component: AuthedLayout,
 });
+
+const PAGE_ACCESS: Record<string, SchoolPermission> = { "/students": "students.view", "/classes": "academics.view", "/promotion": "promotion.edit", "/results": "results.edit", "/attendance": "attendance.view", "/fees": "fees.view", "/announcements": "communication.view", "/report-cards": "results.view", "/users": "users.edit", "/settings": "settings.edit" };
 
 const NAV = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard, roles: ["super_admin","school_admin","teacher","accountant","student","parent"] },
@@ -26,10 +33,13 @@ const NAV = [
   { to: "/announcements", label: "Announcements", icon: Megaphone, roles: ["super_admin","school_admin"] },
   { to: "/report-cards", label: "Report Cards", icon: Award, roles: ["super_admin","school_admin","teacher","student","parent"] },
   { to: "/users", label: "Users & Roles", icon: UserCog, roles: ["super_admin","school_admin"] },
+  { to: "/settings", label: "School Settings", icon: Settings2, roles: ["super_admin","school_admin"] },
 ] as const;
 
 function AuthedLayout() {
   const { user, loading, roles, fullName } = useAuth();
+  const access = useSchoolAccess();
+  const schools = useQuery({ queryKey: ["layout-schools"], enabled: hasRole(roles, "super_admin"), queryFn: async () => (await supabase.from("schools").select("id,name").order("name")).data ?? [] });
   const navigate = useNavigate();
   const { location } = useRouterState();
   const [open, setOpen] = useState(false);
@@ -47,9 +57,16 @@ function AuthedLayout() {
     return <div className="flex min-h-screen items-center justify-center text-muted-foreground">Loading…</div>;
   }
 
-  const visibleNav = NAV.filter((n) =>
-    roles.length === 0 ? n.to === "/dashboard" : hasRole(roles as any, ...(n.roles as any))
-  );
+  const visibleNav = NAV.filter((n) => {
+    if (n.to === "/dashboard") return true;
+    if (n.to === "/schools") return hasRole(roles, "super_admin");
+    if (n.to === "/report-cards" && hasRole(roles, "parent", "student")) return true;
+    const permission = PAGE_ACCESS[n.to];
+    return permission ? access.can(permission) : false;
+  });
+  const permission = PAGE_ACCESS[location.pathname];
+  const ownReports = location.pathname === "/report-cards" && hasRole(roles, "parent", "student");
+  const denied = permission && !ownReports && !access.can(permission);
 
   return (
     <div className="flex min-h-screen bg-background">
@@ -67,7 +84,7 @@ function AuthedLayout() {
             </div>
             <span className="font-bold">EduERP</span>
           </Link>
-          <button className="lg:hidden" onClick={() => setOpen(false)}><X className="h-5 w-5" /></button>
+          <Button variant="ghost" size="icon" className="lg:hidden" aria-label="Close menu" onClick={() => setOpen(false)}><X className="h-5 w-5" /></Button>
         </div>
         <nav className="space-y-1 p-3">
           {visibleNav.map((n) => {
@@ -106,14 +123,15 @@ function AuthedLayout() {
       {open && <div className="fixed inset-0 z-30 bg-black/40 lg:hidden" onClick={() => setOpen(false)} />}
 
       {/* Main */}
-      <div className="flex flex-1 flex-col">
+      <div className="flex min-w-0 flex-1 flex-col">
         <header className="sticky top-0 z-20 flex h-16 items-center justify-between border-b border-border bg-card px-4 lg:px-6">
-          <button className="lg:hidden" onClick={() => setOpen(true)}><Menu className="h-5 w-5" /></button>
+          <Button variant="ghost" size="icon" className="lg:hidden" aria-label="Open menu" onClick={() => setOpen(true)}><Menu className="h-5 w-5" /></Button>
+          {hasRole(roles, "super_admin") && <Select value={access.schoolId ?? undefined} onValueChange={selectSchool}><SelectTrigger className="ml-3 w-60 max-w-[70vw]" aria-label="Active school"><SelectValue placeholder="Select a school" /></SelectTrigger><SelectContent>{schools.data?.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}</SelectContent></Select>}
           <div className="flex-1" />
           <div className="text-sm text-muted-foreground hidden sm:block">{new Date().toLocaleDateString("en-NG", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}</div>
         </header>
         <main className="flex-1 p-4 lg:p-6">
-          <Outlet />
+          {access.loading ? <p className="text-muted-foreground">Loading school access…</p> : denied ? <div className="space-y-2"><h1 className="text-xl font-semibold">Access unavailable</h1><p className="text-muted-foreground">{access.schoolId ? "This page is disabled or your account does not have permission." : "Select a school to continue."}</p></div> : <Outlet />}
         </main>
       </div>
     </div>

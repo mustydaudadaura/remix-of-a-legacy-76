@@ -19,6 +19,8 @@ export const markAttendance = createServerFn({ method: "POST" })
     const { supabase, userId } = context;
     const { data: cls, error: cErr } = await supabase.from("classes").select("id, school_id").eq("id", data.class_id).maybeSingle();
     if (cErr || !cls) throw new Error("Class not found");
+    const { data: students, error: studentError } = await supabase.from("students").select("id").eq("school_id", cls.school_id).eq("class_id", cls.id).in("id", data.entries.map((e) => e.student_id));
+    if (studentError || students?.length !== new Set(data.entries.map((e) => e.student_id)).size) throw new Error("Attendance includes students outside this class");
     const rows = data.entries.map((e) => ({
       school_id: cls.school_id,
       class_id: cls.id,
