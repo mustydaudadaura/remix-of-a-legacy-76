@@ -2,8 +2,9 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth, hasRole } from "@/hooks/useAuth";
 import { generateInvoicesForClass, recordPayment, notifyDefaulters } from "@/lib/api/fees.functions";
+import { setInvoiceDiscount, invoiceOutstanding } from "@/lib/api/finance.functions";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -13,17 +14,30 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plus, BellRing } from "lucide-react";
+import { Plus, BellRing, Percent } from "lucide-react";
 import { toast } from "sonner";
+import { ScholarshipManager } from "@/components/finance/ScholarshipManager";
+import { ExpenseManager } from "@/components/finance/ExpenseManager";
+import { PayrollManager } from "@/components/finance/PayrollManager";
+import { FinanceReports } from "@/components/finance/FinanceReports";
 
 export const Route = createFileRoute("/_authenticated/fees")({
   head: () => ({ meta: [{ title: "Fees — EduERP" }, { name: "description", content: "Fees for authorized school accounts and families in EduERP." }, { property: "og:title", content: "Fees — EduERP" }, { property: "og:description", content: "Fees for authorized school accounts and families in EduERP." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: Page,
 });
 
+type Invoice = {
+  id: string; title: string; session: string; term: string;
+  amount_due: number; amount_paid: number; discount_amount: number;
+  discount_reason: string | null; discount_kind: string | null;
+  status: string; due_date: string | null;
+  students?: { first_name: string; last_name: string; admission_no: string } | null;
+};
+
 function Page() {
-  const { schoolId } = useAuth();
+  const { schoolId, roles } = useAuth();
   const qc = useQueryClient();
+  const canPayroll = hasRole(roles, "super_admin", "school_admin");
 
   const { data: items } = useQuery({
     queryKey: ["fee-items", schoolId],
@@ -31,19 +45,31 @@ function Page() {
   });
   const { data: invoices } = useQuery({
     queryKey: ["fee-invoices", schoolId],
-    queryFn: async () => (await supabase.from("fee_invoices").select("id, title, session, term, amount_due, amount_paid, status, due_date, students(first_name, last_name, admission_no)").order("created_at", { ascending: false }).limit(200)).data ?? [],
+    queryFn: async () => (await supabase.from("fee_invoices")
+      .select("id, title, session, term, amount_due, amount_paid, discount_amount, discount_reason, discount_kind, status, due_date, students(first_name, last_name, admission_no)")
+      .order("created_at", { ascending: false }).limit(200)).data ?? [],
   });
   const { data: classes } = useQuery({
     queryKey: ["classes-fees"],
     queryFn: async () => (await supabase.from("classes").select("id, name").order("name")).data ?? [],
   });
 
+  const list = (invoices ?? []) as Invoice[];
+  const totals = list.reduce((acc, i) => {
+    acc.due += Number(i.amount_due);
+    acc.discount += Number(i.discount_amount ?? 0);
+    acc.paid += Number(i.amount_paid);
+    const bal = invoiceOutstanding(i);
+    if (bal > 0) acc.balance += bal;
+    return acc;
+  }, { due: 0, discount: 0, paid: 0, balance: 0 });
+
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold">Fees</h1>
-          <p className="text-sm text-muted-foreground">Manage fee items, invoices and payments.</p>
+          <p className="text-sm text-muted-foreground">Fee items, invoices, discounts, expenses, salaries and reports.</p>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" onClick={async () => {
@@ -55,35 +81,61 @@ function Page() {
         </div>
       </div>
 
+      <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+        <div className="rounded-lg border p-3"><p className="text-xs text-muted-foreground">Billed</p><p className="text-lg font-semibold">₦{totals.due.toLocaleString()}</p></div>
+        <div className="rounded-lg border p-3"><p className="text-xs text-muted-foreground">Discounts given</p><p className="text-lg font-semibold">₦{totals.discount.toLocaleString()}</p></div>
+        <div className="rounded-lg border p-3"><p className="text-xs text-muted-foreground">Collected</p><p className="text-lg font-semibold text-emerald-600">₦{totals.paid.toLocaleString()}</p></div>
+        <div className="rounded-lg border p-3"><p className="text-xs text-muted-foreground">Still owing</p><p className="text-lg font-semibold text-destructive">₦{totals.balance.toLocaleString()}</p></div>
+      </div>
+
       <Tabs defaultValue="invoices">
-        <TabsList>
+        <TabsList className="flex-wrap">
           <TabsTrigger value="invoices">Invoices</TabsTrigger>
           <TabsTrigger value="items">Fee items</TabsTrigger>
+          <TabsTrigger value="scholarships">Scholarships</TabsTrigger>
+          <TabsTrigger value="expenses">Expenses</TabsTrigger>
+          {canPayroll && <TabsTrigger value="payroll">Payroll</TabsTrigger>}
+          {canPayroll && <TabsTrigger value="reports">Reports</TabsTrigger>}
         </TabsList>
 
         <TabsContent value="invoices" className="space-y-3">
           <GenerateInvoicesCard items={items ?? []} classes={classes ?? []} onDone={() => qc.invalidateQueries({ queryKey: ["fee-invoices"] })} />
           <Card>
             <CardHeader><CardTitle className="text-base">All invoices</CardTitle></CardHeader>
-            <CardContent>
+            <CardContent className="p-0">
               <div className="overflow-x-auto">
                 <Table>
-                  <TableHeader><TableRow><TableHead>Student</TableHead><TableHead>Title</TableHead><TableHead>Term</TableHead><TableHead>Balance</TableHead><TableHead>Status</TableHead><TableHead></TableHead></TableRow></TableHeader>
+                  <TableHeader><TableRow>
+                    <TableHead>Student</TableHead><TableHead>Title</TableHead><TableHead>Term</TableHead>
+                    <TableHead className="text-right">Billed</TableHead><TableHead className="text-right">Discount</TableHead>
+                    <TableHead className="text-right">Paid</TableHead><TableHead className="text-right">Balance</TableHead>
+                    <TableHead>Status</TableHead><TableHead></TableHead>
+                  </TableRow></TableHeader>
                   <TableBody>
-                    {(invoices ?? []).map((i: any) => {
-                      const bal = Number(i.amount_due) - Number(i.amount_paid);
+                    {list.map((i) => {
+                      const bal = invoiceOutstanding(i);
                       return (
                         <TableRow key={i.id}>
                           <TableCell className="text-sm">{i.students?.first_name} {i.students?.last_name}</TableCell>
                           <TableCell className="text-sm">{i.title}</TableCell>
                           <TableCell className="text-xs capitalize">{i.session} • {i.term}</TableCell>
-                          <TableCell className="text-sm">₦{bal.toLocaleString()}</TableCell>
+                          <TableCell className="text-right text-sm">₦{Number(i.amount_due).toLocaleString()}</TableCell>
+                          <TableCell className="text-right text-sm">
+                            {Number(i.discount_amount) > 0
+                              ? <span title={i.discount_reason ?? ""}>₦{Number(i.discount_amount).toLocaleString()}</span>
+                              : "—"}
+                          </TableCell>
+                          <TableCell className="text-right text-sm">₦{Number(i.amount_paid).toLocaleString()}</TableCell>
+                          <TableCell className="text-right text-sm font-medium">₦{bal.toLocaleString()}</TableCell>
                           <TableCell><Badge variant={i.status === "paid" ? "secondary" : i.status === "overdue" ? "destructive" : "outline"} className="capitalize">{i.status}</Badge></TableCell>
-                          <TableCell><RecordPaymentDialog invoice={i} onDone={() => qc.invalidateQueries({ queryKey: ["fee-invoices"] })} /></TableCell>
+                          <TableCell className="whitespace-nowrap">
+                            <RecordPaymentDialog invoice={i} onDone={() => qc.invalidateQueries({ queryKey: ["fee-invoices"] })} />
+                            <DiscountDialog invoice={i} onDone={() => qc.invalidateQueries({ queryKey: ["fee-invoices"] })} />
+                          </TableCell>
                         </TableRow>
                       );
                     })}
-                    {(invoices ?? []).length === 0 && <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground">No invoices</TableCell></TableRow>}
+                    {!list.length && <TableRow><TableCell colSpan={9} className="text-center text-muted-foreground">No invoices</TableCell></TableRow>}
                   </TableBody>
                 </Table>
               </div>
@@ -94,6 +146,11 @@ function Page() {
         <TabsContent value="items">
           <FeeItemsCard items={items ?? []} onDone={() => qc.invalidateQueries({ queryKey: ["fee-items"] })} />
         </TabsContent>
+
+        <TabsContent value="scholarships"><ScholarshipManager /></TabsContent>
+        <TabsContent value="expenses"><ExpenseManager /></TabsContent>
+        {canPayroll && <TabsContent value="payroll"><PayrollManager /></TabsContent>}
+        {canPayroll && <TabsContent value="reports"><FinanceReports /></TabsContent>}
       </Tabs>
     </div>
   );
@@ -187,9 +244,10 @@ function GenerateInvoicesCard({ items, classes, onDone }: any) {
   );
 }
 
-function RecordPaymentDialog({ invoice, onDone }: any) {
+function RecordPaymentDialog({ invoice, onDone }: { invoice: Invoice; onDone: () => void }) {
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({ amount: "", method: "cash", reference: "", notes: "" });
+  const balance = invoiceOutstanding(invoice);
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
@@ -197,10 +255,9 @@ function RecordPaymentDialog({ invoice, onDone }: any) {
       toast.success("Payment recorded"); setOpen(false); onDone();
     } catch (e: any) { toast.error(e.message); }
   };
-  const balance = Number(invoice.amount_due) - Number(invoice.amount_paid);
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild><Button size="sm" variant="outline" disabled={invoice.status === "paid"}>Pay</Button></DialogTrigger>
+      <DialogTrigger asChild><Button size="sm" variant="outline" disabled={balance <= 0}>Pay</Button></DialogTrigger>
       <DialogContent>
         <DialogHeader><DialogTitle>Record payment</DialogTitle></DialogHeader>
         <form onSubmit={submit} className="space-y-3">
@@ -217,6 +274,66 @@ function RecordPaymentDialog({ invoice, onDone }: any) {
           <div><Label>Reference</Label><Input value={form.reference} onChange={(e) => setForm({ ...form, reference: e.target.value })} /></div>
           <div><Label>Notes</Label><Input value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} /></div>
           <Button type="submit" className="w-full">Save payment</Button>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+const DISCOUNT_KINDS = [
+  { id: "scholarship", name: "Scholarship / bursary" },
+  { id: "sibling", name: "Sibling discount" },
+  { id: "staff_child", name: "Staff child" },
+  { id: "early_payment", name: "Early payment" },
+  { id: "waiver", name: "Hardship waiver" },
+  { id: "other", name: "Other" },
+];
+
+function DiscountDialog({ invoice, onDone }: { invoice: Invoice; onDone: () => void }) {
+  const [open, setOpen] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [form, setForm] = useState({
+    discount_amount: String(invoice.discount_amount ?? 0),
+    discount_kind: invoice.discount_kind ?? "scholarship",
+    discount_reason: invoice.discount_reason ?? "",
+  });
+  const unpaid = Number(invoice.amount_due) - Number(invoice.amount_paid);
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setBusy(true);
+    try {
+      await setInvoiceDiscount({ data: {
+        invoice_id: invoice.id,
+        discount_amount: Number(form.discount_amount || 0),
+        discount_kind: form.discount_kind,
+        discount_reason: form.discount_reason,
+      } });
+      toast.success("Discount saved"); setOpen(false); onDone();
+    } catch (err: any) { toast.error(err.message); } finally { setBusy(false); }
+  };
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button size="sm" variant="ghost" aria-label="Discount this invoice"><Percent className="h-4 w-4" /></Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader><DialogTitle>Discount or waiver</DialogTitle></DialogHeader>
+        <form onSubmit={submit} className="space-y-3">
+          <p className="text-sm text-muted-foreground">
+            {invoice.students?.first_name} {invoice.students?.last_name} — unpaid balance ₦{unpaid.toLocaleString()}
+          </p>
+          <div><Label htmlFor="inv_discount">Discount amount (₦)</Label>
+            <Input id="inv_discount" type="number" min="0" max={unpaid} required value={form.discount_amount}
+              onChange={(e) => setForm({ ...form, discount_amount: e.target.value })} /></div>
+          <div><Label htmlFor="inv_discount_kind">Reason type</Label>
+            <Select value={form.discount_kind} onValueChange={(v) => setForm({ ...form, discount_kind: v })}>
+              <SelectTrigger id="inv_discount_kind"><SelectValue /></SelectTrigger>
+              <SelectContent>{DISCOUNT_KINDS.map((k) => <SelectItem key={k.id} value={k.id}>{k.name}</SelectItem>)}</SelectContent>
+            </Select></div>
+          <div><Label htmlFor="inv_discount_reason">Reason (required)</Label>
+            <Input id="inv_discount_reason" required value={form.discount_reason} placeholder="e.g. Second child — 50% sibling discount"
+              onChange={(e) => setForm({ ...form, discount_reason: e.target.value })} /></div>
+          <Button type="submit" className="w-full" disabled={busy}>{busy ? "Saving…" : "Save discount"}</Button>
         </form>
       </DialogContent>
     </Dialog>
