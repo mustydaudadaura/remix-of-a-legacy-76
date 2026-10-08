@@ -1,5 +1,21 @@
 /** Pure, browser-safe helpers for the weekly attendance report sent to families. */
 
+/** Titles families are often registered under ("Mr/Mrs Hauwa Bello") — never used as the greeting name. */
+const HONORIFICS = new Set([
+  "mr", "mrs", "ms", "miss", "dr", "prof", "engr", "rev", "hon", "chief",
+  "barr", "sol", "alhaji", "hajia", "haji", "sir", "madam", "dame", "lord",
+]);
+
+/** The name to greet an adult by: their first real name, skipping any leading titles. */
+export function preferredName(fullName: string): string {
+  for (const raw of fullName.trim().split(/[\s/]+/)) {
+    const token = raw.replace(/\.$/, "");
+    if (!token) continue;
+    if (!HONORIFICS.has(token.toLowerCase())) return token;
+  }
+  return "Parent";
+}
+
 export const ATT_STATUSES = ["present", "absent", "late", "excused"] as const;
 export type AttStatus = (typeof ATT_STATUSES)[number];
 
@@ -100,7 +116,7 @@ export function buildAttendanceMessage(input: {
   end: string;
   children: Summary[];
 }): string {
-  const parent = input.parentName.trim().split(/\s+/)[0] || "Parent";
+  const parent = preferredName(input.parentName) || "Parent";
   const lines = input.children.map(
     (c) => `${c.name}: ${c.present} present, ${c.absent} absent, ${c.late} late, ${c.excused} excused`,
   );
