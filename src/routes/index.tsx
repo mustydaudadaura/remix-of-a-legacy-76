@@ -5,6 +5,7 @@ import { GraduationCap, Users, FileText, Shield, BarChart3, BookOpen } from "luc
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
+      { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" },
       { title: "EduERP — Nigeria's Modern School Management Platform" },
       { name: "description", content: "All-in-one ERP for Nigerian schools: admissions, results, report cards, fees, and parent portal." },
       { property: "og:title", content: "EduERP — Modern School Management" },

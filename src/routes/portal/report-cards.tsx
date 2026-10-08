@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/portal/report-cards")({
+  head: () => ({ meta: [{ title: "Child Results — EduERP Parent Portal" }, { name: "description", content: "Child Results for authorized school accounts and families in EduERP." }, { property: "og:title", content: "Child Results — EduERP Parent Portal" }, { property: "og:description", content: "Child Results for authorized school accounts and families in EduERP." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: Page,
 });
 

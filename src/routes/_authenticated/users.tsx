@@ -17,7 +17,7 @@ import { useAuth, hasRole } from "@/hooks/useAuth";
 import { inviteStaff, removeStaffRole } from "@/lib/api/staff.functions";
 
 export const Route = createFileRoute("/_authenticated/users")({
-  head: () => ({ meta: [{ title: "Users & Roles — EduERP" }] }),
+  head: () => ({ meta: [{ title: "Users & Roles — EduERP" }, { name: "description", content: "Users & Roles for authorized school accounts and families in EduERP." }, { property: "og:title", content: "Users & Roles — EduERP" }, { property: "og:description", content: "Users & Roles for authorized school accounts and families in EduERP." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: UsersPage,
 });
 
@@ -192,21 +192,21 @@ function UsersPage() {
                       <div className="flex flex-wrap gap-1">
                         {userRoles.length ? userRoles.map((r) => {
                           const removable = canManage && r.role !== "super_admin" && r.school_id &&
-                            (isSuper || r.school_id === mySchoolId);
+                            (isSuper || (r.school_id === mySchoolId && r.role !== "school_admin"));
                           return (
                             <Badge key={r.id} variant="secondary" className="gap-1">
                               {r.role}
                               {removable && (
-                                <button
-                                  type="button"
+                                <Button
+                                  variant="ghost" size="icon"
                                   className="hover:text-destructive"
                                   onClick={() => removeMut.mutate({
                                     user_id: r.user_id,
                                     role: r.role as StaffRole,
-                                    school_id: r.school_id!,
+                                    school_id: r.school_id ?? "",
                                   })}
                                   aria-label="Remove role"
-                                ><X className="h-3 w-3" /></button>
+                                ><X className="h-3 w-3" /></Button>
                               )}
                             </Badge>
                           );

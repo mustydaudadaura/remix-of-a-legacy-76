@@ -16,7 +16,7 @@ import {
 } from "recharts";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
-  head: () => ({ meta: [{ title: "Dashboard — EduERP" }] }),
+  head: () => ({ meta: [{ title: "Dashboard — EduERP" }, { name: "description", content: "Dashboard for authorized school accounts and families in EduERP." }, { property: "og:title", content: "Dashboard — EduERP" }, { property: "og:description", content: "Dashboard for authorized school accounts and families in EduERP." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: Dashboard,
 });
 

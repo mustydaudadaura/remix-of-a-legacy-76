@@ -12,7 +12,7 @@ import { GraduationCap, Phone } from "lucide-react";
 import { startDemo } from "@/lib/api/demo.functions";
 
 export const Route = createFileRoute("/auth")({
-  head: () => ({ meta: [{ title: "Sign in — EduERP" }] }),
+  head: () => ({ meta: [{ title: "Sign in — EduERP" }, { name: "description", content: "Sign in for authorized school accounts and families in EduERP." }, { property: "og:title", content: "Sign in — EduERP" }, { property: "og:description", content: "Sign in for authorized school accounts and families in EduERP." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: AuthPage,
 });
 
@@ -72,13 +72,6 @@ function AuthPage() {
       setLoading(false);
       toast.error(error.message);
       return;
-    }
-
-    if (signUpData.session?.user) {
-      await supabase
-        .from("profiles")
-        .update({ school_id: school.id, full_name: fullName })
-        .eq("user_id", signUpData.session.user.id);
     }
 
     setLoading(false);

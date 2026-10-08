@@ -7,7 +7,7 @@ import { getReportCardDetail } from "@/lib/api/results.functions";
 import { ReportCardView } from "@/components/ReportCardView";
 
 export const Route = createFileRoute("/_authenticated/report-card/$id")({
-  head: () => ({ meta: [{ title: "Report Card — EduERP" }] }),
+  head: () => ({ meta: [{ title: "Report Card — EduERP" }, { name: "description", content: "Report Card for authorized school accounts and families in EduERP." }, { property: "og:title", content: "Report Card — EduERP" }, { property: "og:description", content: "Report Card for authorized school accounts and families in EduERP." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: ReportCardPage,
 });
 

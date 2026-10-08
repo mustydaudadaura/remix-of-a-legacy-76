@@ -7,6 +7,7 @@ import { ArrowLeft, Printer } from "lucide-react";
 import { ReportCardView } from "@/components/ReportCardView";
 
 export const Route = createFileRoute("/portal/report-card/$id")({
+  head: () => ({ meta: [{ title: "Child Report Card — EduERP Parent Portal" }, { name: "description", content: "Child Report Card for authorized school accounts and families in EduERP." }, { property: "og:title", content: "Child Report Card — EduERP Parent Portal" }, { property: "og:description", content: "Child Report Card for authorized school accounts and families in EduERP." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: Page,
 });
 

@@ -9,7 +9,7 @@ import { GraduationCap, Home, CalendarCheck, Award, Wallet, Bell, LogOut } from 
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/portal")({
-  head: () => ({ meta: [{ title: "Parent Portal — EduERP" }] }),
+  head: () => ({ meta: [{ title: "Parent Portal — EduERP" }, { name: "description", content: "Parent Portal for authorized school accounts and families in EduERP." }, { property: "og:title", content: "Parent Portal — EduERP" }, { property: "og:description", content: "Parent Portal for authorized school accounts and families in EduERP." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: PortalLayout,
 });
 

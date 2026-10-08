@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Eye } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/report-cards")({
-  head: () => ({ meta: [{ title: "Report Cards — EduERP" }] }),
+  head: () => ({ meta: [{ title: "Report Cards — EduERP" }, { name: "description", content: "Report Cards for authorized school accounts and families in EduERP." }, { property: "og:title", content: "Report Cards — EduERP" }, { property: "og:description", content: "Report Cards for authorized school accounts and families in EduERP." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: ReportCardsListPage,
 });
 

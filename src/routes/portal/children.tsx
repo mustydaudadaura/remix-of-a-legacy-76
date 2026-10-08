@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Check, User } from "lucide-react";
 
 export const Route = createFileRoute("/portal/children")({
-  head: () => ({ meta: [{ title: "My Children — Parent Portal" }] }),
+  head: () => ({ meta: [{ title: "My Children — Parent Portal" }, { name: "description", content: "My Children for authorized school accounts and families in EduERP." }, { property: "og:title", content: "My Children — Parent Portal" }, { property: "og:description", content: "My Children for authorized school accounts and families in EduERP." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: ChildrenPage,
 });
 
