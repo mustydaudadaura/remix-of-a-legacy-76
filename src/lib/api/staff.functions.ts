@@ -1,7 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
 const ALLOWED_ROLES = ["school_admin", "teacher", "accountant"] as const;
 
@@ -43,6 +42,7 @@ export const inviteStaff = createServerFn({ method: "POST" })
       throw new Error("Only a super admin can assign the School Admin role");
     }
 
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     // Invite (or fetch existing) user
     let invitedUserId: string | null = null;
     const inviteRes = await supabaseAdmin.auth.admin.inviteUserByEmail(
@@ -66,14 +66,19 @@ export const inviteStaff = createServerFn({ method: "POST" })
 
     if (!invitedUserId) throw new Error("Could not resolve invited user");
 
+    const { data: existingProfile, error: profileReadError } = await supabaseAdmin.from("profiles").select("school_id").eq("user_id", invitedUserId).maybeSingle();
+    if (profileReadError) throw new Error(profileReadError.message);
+    if (!isSuper && existingProfile?.school_id && existingProfile.school_id !== data.school_id) throw new Error("This account belongs to another school");
+
     // Ensure profile exists and attach to school
-    await supabaseAdmin
+    const { error: profileError } = await supabaseAdmin
       .from("profiles")
       .upsert(
         { user_id: invitedUserId, full_name: data.full_name, school_id: data.school_id },
         { onConflict: "user_id" },
       );
 
+    if (profileError) throw new Error(profileError.message);
     // Assign role (idempotent on (user_id, role, school_id))
     const { error: roleErr } = await supabaseAdmin.from("user_roles").insert({
       user_id: invitedUserId,
@@ -114,7 +119,8 @@ export const removeStaffRole = createServerFn({ method: "POST" })
       throw new Error("Not authorized");
     }
 
-    const { error } = await supabaseAdmin
+    if (!isSuper && data.role === "school_admin") throw new Error("Only a super admin can remove a School Admin role");
+    const { error } = await userClient
       .from("user_roles")
       .delete()
       .eq("user_id", data.user_id)

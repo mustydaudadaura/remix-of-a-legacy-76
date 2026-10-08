@@ -13,6 +13,8 @@ export const generateInvoicesForClass = createServerFn({ method: "POST" })
     const { supabase } = context;
     const { data: item, error: iErr } = await supabase.from("fee_items").select("*").eq("id", data.fee_item_id).maybeSingle();
     if (iErr || !item) throw new Error("Fee item not found");
+    const { data: cls } = await supabase.from("classes").select("school_id").eq("id", data.class_id).maybeSingle();
+    if (!cls || cls.school_id !== item.school_id) throw new Error("Fee item and class must belong to the same school");
     const { data: students } = await supabase.from("students").select("id, school_id").eq("class_id", data.class_id);
     if (!students?.length) throw new Error("No students in class");
     const rows = students.map((s: any) => ({

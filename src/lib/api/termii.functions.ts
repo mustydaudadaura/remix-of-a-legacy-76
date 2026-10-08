@@ -1,7 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
 const SendSmsInput = z.object({
   school_id: z.string().uuid(),
@@ -23,9 +22,10 @@ export const sendTermiiSms = createServerFn({ method: "POST" })
     const sender = process.env.TERMII_SENDER_ID || "N-Alert";
     if (!apiKey) throw new Error("TERMII_API_KEY not configured");
 
-    const { data: staffOk } = await supabaseAdmin.rpc("is_school_staff", {
+    const { data: staffOk } = await context.supabase.rpc("school_permission", {
       _user_id: context.userId,
       _school_id: data.school_id,
+      _permission: "communication.edit",
     });
     if (!staffOk) throw new Error("Not authorized");
 
@@ -71,7 +71,7 @@ export const sendTermiiSms = createServerFn({ method: "POST" })
     }
 
     // Log
-    await supabaseAdmin.from("notifications").insert(
+    await context.supabase.from("notifications").insert(
       to.map((phone) => ({
         school_id: data.school_id,
         channel: data.channel === "whatsapp" ? "whatsapp" : "sms",

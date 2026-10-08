@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import type { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
+import { ACTIVE_SCHOOL_KEY } from "@/lib/school-access";
 import type { Database } from "@/integrations/supabase/types";
 
 type AppRole = Database["public"]["Enums"]["app_role"];
@@ -30,12 +31,14 @@ export function useAuth(): AuthState {
         setRoles([]); setSchoolId(null); setFullName(null);
       }
     });
-    supabase.auth.getSession().then(({ data }) => {
+    supabase.auth.getSession().then(async ({ data }) => {
       setSession(data.session);
-      if (data.session?.user) loadProfile(data.session.user.id);
+      if (data.session?.user) await loadProfile(data.session.user.id);
       setLoading(false);
     });
-    return () => subscription.unsubscribe();
+    const refresh = () => { supabase.auth.getUser().then(({ data }) => { if (data.user) loadProfile(data.user.id); }); };
+    window.addEventListener("school-selection", refresh);
+    return () => { subscription.unsubscribe(); window.removeEventListener("school-selection", refresh); };
   }, []);
 
   const loadProfile = async (userId: string) => {
@@ -44,7 +47,9 @@ export function useAuth(): AuthState {
       supabase.from("user_roles").select("role").eq("user_id", userId),
     ]);
     setFullName(prof?.full_name ?? null);
-    setSchoolId(prof?.school_id ?? null);
+    const isSuper = rolesData?.some((r) => r.role === "super_admin");
+    const selected = localStorage.getItem(ACTIVE_SCHOOL_KEY);
+    setSchoolId(isSuper && selected ? selected : prof?.school_id ?? null);
     setRoles((rolesData?.map((r) => r.role as AppRole)) ?? []);
   };
 
