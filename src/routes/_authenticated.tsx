@@ -28,6 +28,7 @@ const NAV = [
   { to: "/students", label: "Students", icon: Users, roles: ["super_admin","school_admin","teacher"] },
   { to: "/classes", label: "Classes & Subjects", icon: BookOpen, roles: ["super_admin","school_admin","teacher"] },
   { to: "/academics", label: "Teaching & Timetable", icon: CalendarCheck, roles: ["super_admin","school_admin","teacher"] },
+  { to: "/islamic", label: "Islamic Programmes", icon: MoonStar, roles: ["super_admin","school_admin","teacher"] },
   { to: "/promotion", label: "Promotion", icon: GraduationCap, roles: ["super_admin","school_admin"] },
   { to: "/results", label: "Results Entry", icon: FileText, roles: ["super_admin","school_admin","teacher"] },
   { to: "/attendance", label: "Attendance", icon: CalendarCheck, roles: ["super_admin","school_admin","teacher"] },
