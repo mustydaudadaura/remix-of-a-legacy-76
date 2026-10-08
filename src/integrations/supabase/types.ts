@@ -609,7 +609,10 @@ export type Database = {
           created_at: string
           created_by: string
           duration_minutes: number | null
+          header: Json | null
           id: string
+          lesson_date: string | null
+          plan: Json | null
           school_id: string
           status: string
           subject_id: string | null
@@ -624,7 +627,10 @@ export type Database = {
           created_at?: string
           created_by: string
           duration_minutes?: number | null
+          header?: Json | null
           id?: string
+          lesson_date?: string | null
+          plan?: Json | null
           school_id: string
           status?: string
           subject_id?: string | null
@@ -639,7 +645,10 @@ export type Database = {
           created_at?: string
           created_by?: string
           duration_minutes?: number | null
+          header?: Json | null
           id?: string
+          lesson_date?: string | null
+          plan?: Json | null
           school_id?: string
           status?: string
           subject_id?: string | null
