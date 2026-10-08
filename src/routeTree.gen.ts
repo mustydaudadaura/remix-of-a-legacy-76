@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as PortalRouteImport } from './routes/portal'
+import { Route as AuthenticatedAdmissionsRouteImport } from './routes/_authenticated/admissions'
 import { Route as AuthenticatedAnnouncementsRouteImport } from './routes/_authenticated/announcements'
 import { Route as AuthenticatedAttendanceRouteImport } from './routes/_authenticated/attendance'
 import { Route as AuthenticatedClassesRouteImport } from './routes/_authenticated/classes'
@@ -33,6 +34,7 @@ import { Route as PortalNotificationsRouteImport } from './routes/portal/notific
 import { Route as PortalReportCardsRouteImport } from './routes/portal/report-cards'
 import { Route as VerifyCodeRouteImport } from './routes/verify.$code'
 import { Route as AuthenticatedReportCardIdRouteImport } from './routes/_authenticated/report-card.$id'
+import { Route as AuthenticatedStudentsIdRouteImport } from './routes/_authenticated/students.$id'
 import { Route as ApiPublicParentLoginRouteImport } from './routes/api/public/parent-login'
 import { Route as PortalReceiptIdRouteImport } from './routes/portal/receipt.$id'
 import { Route as PortalReportCardIdRouteImport } from './routes/portal/report-card.$id'
@@ -55,6 +57,11 @@ const PortalRoute = PortalRouteImport.update({
   id: '/portal',
   path: '/portal',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedAdmissionsRoute = AuthenticatedAdmissionsRouteImport.update({
+  id: '/admissions',
+  path: '/admissions',
+  getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedAnnouncementsRoute =
   AuthenticatedAnnouncementsRouteImport.update({
@@ -159,6 +166,11 @@ const AuthenticatedReportCardIdRoute =
     path: '/report-card/$id',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedStudentsIdRoute = AuthenticatedStudentsIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => AuthenticatedStudentsRoute,
+} as any)
 const ApiPublicParentLoginRoute = ApiPublicParentLoginRouteImport.update({
   id: '/api/public/parent-login',
   path: '/api/public/parent-login',
@@ -179,6 +191,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/portal': typeof PortalRouteWithChildren
+  '/admissions': typeof AuthenticatedAdmissionsRoute
   '/announcements': typeof AuthenticatedAnnouncementsRoute
   '/attendance': typeof AuthenticatedAttendanceRoute
   '/classes': typeof AuthenticatedClassesRoute
@@ -189,7 +202,7 @@ export interface FileRoutesByFullPath {
   '/results': typeof AuthenticatedResultsRoute
   '/schools': typeof AuthenticatedSchoolsRoute
   '/settings': typeof AuthenticatedSettingsRoute
-  '/students': typeof AuthenticatedStudentsRoute
+  '/students': typeof AuthenticatedStudentsRouteWithChildren
   '/users': typeof AuthenticatedUsersRoute
   '/portal/attendance': typeof PortalAttendanceRoute
   '/portal/children': typeof PortalChildrenRoute
@@ -199,6 +212,7 @@ export interface FileRoutesByFullPath {
   '/verify/$code': typeof VerifyCodeRoute
   '/portal/': typeof PortalIndexRoute
   '/report-card/$id': typeof AuthenticatedReportCardIdRoute
+  '/students/$id': typeof AuthenticatedStudentsIdRoute
   '/api/public/parent-login': typeof ApiPublicParentLoginRoute
   '/portal/receipt/$id': typeof PortalReceiptIdRoute
   '/portal/report-card/$id': typeof PortalReportCardIdRoute
@@ -206,6 +220,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/admissions': typeof AuthenticatedAdmissionsRoute
   '/announcements': typeof AuthenticatedAnnouncementsRoute
   '/attendance': typeof AuthenticatedAttendanceRoute
   '/classes': typeof AuthenticatedClassesRoute
@@ -216,7 +231,7 @@ export interface FileRoutesByTo {
   '/results': typeof AuthenticatedResultsRoute
   '/schools': typeof AuthenticatedSchoolsRoute
   '/settings': typeof AuthenticatedSettingsRoute
-  '/students': typeof AuthenticatedStudentsRoute
+  '/students': typeof AuthenticatedStudentsRouteWithChildren
   '/users': typeof AuthenticatedUsersRoute
   '/portal/attendance': typeof PortalAttendanceRoute
   '/portal/children': typeof PortalChildrenRoute
@@ -226,6 +241,7 @@ export interface FileRoutesByTo {
   '/verify/$code': typeof VerifyCodeRoute
   '/portal': typeof PortalIndexRoute
   '/report-card/$id': typeof AuthenticatedReportCardIdRoute
+  '/students/$id': typeof AuthenticatedStudentsIdRoute
   '/api/public/parent-login': typeof ApiPublicParentLoginRoute
   '/portal/receipt/$id': typeof PortalReceiptIdRoute
   '/portal/report-card/$id': typeof PortalReportCardIdRoute
@@ -236,6 +252,7 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/auth': typeof AuthRoute
   '/portal': typeof PortalRouteWithChildren
+  '/_authenticated/admissions': typeof AuthenticatedAdmissionsRoute
   '/_authenticated/announcements': typeof AuthenticatedAnnouncementsRoute
   '/_authenticated/attendance': typeof AuthenticatedAttendanceRoute
   '/_authenticated/classes': typeof AuthenticatedClassesRoute
@@ -246,7 +263,7 @@ export interface FileRoutesById {
   '/_authenticated/results': typeof AuthenticatedResultsRoute
   '/_authenticated/schools': typeof AuthenticatedSchoolsRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
-  '/_authenticated/students': typeof AuthenticatedStudentsRoute
+  '/_authenticated/students': typeof AuthenticatedStudentsRouteWithChildren
   '/_authenticated/users': typeof AuthenticatedUsersRoute
   '/portal/attendance': typeof PortalAttendanceRoute
   '/portal/children': typeof PortalChildrenRoute
@@ -256,6 +273,7 @@ export interface FileRoutesById {
   '/verify/$code': typeof VerifyCodeRoute
   '/portal/': typeof PortalIndexRoute
   '/_authenticated/report-card/$id': typeof AuthenticatedReportCardIdRoute
+  '/_authenticated/students/$id': typeof AuthenticatedStudentsIdRoute
   '/api/public/parent-login': typeof ApiPublicParentLoginRoute
   '/portal/receipt/$id': typeof PortalReceiptIdRoute
   '/portal/report-card/$id': typeof PortalReportCardIdRoute
@@ -266,6 +284,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/portal'
+    | '/admissions'
     | '/announcements'
     | '/attendance'
     | '/classes'
@@ -286,6 +305,7 @@ export interface FileRouteTypes {
     | '/verify/$code'
     | '/portal/'
     | '/report-card/$id'
+    | '/students/$id'
     | '/api/public/parent-login'
     | '/portal/receipt/$id'
     | '/portal/report-card/$id'
@@ -293,6 +313,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/auth'
+    | '/admissions'
     | '/announcements'
     | '/attendance'
     | '/classes'
@@ -313,6 +334,7 @@ export interface FileRouteTypes {
     | '/verify/$code'
     | '/portal'
     | '/report-card/$id'
+    | '/students/$id'
     | '/api/public/parent-login'
     | '/portal/receipt/$id'
     | '/portal/report-card/$id'
@@ -322,6 +344,7 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/auth'
     | '/portal'
+    | '/_authenticated/admissions'
     | '/_authenticated/announcements'
     | '/_authenticated/attendance'
     | '/_authenticated/classes'
@@ -342,6 +365,7 @@ export interface FileRouteTypes {
     | '/verify/$code'
     | '/portal/'
     | '/_authenticated/report-card/$id'
+    | '/_authenticated/students/$id'
     | '/api/public/parent-login'
     | '/portal/receipt/$id'
     | '/portal/report-card/$id'
@@ -385,6 +409,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/portal'
       preLoaderRoute: typeof PortalRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/admissions': {
+      id: '/_authenticated/admissions'
+      path: '/admissions'
+      fullPath: '/admissions'
+      preLoaderRoute: typeof AuthenticatedAdmissionsRouteImport
+      parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/announcements': {
       id: '/_authenticated/announcements'
@@ -526,6 +557,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedReportCardIdRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/students/$id': {
+      id: '/_authenticated/students/$id'
+      path: '/$id'
+      fullPath: '/students/$id'
+      preLoaderRoute: typeof AuthenticatedStudentsIdRouteImport
+      parentRoute: typeof AuthenticatedStudentsRoute
+    }
     '/api/public/parent-login': {
       id: '/api/public/parent-login'
       path: '/api/public/parent-login'
@@ -550,7 +588,21 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AuthenticatedStudentsRouteChildren {
+  AuthenticatedStudentsIdRoute: typeof AuthenticatedStudentsIdRoute
+}
+
+const AuthenticatedStudentsRouteChildren: AuthenticatedStudentsRouteChildren = {
+  AuthenticatedStudentsIdRoute: AuthenticatedStudentsIdRoute,
+}
+
+const AuthenticatedStudentsRouteWithChildren =
+  AuthenticatedStudentsRoute._addFileChildren(
+    AuthenticatedStudentsRouteChildren,
+  )
+
 interface AuthenticatedRouteChildren {
+  AuthenticatedAdmissionsRoute: typeof AuthenticatedAdmissionsRoute
   AuthenticatedAnnouncementsRoute: typeof AuthenticatedAnnouncementsRoute
   AuthenticatedAttendanceRoute: typeof AuthenticatedAttendanceRoute
   AuthenticatedClassesRoute: typeof AuthenticatedClassesRoute
@@ -561,12 +613,13 @@ interface AuthenticatedRouteChildren {
   AuthenticatedResultsRoute: typeof AuthenticatedResultsRoute
   AuthenticatedSchoolsRoute: typeof AuthenticatedSchoolsRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
-  AuthenticatedStudentsRoute: typeof AuthenticatedStudentsRoute
+  AuthenticatedStudentsRoute: typeof AuthenticatedStudentsRouteWithChildren
   AuthenticatedUsersRoute: typeof AuthenticatedUsersRoute
   AuthenticatedReportCardIdRoute: typeof AuthenticatedReportCardIdRoute
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
+  AuthenticatedAdmissionsRoute: AuthenticatedAdmissionsRoute,
   AuthenticatedAnnouncementsRoute: AuthenticatedAnnouncementsRoute,
   AuthenticatedAttendanceRoute: AuthenticatedAttendanceRoute,
   AuthenticatedClassesRoute: AuthenticatedClassesRoute,
@@ -577,7 +630,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedResultsRoute: AuthenticatedResultsRoute,
   AuthenticatedSchoolsRoute: AuthenticatedSchoolsRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
-  AuthenticatedStudentsRoute: AuthenticatedStudentsRoute,
+  AuthenticatedStudentsRoute: AuthenticatedStudentsRouteWithChildren,
   AuthenticatedUsersRoute: AuthenticatedUsersRoute,
   AuthenticatedReportCardIdRoute: AuthenticatedReportCardIdRoute,
 }
