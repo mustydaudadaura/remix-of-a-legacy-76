@@ -15,6 +15,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Save, Trash2, ShieldCheck, Settings2, History } from 'lucide-react';
 import { toast } from 'sonner';
+import { CampusManager } from '@/components/CampusManager';
 
 export const Route = createFileRoute('/_authenticated/settings')({
   head: () => ({ meta: [
@@ -81,12 +82,14 @@ function SchoolSettings({ schoolId }: { schoolId: string }) {
   const modules = controls?.enabled_modules ?? SCHOOL_MODULES.map(m => m.id);
   const sections = controls?.enabled_sections ?? ['nursery', 'primary', 'secondary'];
   return <Tabs defaultValue="details" className="space-y-6">
-    <TabsList className="grid h-auto w-full grid-cols-2 sm:grid-cols-4">
+    <TabsList className="grid h-auto w-full grid-cols-2 sm:grid-cols-5">
       <TabsTrigger value="details"><Settings2 className="mr-2 h-4 w-4" />Details</TabsTrigger>
       <TabsTrigger value="modules">Modules</TabsTrigger>
+      <TabsTrigger value="campuses">Campuses</TabsTrigger>
       <TabsTrigger value="permissions"><ShieldCheck className="mr-2 h-4 w-4" />Permissions</TabsTrigger>
       <TabsTrigger value="history"><History className="mr-2 h-4 w-4" />History</TabsTrigger>
     </TabsList>
+    <TabsContent value="campuses"><CampusManager schoolId={schoolId} /></TabsContent>
     <TabsContent value="details">
       <form key={school.updated_at} className="space-y-6" onSubmit={e => {
         e.preventDefault(); const form = new FormData(e.currentTarget);
