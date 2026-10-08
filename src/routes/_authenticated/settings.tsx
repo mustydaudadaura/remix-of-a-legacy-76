@@ -52,6 +52,7 @@ function SettingsPage() {
 
 function SchoolSettings({ schoolId }: { schoolId: string }) {
   const qc = useQueryClient();
+  const { tab } = Route.useSearch();
   const [busy, setBusy] = useState(false);
   const [roleName, setRoleName] = useState('');
   const [permissions, setPermissions] = useState<string[]>([]);
@@ -83,7 +84,7 @@ function SchoolSettings({ schoolId }: { schoolId: string }) {
   const { school, controls, customRoles, assignments, profiles, audit } = data.data;
   const modules = controls?.enabled_modules ?? SCHOOL_MODULES.map(m => m.id);
   const sections = controls?.enabled_sections ?? ['nursery', 'primary', 'secondary'];
-  return <Tabs defaultValue={Route.useSearch().tab ?? "details"} className="space-y-6">
+  return <Tabs defaultValue={tab ?? "details"} className="space-y-6">
     <TabsList className="grid h-auto w-full grid-cols-2 sm:grid-cols-3 lg:grid-cols-6">
       <TabsTrigger value="details"><Settings2 className="mr-2 h-4 w-4" />Details</TabsTrigger>
       <TabsTrigger value="modules">Modules</TabsTrigger>
