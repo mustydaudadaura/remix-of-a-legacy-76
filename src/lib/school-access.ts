@@ -12,6 +12,7 @@ export const SCHOOL_PERMISSIONS = [
   'promotion.edit', 'results.view', 'results.edit', 'results.publish',
   'attendance.view', 'attendance.edit', 'fees.view', 'fees.edit',
   'communication.view', 'communication.edit', 'settings.edit', 'users.edit', 'audit.view',
+  'staffatt.view', 'staffatt.edit', 'staffatt.kiosk', 'payroll.view', 'payroll.edit', 'payroll.approve',
 ] as const;
 export type SchoolPermission = typeof SCHOOL_PERMISSIONS[number];
 export const ACTIVE_SCHOOL_KEY = 'eduerp_active_school';

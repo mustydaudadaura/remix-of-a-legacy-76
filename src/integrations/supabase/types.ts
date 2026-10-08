@@ -331,6 +331,171 @@ export type Database = {
           },
         ]
       }
+      attendance_attempts: {
+        Row: {
+          accuracy: number | null
+          action: string
+          created_at: string
+          device_user_id: string | null
+          distance_m: number | null
+          id: string
+          lat: number | null
+          lng: number | null
+          method: string
+          result: string
+          school_id: string
+          user_id: string | null
+        }
+        Insert: {
+          accuracy?: number | null
+          action: string
+          created_at?: string
+          device_user_id?: string | null
+          distance_m?: number | null
+          id?: string
+          lat?: number | null
+          lng?: number | null
+          method: string
+          result: string
+          school_id: string
+          user_id?: string | null
+        }
+        Update: {
+          accuracy?: number | null
+          action?: string
+          created_at?: string
+          device_user_id?: string | null
+          distance_m?: number | null
+          id?: string
+          lat?: number | null
+          lng?: number | null
+          method?: string
+          result?: string
+          school_id?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "attendance_attempts_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      attendance_exemptions: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          end_date: string
+          id: string
+          kind: string
+          reason: string
+          school_id: string
+          start_date: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          end_date: string
+          id?: string
+          kind?: string
+          reason: string
+          school_id: string
+          start_date: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          end_date?: string
+          id?: string
+          kind?: string
+          reason?: string
+          school_id?: string
+          start_date?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "attendance_exemptions_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      attendance_settings: {
+        Row: {
+          apply_penalties_in_payroll: boolean
+          closing_time: string
+          early_departure_minutes: number
+          gps_kiosk: boolean
+          gps_phone: boolean
+          grace_minutes: number
+          late_threshold_minutes: number
+          latitude: number | null
+          leave_requires_approval: boolean
+          longitude: number | null
+          min_hours: number
+          penalties: Json
+          radius_m: number
+          report_time: string
+          school_id: string
+          updated_at: string
+          working_days: number[]
+        }
+        Insert: {
+          apply_penalties_in_payroll?: boolean
+          closing_time?: string
+          early_departure_minutes?: number
+          gps_kiosk?: boolean
+          gps_phone?: boolean
+          grace_minutes?: number
+          late_threshold_minutes?: number
+          latitude?: number | null
+          leave_requires_approval?: boolean
+          longitude?: number | null
+          min_hours?: number
+          penalties?: Json
+          radius_m?: number
+          report_time?: string
+          school_id: string
+          updated_at?: string
+          working_days?: number[]
+        }
+        Update: {
+          apply_penalties_in_payroll?: boolean
+          closing_time?: string
+          early_departure_minutes?: number
+          gps_kiosk?: boolean
+          gps_phone?: boolean
+          grace_minutes?: number
+          late_threshold_minutes?: number
+          latitude?: number | null
+          leave_requires_approval?: boolean
+          longitude?: number | null
+          min_hours?: number
+          penalties?: Json
+          radius_m?: number
+          report_time?: string
+          school_id?: string
+          updated_at?: string
+          working_days?: number[]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "attendance_settings_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: true
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       campuses: {
         Row: {
           active: boolean
@@ -722,6 +887,101 @@ export type Database = {
           },
         ]
       }
+      leave_requests: {
+        Row: {
+          created_at: string
+          end_date: string
+          id: string
+          leave_type_id: string | null
+          reason: string
+          review_note: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          school_id: string
+          start_date: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          end_date: string
+          id?: string
+          leave_type_id?: string | null
+          reason: string
+          review_note?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          school_id: string
+          start_date: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          end_date?: string
+          id?: string
+          leave_type_id?: string | null
+          reason?: string
+          review_note?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          school_id?: string
+          start_date?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "leave_requests_leave_type_id_fkey"
+            columns: ["leave_type_id"]
+            isOneToOne: false
+            referencedRelation: "leave_types"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "leave_requests_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      leave_types: {
+        Row: {
+          active: boolean
+          created_at: string
+          id: string
+          name: string
+          paid: boolean
+          school_id: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          name: string
+          paid?: boolean
+          school_id: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          name?: string
+          paid?: boolean
+          school_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "leave_types_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       lesson_notes: {
         Row: {
           acknowledged_at: string | null
@@ -1045,6 +1305,200 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "parents_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payroll_items: {
+        Row: {
+          amount: number
+          id: string
+          kind: string
+          label: string
+          record_id: string
+          school_id: string
+        }
+        Insert: {
+          amount: number
+          id?: string
+          kind: string
+          label: string
+          record_id: string
+          school_id: string
+        }
+        Update: {
+          amount?: number
+          id?: string
+          kind?: string
+          label?: string
+          record_id?: string
+          school_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payroll_items_record_id_fkey"
+            columns: ["record_id"]
+            isOneToOne: false
+            referencedRelation: "payroll_records"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payroll_items_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payroll_periods: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          created_at: string
+          created_by: string | null
+          end_date: string
+          generated_at: string | null
+          id: string
+          kind: string
+          name: string
+          paid_at: string | null
+          paid_by: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          school_id: string
+          start_date: string
+          status: string
+          version: number
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string
+          created_by?: string | null
+          end_date: string
+          generated_at?: string | null
+          id?: string
+          kind: string
+          name: string
+          paid_at?: string | null
+          paid_by?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          school_id: string
+          start_date: string
+          status?: string
+          version?: number
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string
+          created_by?: string | null
+          end_date?: string
+          generated_at?: string | null
+          id?: string
+          kind?: string
+          name?: string
+          paid_at?: string | null
+          paid_by?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          school_id?: string
+          start_date?: string
+          status?: string
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payroll_periods_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payroll_records: {
+        Row: {
+          absence_penalty: number
+          allowances: number
+          basic: number
+          created_at: string
+          days_absent: number
+          days_exempt: number
+          days_present: number
+          gross: number
+          id: string
+          late_count: number
+          late_penalty: number
+          net: number
+          other_deductions: number
+          other_penalty: number
+          period_id: string
+          school_id: string
+          staff_name: string | null
+          total_deductions: number
+          user_id: string
+          version: number
+        }
+        Insert: {
+          absence_penalty?: number
+          allowances?: number
+          basic?: number
+          created_at?: string
+          days_absent?: number
+          days_exempt?: number
+          days_present?: number
+          gross?: number
+          id?: string
+          late_count?: number
+          late_penalty?: number
+          net?: number
+          other_deductions?: number
+          other_penalty?: number
+          period_id: string
+          school_id: string
+          staff_name?: string | null
+          total_deductions?: number
+          user_id: string
+          version?: number
+        }
+        Update: {
+          absence_penalty?: number
+          allowances?: number
+          basic?: number
+          created_at?: string
+          days_absent?: number
+          days_exempt?: number
+          days_present?: number
+          gross?: number
+          id?: string
+          late_count?: number
+          late_penalty?: number
+          net?: number
+          other_deductions?: number
+          other_penalty?: number
+          period_id?: string
+          school_id?: string
+          staff_name?: string | null
+          total_deductions?: number
+          user_id?: string
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payroll_records_period_id_fkey"
+            columns: ["period_id"]
+            isOneToOne: false
+            referencedRelation: "payroll_periods"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payroll_records_school_id_fkey"
             columns: ["school_id"]
             isOneToOne: false
             referencedRelation: "schools"
@@ -1522,6 +1976,286 @@ export type Database = {
         }
         Relationships: []
       }
+      staff_attendance: {
+        Row: {
+          check_in_at: string | null
+          check_out_at: string | null
+          corrected_by: string | null
+          correction_reason: string | null
+          created_at: string
+          date: string
+          early_minutes: number
+          id: string
+          in_accuracy: number | null
+          in_distance_m: number | null
+          in_lat: number | null
+          in_lng: number | null
+          in_method: string | null
+          in_verified: boolean | null
+          late_minutes: number
+          out_accuracy: number | null
+          out_distance_m: number | null
+          out_lat: number | null
+          out_lng: number | null
+          out_method: string | null
+          out_verified: boolean | null
+          school_id: string
+          status: string
+          updated_at: string
+          user_id: string
+          worked_minutes: number
+        }
+        Insert: {
+          check_in_at?: string | null
+          check_out_at?: string | null
+          corrected_by?: string | null
+          correction_reason?: string | null
+          created_at?: string
+          date: string
+          early_minutes?: number
+          id?: string
+          in_accuracy?: number | null
+          in_distance_m?: number | null
+          in_lat?: number | null
+          in_lng?: number | null
+          in_method?: string | null
+          in_verified?: boolean | null
+          late_minutes?: number
+          out_accuracy?: number | null
+          out_distance_m?: number | null
+          out_lat?: number | null
+          out_lng?: number | null
+          out_method?: string | null
+          out_verified?: boolean | null
+          school_id: string
+          status?: string
+          updated_at?: string
+          user_id: string
+          worked_minutes?: number
+        }
+        Update: {
+          check_in_at?: string | null
+          check_out_at?: string | null
+          corrected_by?: string | null
+          correction_reason?: string | null
+          created_at?: string
+          date?: string
+          early_minutes?: number
+          id?: string
+          in_accuracy?: number | null
+          in_distance_m?: number | null
+          in_lat?: number | null
+          in_lng?: number | null
+          in_method?: string | null
+          in_verified?: boolean | null
+          late_minutes?: number
+          out_accuracy?: number | null
+          out_distance_m?: number | null
+          out_lat?: number | null
+          out_lng?: number | null
+          out_method?: string | null
+          out_verified?: boolean | null
+          school_id?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+          worked_minutes?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "staff_attendance_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      staff_department_history: {
+        Row: {
+          category: string | null
+          changed_at: string
+          changed_by: string | null
+          department: string | null
+          id: string
+          school_id: string
+          user_id: string
+        }
+        Insert: {
+          category?: string | null
+          changed_at?: string
+          changed_by?: string | null
+          department?: string | null
+          id?: string
+          school_id: string
+          user_id: string
+        }
+        Update: {
+          category?: string | null
+          changed_at?: string
+          changed_by?: string | null
+          department?: string | null
+          id?: string
+          school_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "staff_department_history_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      staff_holidays: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          end_date: string
+          id: string
+          kind: string
+          school_id: string
+          start_date: string
+          title: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          end_date: string
+          id?: string
+          kind?: string
+          school_id: string
+          start_date: string
+          title: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          end_date?: string
+          id?: string
+          kind?: string
+          school_id?: string
+          start_date?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "staff_holidays_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      staff_penalties: {
+        Row: {
+          amount: number
+          created_at: string
+          date: string
+          id: string
+          kind: string
+          minutes: number | null
+          payroll_record_id: string | null
+          school_id: string
+          status: string
+          user_id: string
+          waive_reason: string | null
+          waived_by: string | null
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          date: string
+          id?: string
+          kind: string
+          minutes?: number | null
+          payroll_record_id?: string | null
+          school_id: string
+          status?: string
+          user_id: string
+          waive_reason?: string | null
+          waived_by?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          date?: string
+          id?: string
+          kind?: string
+          minutes?: number | null
+          payroll_record_id?: string | null
+          school_id?: string
+          status?: string
+          user_id?: string
+          waive_reason?: string | null
+          waived_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "staff_penalties_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      staff_profiles: {
+        Row: {
+          active: boolean
+          attendance_exempt: boolean
+          category: string
+          created_at: string
+          department: string | null
+          id: string
+          photo_url: string | null
+          pin_hash: string | null
+          school_id: string
+          staff_no: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          active?: boolean
+          attendance_exempt?: boolean
+          category?: string
+          created_at?: string
+          department?: string | null
+          id?: string
+          photo_url?: string | null
+          pin_hash?: string | null
+          school_id: string
+          staff_no?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          active?: boolean
+          attendance_exempt?: boolean
+          category?: string
+          created_at?: string
+          department?: string | null
+          id?: string
+          photo_url?: string | null
+          pin_hash?: string | null
+          school_id?: string
+          staff_no?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "staff_profiles_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       staff_salaries: {
         Row: {
           allowances: number
@@ -1594,7 +2328,10 @@ export type Database = {
         Row: {
           allowances: number
           basic: number
+          effective_from: string | null
           id: string
+          other_deductions: number
+          salary_type: string
           school_id: string
           updated_at: string
           user_id: string
@@ -1602,7 +2339,10 @@ export type Database = {
         Insert: {
           allowances?: number
           basic?: number
+          effective_from?: string | null
           id?: string
+          other_deductions?: number
+          salary_type?: string
           school_id: string
           updated_at?: string
           user_id: string
@@ -1610,7 +2350,10 @@ export type Database = {
         Update: {
           allowances?: number
           basic?: number
+          effective_from?: string | null
           id?: string
+          other_deductions?: number
+          salary_type?: string
           school_id?: string
           updated_at?: string
           user_id?: string
