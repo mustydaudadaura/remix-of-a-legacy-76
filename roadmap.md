@@ -6,7 +6,8 @@
 - [x] Phase 1: school configuration, module activation, school-scoped permissions, audit trails and access-boundary tests.
 - [x] Phase 2 (core): student 360 profiles, admissions pipeline, campuses, enrollment history and guardians.
 - [x] Phase 3 (core): teacher allocations, class timetable with clash checks, assignments.
-- [ ] Phase 3 (rest): lesson plans, flexible assessments and result approval.
+- [x] AI lesson plan & lesson note generator (NERDC format).
+- [ ] Phase 3 (rest): flexible assessments and result approval.
 - [ ] Phase 4: finance corrections, discounts/scholarships, expenses, payments integration and payroll.
 - [ ] Phase 5: communication templates/scheduling, document templates and notification preferences.
 - [ ] Phase 6: Tahfiz, Arabic and Islamic programme workflows.
