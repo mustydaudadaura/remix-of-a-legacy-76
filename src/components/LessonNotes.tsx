@@ -15,7 +15,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Sparkles, Printer, Trash2, Pencil, Eye, MessageSquare } from "lucide-react";
+import { Sparkles, Printer, Trash2, Pencil, Eye, MessageSquare, Youtube } from "lucide-react";
 import { toast } from "sonner";
 
 type Item = { id: string; name: string; class_id?: string | null };
@@ -149,6 +149,20 @@ export function LessonNotes({ schoolId, classes, subjects }: { schoolId: string;
               <div className="flex flex-wrap gap-2 sm:col-span-4"><Button onClick={() => review("approved")}>Approve</Button><Button variant="outline" onClick={() => review("needs_revision")}>Return for correction</Button></div>
             </div>
           )}
+          {(() => {
+            const qs = doc.plan.video_searches?.length ? doc.plan.video_searches : [`${doc.header.topic} ${doc.header.subject}`, ...(doc.plan.sub_topics ?? []).slice(0, 3).map((s) => `${s} ${doc.header.subject}`)];
+            return (
+              <div className="rounded-md border p-3 text-sm">
+                <p className="mb-2 flex items-center gap-1 font-semibold"><Youtube className="h-4 w-4 text-destructive" />Watch videos on this topic</p>
+                <div className="flex flex-wrap gap-2">
+                  {qs.map((q) => (
+                    <a key={q} href={`https://www.youtube.com/results?search_query=${encodeURIComponent(q)}`} target="_blank" rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 rounded-full border px-3 py-1 hover:bg-muted"><Youtube className="h-3.5 w-3.5" />{q}</a>
+                  ))}
+                </div>
+              </div>
+            );
+          })()}
           {editing && canEditDoc ? <LessonPlanEditor header={doc.header} plan={doc.plan} onChange={(header, plan) => setDoc({ ...doc, header, plan })} /> : <LessonPlanDocument header={doc.header} plan={doc.plan} />}
         </CardContent></Card>
         );

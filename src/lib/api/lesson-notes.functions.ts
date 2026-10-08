@@ -30,7 +30,8 @@ Return ONLY a JSON object (no code fences) with exactly these keys:
  "evaluation": string[] (4-5 questions),
  "summary": string,
  "assignment": string[],
- "lesson_note": string (detailed board note in Markdown with headings per sub-topic, Nigerian examples)}
+ "lesson_note": string (detailed board note in Markdown with headings per sub-topic, Nigerian examples),
+ "video_searches": string[] (3-4 short YouTube search phrases a teacher could use to find good explainer videos on this topic and its sub-topics, e.g. "electoral process in Nigeria explained")}
 Match the language level to the class.`;
 
 export const generateLessonNote = createServerFn({ method: "POST" })

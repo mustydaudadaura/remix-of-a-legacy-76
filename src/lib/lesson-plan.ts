@@ -8,4 +8,5 @@ export type LessonPlan = {
   sub_topics: string[]; specific_objectives: string[]; rationale: string; previous_knowledge: string;
   instructional_materials: string[]; reference_materials?: string[]; presentation: LessonStep[];
   evaluation: string[]; summary: string; assignment: string[]; lesson_note: string;
+  video_searches?: string[];
 };
