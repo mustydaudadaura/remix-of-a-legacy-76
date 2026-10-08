@@ -91,7 +91,7 @@ function AuthedLayout() {
         </div>
         <nav className="space-y-1 p-3">
           {visibleNav.map((n) => {
-            const active = location.pathname.startsWith(n.to) && ("search" in n ? (location.search as { tab?: string }).tab === "reports" : !(location.search as { tab?: string }).tab === "reports");
+            const active = location.pathname.startsWith(n.to) && ("search" in n ? (location.search as { tab?: string }).tab === "reports" : (location.search as { tab?: string }).tab !== "reports");
             const Icon = n.icon;
             return (
               <Link
