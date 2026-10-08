@@ -602,6 +602,76 @@ export type Database = {
           },
         ]
       }
+      lesson_notes: {
+        Row: {
+          class_id: string | null
+          content: string
+          created_at: string
+          created_by: string
+          duration_minutes: number | null
+          id: string
+          school_id: string
+          status: string
+          subject_id: string | null
+          term: Database["public"]["Enums"]["term_name"] | null
+          topic: string
+          updated_at: string
+          week: number | null
+        }
+        Insert: {
+          class_id?: string | null
+          content: string
+          created_at?: string
+          created_by: string
+          duration_minutes?: number | null
+          id?: string
+          school_id: string
+          status?: string
+          subject_id?: string | null
+          term?: Database["public"]["Enums"]["term_name"] | null
+          topic: string
+          updated_at?: string
+          week?: number | null
+        }
+        Update: {
+          class_id?: string | null
+          content?: string
+          created_at?: string
+          created_by?: string
+          duration_minutes?: number | null
+          id?: string
+          school_id?: string
+          status?: string
+          subject_id?: string | null
+          term?: Database["public"]["Enums"]["term_name"] | null
+          topic?: string
+          updated_at?: string
+          week?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lesson_notes_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lesson_notes_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lesson_notes_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "subjects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notifications: {
         Row: {
           body: string | null
