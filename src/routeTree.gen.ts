@@ -22,6 +22,8 @@ import { Route as AuthenticatedDashboardRouteImport } from './routes/_authentica
 import { Route as AuthenticatedDocumentsRouteImport } from './routes/_authenticated/documents'
 import { Route as AuthenticatedFeesRouteImport } from './routes/_authenticated/fees'
 import { Route as AuthenticatedIslamicRouteImport } from './routes/_authenticated/islamic'
+import { Route as AuthenticatedKioskRouteImport } from './routes/_authenticated/kiosk'
+import { Route as AuthenticatedMyAttendanceRouteImport } from './routes/_authenticated/my-attendance'
 import { Route as AuthenticatedPromotionRouteImport } from './routes/_authenticated/promotion'
 import { Route as AuthenticatedReportCardsRouteImport } from './routes/_authenticated/report-cards'
 import { Route as AuthenticatedResultsRouteImport } from './routes/_authenticated/results'
@@ -107,6 +109,17 @@ const AuthenticatedIslamicRoute = AuthenticatedIslamicRouteImport.update({
   path: '/islamic',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedKioskRoute = AuthenticatedKioskRouteImport.update({
+  id: '/kiosk',
+  path: '/kiosk',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedMyAttendanceRoute =
+  AuthenticatedMyAttendanceRouteImport.update({
+    id: '/my-attendance',
+    path: '/my-attendance',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedPromotionRoute = AuthenticatedPromotionRouteImport.update({
   id: '/promotion',
   path: '/promotion',
@@ -218,6 +231,8 @@ export interface FileRoutesByFullPath {
   '/documents': typeof AuthenticatedDocumentsRoute
   '/fees': typeof AuthenticatedFeesRoute
   '/islamic': typeof AuthenticatedIslamicRoute
+  '/kiosk': typeof AuthenticatedKioskRoute
+  '/my-attendance': typeof AuthenticatedMyAttendanceRoute
   '/promotion': typeof AuthenticatedPromotionRoute
   '/report-cards': typeof AuthenticatedReportCardsRoute
   '/results': typeof AuthenticatedResultsRoute
@@ -250,6 +265,8 @@ export interface FileRoutesByTo {
   '/documents': typeof AuthenticatedDocumentsRoute
   '/fees': typeof AuthenticatedFeesRoute
   '/islamic': typeof AuthenticatedIslamicRoute
+  '/kiosk': typeof AuthenticatedKioskRoute
+  '/my-attendance': typeof AuthenticatedMyAttendanceRoute
   '/promotion': typeof AuthenticatedPromotionRoute
   '/report-cards': typeof AuthenticatedReportCardsRoute
   '/results': typeof AuthenticatedResultsRoute
@@ -285,6 +302,8 @@ export interface FileRoutesById {
   '/_authenticated/documents': typeof AuthenticatedDocumentsRoute
   '/_authenticated/fees': typeof AuthenticatedFeesRoute
   '/_authenticated/islamic': typeof AuthenticatedIslamicRoute
+  '/_authenticated/kiosk': typeof AuthenticatedKioskRoute
+  '/_authenticated/my-attendance': typeof AuthenticatedMyAttendanceRoute
   '/_authenticated/promotion': typeof AuthenticatedPromotionRoute
   '/_authenticated/report-cards': typeof AuthenticatedReportCardsRoute
   '/_authenticated/results': typeof AuthenticatedResultsRoute
@@ -320,6 +339,8 @@ export interface FileRouteTypes {
     | '/documents'
     | '/fees'
     | '/islamic'
+    | '/kiosk'
+    | '/my-attendance'
     | '/promotion'
     | '/report-cards'
     | '/results'
@@ -352,6 +373,8 @@ export interface FileRouteTypes {
     | '/documents'
     | '/fees'
     | '/islamic'
+    | '/kiosk'
+    | '/my-attendance'
     | '/promotion'
     | '/report-cards'
     | '/results'
@@ -386,6 +409,8 @@ export interface FileRouteTypes {
     | '/_authenticated/documents'
     | '/_authenticated/fees'
     | '/_authenticated/islamic'
+    | '/_authenticated/kiosk'
+    | '/_authenticated/my-attendance'
     | '/_authenticated/promotion'
     | '/_authenticated/report-cards'
     | '/_authenticated/results'
@@ -507,6 +532,20 @@ declare module '@tanstack/react-router' {
       path: '/islamic'
       fullPath: '/islamic'
       preLoaderRoute: typeof AuthenticatedIslamicRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/kiosk': {
+      id: '/_authenticated/kiosk'
+      path: '/kiosk'
+      fullPath: '/kiosk'
+      preLoaderRoute: typeof AuthenticatedKioskRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/my-attendance': {
+      id: '/_authenticated/my-attendance'
+      path: '/my-attendance'
+      fullPath: '/my-attendance'
+      preLoaderRoute: typeof AuthenticatedMyAttendanceRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/promotion': {
@@ -668,6 +707,8 @@ interface AuthenticatedRouteChildren {
   AuthenticatedDocumentsRoute: typeof AuthenticatedDocumentsRoute
   AuthenticatedFeesRoute: typeof AuthenticatedFeesRoute
   AuthenticatedIslamicRoute: typeof AuthenticatedIslamicRoute
+  AuthenticatedKioskRoute: typeof AuthenticatedKioskRoute
+  AuthenticatedMyAttendanceRoute: typeof AuthenticatedMyAttendanceRoute
   AuthenticatedPromotionRoute: typeof AuthenticatedPromotionRoute
   AuthenticatedReportCardsRoute: typeof AuthenticatedReportCardsRoute
   AuthenticatedResultsRoute: typeof AuthenticatedResultsRoute
@@ -688,6 +729,8 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedDocumentsRoute: AuthenticatedDocumentsRoute,
   AuthenticatedFeesRoute: AuthenticatedFeesRoute,
   AuthenticatedIslamicRoute: AuthenticatedIslamicRoute,
+  AuthenticatedKioskRoute: AuthenticatedKioskRoute,
+  AuthenticatedMyAttendanceRoute: AuthenticatedMyAttendanceRoute,
   AuthenticatedPromotionRoute: AuthenticatedPromotionRoute,
   AuthenticatedReportCardsRoute: AuthenticatedReportCardsRoute,
   AuthenticatedResultsRoute: AuthenticatedResultsRoute,
