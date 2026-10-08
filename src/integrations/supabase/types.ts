@@ -14,6 +14,103 @@ export type Database = {
   }
   public: {
     Tables: {
+      admissions: {
+        Row: {
+          application_no: string
+          class_applied_id: string | null
+          created_at: string
+          created_by: string | null
+          dob: string | null
+          entrance_score: number | null
+          first_name: string
+          gender: Database["public"]["Enums"]["gender_type"] | null
+          id: string
+          last_name: string
+          middle_name: string | null
+          notes: string | null
+          parent_email: string | null
+          parent_name: string | null
+          parent_phone: string | null
+          previous_school: string | null
+          relationship: string | null
+          school_id: string
+          stage: string
+          state_of_origin: string | null
+          student_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          application_no: string
+          class_applied_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          dob?: string | null
+          entrance_score?: number | null
+          first_name: string
+          gender?: Database["public"]["Enums"]["gender_type"] | null
+          id?: string
+          last_name: string
+          middle_name?: string | null
+          notes?: string | null
+          parent_email?: string | null
+          parent_name?: string | null
+          parent_phone?: string | null
+          previous_school?: string | null
+          relationship?: string | null
+          school_id: string
+          stage?: string
+          state_of_origin?: string | null
+          student_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          application_no?: string
+          class_applied_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          dob?: string | null
+          entrance_score?: number | null
+          first_name?: string
+          gender?: Database["public"]["Enums"]["gender_type"] | null
+          id?: string
+          last_name?: string
+          middle_name?: string | null
+          notes?: string | null
+          parent_email?: string | null
+          parent_name?: string | null
+          parent_phone?: string | null
+          previous_school?: string | null
+          relationship?: string | null
+          school_id?: string
+          stage?: string
+          state_of_origin?: string | null
+          student_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "admissions_class_applied_id_fkey"
+            columns: ["class_applied_id"]
+            isOneToOne: false
+            referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "admissions_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "admissions_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       assessments: {
         Row: {
           ca1: number | null
@@ -164,9 +261,48 @@ export type Database = {
           },
         ]
       }
+      campuses: {
+        Row: {
+          active: boolean
+          address: string | null
+          created_at: string
+          id: string
+          name: string
+          phone: string | null
+          school_id: string
+        }
+        Insert: {
+          active?: boolean
+          address?: string | null
+          created_at?: string
+          id?: string
+          name: string
+          phone?: string | null
+          school_id: string
+        }
+        Update: {
+          active?: boolean
+          address?: string | null
+          created_at?: string
+          id?: string
+          name?: string
+          phone?: string | null
+          school_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campuses_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       classes: {
         Row: {
           arm: string | null
+          campus_id: string | null
           created_at: string
           id: string
           level: string | null
@@ -177,6 +313,7 @@ export type Database = {
         }
         Insert: {
           arm?: string | null
+          campus_id?: string | null
           created_at?: string
           id?: string
           level?: string | null
@@ -187,6 +324,7 @@ export type Database = {
         }
         Update: {
           arm?: string | null
+          campus_id?: string | null
           created_at?: string
           id?: string
           level?: string | null
@@ -196,6 +334,13 @@ export type Database = {
           teacher_id?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "classes_campus_id_fkey"
+            columns: ["campus_id"]
+            isOneToOne: false
+            referencedRelation: "campuses"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "classes_school_id_fkey"
             columns: ["school_id"]
@@ -906,6 +1051,61 @@ export type Database = {
         }
         Relationships: []
       }
+      student_enrollments: {
+        Row: {
+          class_id: string | null
+          created_at: string
+          created_by: string | null
+          event: string
+          id: string
+          school_id: string
+          session: string | null
+          student_id: string
+        }
+        Insert: {
+          class_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          event?: string
+          id?: string
+          school_id: string
+          session?: string | null
+          student_id: string
+        }
+        Update: {
+          class_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          event?: string
+          id?: string
+          school_id?: string
+          session?: string | null
+          student_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "student_enrollments_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "student_enrollments_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "student_enrollments_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       student_parents: {
         Row: {
           created_at: string
@@ -953,7 +1153,9 @@ export type Database = {
           address: string | null
           admission_date: string | null
           admission_no: string
+          allergies: string | null
           blood_group: string | null
+          campus_id: string | null
           class_id: string | null
           created_at: string
           dob: string | null
@@ -965,6 +1167,7 @@ export type Database = {
           house: string | null
           id: string
           last_name: string
+          lga: string | null
           medical_notes: string | null
           middle_name: string | null
           next_resumption_date: string | null
@@ -973,6 +1176,7 @@ export type Database = {
           religion: string | null
           school_id: string
           state_of_origin: string | null
+          status: string
           updated_at: string
           user_id: string | null
         }
@@ -980,7 +1184,9 @@ export type Database = {
           address?: string | null
           admission_date?: string | null
           admission_no: string
+          allergies?: string | null
           blood_group?: string | null
+          campus_id?: string | null
           class_id?: string | null
           created_at?: string
           dob?: string | null
@@ -992,6 +1198,7 @@ export type Database = {
           house?: string | null
           id?: string
           last_name: string
+          lga?: string | null
           medical_notes?: string | null
           middle_name?: string | null
           next_resumption_date?: string | null
@@ -1000,6 +1207,7 @@ export type Database = {
           religion?: string | null
           school_id: string
           state_of_origin?: string | null
+          status?: string
           updated_at?: string
           user_id?: string | null
         }
@@ -1007,7 +1215,9 @@ export type Database = {
           address?: string | null
           admission_date?: string | null
           admission_no?: string
+          allergies?: string | null
           blood_group?: string | null
+          campus_id?: string | null
           class_id?: string | null
           created_at?: string
           dob?: string | null
@@ -1019,6 +1229,7 @@ export type Database = {
           house?: string | null
           id?: string
           last_name?: string
+          lga?: string | null
           medical_notes?: string | null
           middle_name?: string | null
           next_resumption_date?: string | null
@@ -1027,10 +1238,18 @@ export type Database = {
           religion?: string | null
           school_id?: string
           state_of_origin?: string | null
+          status?: string
           updated_at?: string
           user_id?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "students_campus_id_fkey"
+            columns: ["campus_id"]
+            isOneToOne: false
+            referencedRelation: "campuses"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "students_class_id_fkey"
             columns: ["class_id"]

@@ -15,6 +15,13 @@
       "when": 1791445963857,
       "tag": "0001_school_access_integrity_guards",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1791448276703,
+      "tag": "0002_phase2_admissions_campuses_enrollments",
+      "breakpoints": true
     }
   ]
 }
