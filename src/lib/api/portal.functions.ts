@@ -131,7 +131,7 @@ export const getPortalNotifications = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const claims = await verify(data.token);
     const db = await admin();
-    const { data: rows } = await db.from("parent_notifications").select("id, type, title, body, meta, read_at, created_at, student_id").eq("parent_id", claims.parent_id).lte("visible_from", new Date().toISOString()).order("visible_from", { ascending: false }).limit(100);
+    const { data: rows } = await db.from("parent_notifications").select("id, type, title, body, meta, read_at, created_at, visible_from, student_id").eq("parent_id", claims.parent_id).lte("visible_from", new Date().toISOString()).order("visible_from", { ascending: false }).limit(100);
     return { rows: rows ?? [] };
   });
 
