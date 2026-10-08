@@ -1,0 +1,1 @@
+DROP TRIGGER IF EXISTS audit_staff_salary_settings_v2 ON public.staff_salary_settings;
