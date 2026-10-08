@@ -175,14 +175,14 @@ function SalarySettings({ staff, settings, onSaved }: { staff: Staff[]; settings
           <DialogContent>
             <DialogHeader><DialogTitle>Monthly pay for a staff member</DialogTitle></DialogHeader>
             <form onSubmit={submit} className="space-y-3">
-              <div><Label>Staff member</Label>
+              <div><Label htmlFor="pay_user">Staff member</Label>
                 <Select value={form.user_id} onValueChange={(v) => setForm({ ...form, user_id: v })}>
-                  <SelectTrigger><SelectValue placeholder="Choose staff" /></SelectTrigger>
+                  <SelectTrigger id="pay_user"><SelectValue placeholder="Choose staff" /></SelectTrigger>
                   <SelectContent>{staff.map((s) => <SelectItem key={s.user_id} value={s.user_id}>{s.name} ({roleLabel(s.role)})</SelectItem>)}</SelectContent>
                 </Select></div>
               <div className="grid grid-cols-2 gap-3">
-                <div><Label>Basic pay (₦)</Label><Input type="number" min="0" required value={form.basic} onChange={(e) => setForm({ ...form, basic: e.target.value })} /></div>
-                <div><Label>Allowances (₦)</Label><Input type="number" min="0" value={form.allowances} onChange={(e) => setForm({ ...form, allowances: e.target.value })} /></div>
+                <div><Label htmlFor="pay_basic">Basic pay (₦)</Label><Input id="pay_basic" type="number" min="0" required value={form.basic} onChange={(e) => setForm({ ...form, basic: e.target.value })} /></div>
+                <div><Label htmlFor="pay_allowances">Allowances (₦)</Label><Input id="pay_allowances" type="number" min="0" value={form.allowances} onChange={(e) => setForm({ ...form, allowances: e.target.value })} /></div>
               </div>
               <Button type="submit" className="w-full" disabled={!form.user_id || busy}>{busy ? "Saving…" : "Save"}</Button>
             </form>
@@ -230,8 +230,8 @@ function DeductionDialog({ row, onClose, onSaved }: { row: Salary; onClose: () =
         <DialogHeader><DialogTitle>Adjust {row.payslip_no}</DialogTitle></DialogHeader>
         <form onSubmit={submit} className="space-y-3">
           <p className="text-sm text-muted-foreground">Gross: ₦{(Number(row.basic) + Number(row.allowances)).toLocaleString()}</p>
-          <div><Label>Deduction (₦)</Label><Input type="number" min="0" value={form.deductions} onChange={(e) => setForm({ ...form, deductions: e.target.value })} /></div>
-          <div><Label>Reason / note</Label><Input value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} /></div>
+          <div><Label htmlFor="ded_amount">Deduction (₦)</Label><Input id="ded_amount" type="number" min="0" value={form.deductions} onChange={(e) => setForm({ ...form, deductions: e.target.value })} /></div>
+          <div><Label htmlFor="ded_note">Reason / note</Label><Input id="ded_note" value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} /></div>
           <Button type="submit" className="w-full" disabled={busy}>{busy ? "Saving…" : "Save adjustment"}</Button>
         </form>
       </DialogContent>

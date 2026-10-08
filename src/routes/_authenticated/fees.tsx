@@ -322,16 +322,16 @@ function DiscountDialog({ invoice, onDone }: { invoice: Invoice; onDone: () => v
           <p className="text-sm text-muted-foreground">
             {invoice.students?.first_name} {invoice.students?.last_name} — unpaid balance ₦{unpaid.toLocaleString()}
           </p>
-          <div><Label>Discount amount (₦)</Label>
-            <Input type="number" min="0" max={unpaid} required value={form.discount_amount}
+          <div><Label htmlFor="inv_discount">Discount amount (₦)</Label>
+            <Input id="inv_discount" type="number" min="0" max={unpaid} required value={form.discount_amount}
               onChange={(e) => setForm({ ...form, discount_amount: e.target.value })} /></div>
-          <div><Label>Reason type</Label>
+          <div><Label htmlFor="inv_discount_kind">Reason type</Label>
             <Select value={form.discount_kind} onValueChange={(v) => setForm({ ...form, discount_kind: v })}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectTrigger id="inv_discount_kind"><SelectValue /></SelectTrigger>
               <SelectContent>{DISCOUNT_KINDS.map((k) => <SelectItem key={k.id} value={k.id}>{k.name}</SelectItem>)}</SelectContent>
             </Select></div>
-          <div><Label>Reason (required)</Label>
-            <Input required value={form.discount_reason} placeholder="e.g. Second child — 50% sibling discount"
+          <div><Label htmlFor="inv_discount_reason">Reason (required)</Label>
+            <Input id="inv_discount_reason" required value={form.discount_reason} placeholder="e.g. Second child — 50% sibling discount"
               onChange={(e) => setForm({ ...form, discount_reason: e.target.value })} /></div>
           <Button type="submit" className="w-full" disabled={busy}>{busy ? "Saving…" : "Save discount"}</Button>
         </form>
