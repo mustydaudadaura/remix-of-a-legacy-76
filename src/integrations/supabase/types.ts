@@ -604,6 +604,7 @@ export type Database = {
       }
       lesson_notes: {
         Row: {
+          acknowledged_at: string | null
           class_id: string | null
           content: string
           created_at: string
@@ -613,15 +614,21 @@ export type Database = {
           id: string
           lesson_date: string | null
           plan: Json | null
+          review_remark: string | null
+          review_score: number | null
+          reviewed_at: string | null
+          reviewed_by: string | null
           school_id: string
           status: string
           subject_id: string | null
+          teacher_reply: string | null
           term: Database["public"]["Enums"]["term_name"] | null
           topic: string
           updated_at: string
           week: number | null
         }
         Insert: {
+          acknowledged_at?: string | null
           class_id?: string | null
           content: string
           created_at?: string
@@ -631,15 +638,21 @@ export type Database = {
           id?: string
           lesson_date?: string | null
           plan?: Json | null
+          review_remark?: string | null
+          review_score?: number | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
           school_id: string
           status?: string
           subject_id?: string | null
+          teacher_reply?: string | null
           term?: Database["public"]["Enums"]["term_name"] | null
           topic: string
           updated_at?: string
           week?: number | null
         }
         Update: {
+          acknowledged_at?: string | null
           class_id?: string | null
           content?: string
           created_at?: string
@@ -649,9 +662,14 @@ export type Database = {
           id?: string
           lesson_date?: string | null
           plan?: Json | null
+          review_remark?: string | null
+          review_score?: number | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
           school_id?: string
           status?: string
           subject_id?: string | null
+          teacher_reply?: string | null
           term?: Database["public"]["Enums"]["term_name"] | null
           topic?: string
           updated_at?: string
