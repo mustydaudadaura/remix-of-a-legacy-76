@@ -626,6 +626,102 @@ export type Database = {
           },
         ]
       }
+      islamic_enrollments: {
+        Row: {
+          enrolled_at: string
+          id: string
+          notes: string | null
+          programme_id: string
+          school_id: string
+          status: string
+          student_id: string
+        }
+        Insert: {
+          enrolled_at?: string
+          id?: string
+          notes?: string | null
+          programme_id: string
+          school_id: string
+          status?: string
+          student_id: string
+        }
+        Update: {
+          enrolled_at?: string
+          id?: string
+          notes?: string | null
+          programme_id?: string
+          school_id?: string
+          status?: string
+          student_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "islamic_enrollments_programme_id_fkey"
+            columns: ["programme_id"]
+            isOneToOne: false
+            referencedRelation: "islamic_programmes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "islamic_enrollments_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "islamic_enrollments_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      islamic_programmes: {
+        Row: {
+          active: boolean
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          name: string
+          programme_type: string
+          school_id: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          name: string
+          programme_type?: string
+          school_id: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          name?: string
+          programme_type?: string
+          school_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "islamic_programmes_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       lesson_notes: {
         Row: {
           acknowledged_at: string | null
@@ -1839,6 +1935,78 @@ export type Database = {
             columns: ["school_id"]
             isOneToOne: false
             referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tahfiz_records: {
+        Row: {
+          assessment_type: string
+          ayah_from: number
+          ayah_to: number
+          created_at: string
+          grade: string | null
+          id: string
+          record_date: string
+          remarks: string | null
+          school_id: string
+          score: number | null
+          session: string
+          student_id: string
+          surah_from: string
+          surah_to: string
+          teacher_id: string | null
+          term: string
+        }
+        Insert: {
+          assessment_type?: string
+          ayah_from?: number
+          ayah_to?: number
+          created_at?: string
+          grade?: string | null
+          id?: string
+          record_date?: string
+          remarks?: string | null
+          school_id: string
+          score?: number | null
+          session: string
+          student_id: string
+          surah_from: string
+          surah_to: string
+          teacher_id?: string | null
+          term: string
+        }
+        Update: {
+          assessment_type?: string
+          ayah_from?: number
+          ayah_to?: number
+          created_at?: string
+          grade?: string | null
+          id?: string
+          record_date?: string
+          remarks?: string | null
+          school_id?: string
+          score?: number | null
+          session?: string
+          student_id?: string
+          surah_from?: string
+          surah_to?: string
+          teacher_id?: string | null
+          term?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tahfiz_records_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tahfiz_records_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
             referencedColumns: ["id"]
           },
         ]
