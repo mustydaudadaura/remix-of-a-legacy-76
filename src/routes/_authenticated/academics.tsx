@@ -13,6 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Trash2 } from "lucide-react";
 import { toast } from "sonner";
+import { LessonNotes } from "@/components/LessonNotes";
 
 const meta = "Teacher allocations, class timetables and assignments in EduERP.";
 export const Route = createFileRoute("/_authenticated/academics")({
@@ -52,13 +53,15 @@ function Page() {
         <p className="text-sm text-muted-foreground">Assign teachers to classes and subjects, build the weekly timetable and post assignments.</p>
       </div>
       <Tabs defaultValue="timetable">
-        <TabsList className="w-full sm:w-auto">
+        <TabsList className="flex h-auto w-full flex-wrap sm:w-auto">
           <TabsTrigger value="timetable">Timetable</TabsTrigger>
           <TabsTrigger value="assignments">Assignments</TabsTrigger>
+          <TabsTrigger value="lessons">Lesson Notes (AI)</TabsTrigger>
           <TabsTrigger value="allocations">Teachers</TabsTrigger>
         </TabsList>
         <TabsContent value="timetable"><Timetable schoolId={schoolId} canEdit={canEdit} look={look} /></TabsContent>
         <TabsContent value="assignments"><Assignments schoolId={schoolId} look={look} /></TabsContent>
+        <TabsContent value="lessons"><LessonNotes schoolId={schoolId} classes={look.classes} subjects={look.subjects} /></TabsContent>
         <TabsContent value="allocations"><Allocations schoolId={schoolId} canEdit={canEdit} look={look} /></TabsContent>
       </Tabs>
     </div>

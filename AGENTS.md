@@ -5,4 +5,4 @@
 - Enforce module activation and school-scoped permissions in database policies and authenticated server functions; navigation visibility is not authorization.
 - Use authenticated RLS clients for ordinary operations; dynamically import privileged clients only inside authorized handlers for true administrative work.
 - Keep audit records append-only and write them in database triggers so direct client mutations are covered.
-- Preserve compatibility with existing assessment and report structures until a separately verified data migration replaces them.
+- Preserve compatibility with existing assessment and report structures until a separately verified data migration replaces them.- AI features run in authenticated server functions that check school permissions before calling Lovable AI; prompts and keys never reach the browser.

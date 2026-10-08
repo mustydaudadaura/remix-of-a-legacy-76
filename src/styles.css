@@ -158,3 +158,11 @@
     font-family: var(--font-sans);
   }
 }
+
+.lesson-note h2 { font-size: 1.25rem; font-weight: 700; margin: 1rem 0 .5rem; border-bottom: 2px solid var(--border); }
+.lesson-note h3 { font-size: 1.05rem; font-weight: 600; margin: .75rem 0 .25rem; }
+.lesson-note ul, .lesson-note ol { padding-left: 1.25rem; list-style: disc; }
+.lesson-note ol { list-style: decimal; }
+.lesson-note table { border-collapse: collapse; width: 100%; margin: .5rem 0; }
+.lesson-note td, .lesson-note th { border: 1px solid var(--border); padding: .4rem; vertical-align: top; text-align: left; }
+.lesson-note p { margin: .35rem 0; }
