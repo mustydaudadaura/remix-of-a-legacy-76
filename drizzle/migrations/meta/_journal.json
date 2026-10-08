@@ -64,6 +64,13 @@
       "when": 1791455127122,
       "tag": "0008_report_template_customization",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1791467570975,
+      "tag": "0009_school_certificates",
+      "breakpoints": true
     }
   ]
 }

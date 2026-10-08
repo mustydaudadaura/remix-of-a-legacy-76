@@ -1046,6 +1046,54 @@ export type Database = {
           },
         ]
       }
+      school_certificates: {
+        Row: {
+          created_at: string
+          details: Json
+          id: string
+          issued_by: string | null
+          kind: string
+          school_id: string
+          serial_no: string
+          student_id: string
+        }
+        Insert: {
+          created_at?: string
+          details?: Json
+          id?: string
+          issued_by?: string | null
+          kind: string
+          school_id: string
+          serial_no: string
+          student_id: string
+        }
+        Update: {
+          created_at?: string
+          details?: Json
+          id?: string
+          issued_by?: string | null
+          kind?: string
+          school_id?: string
+          serial_no?: string
+          student_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "school_certificates_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "school_certificates_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       school_controls: {
         Row: {
           enabled_modules: string[]

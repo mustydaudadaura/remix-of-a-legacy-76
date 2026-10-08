@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import {
   LayoutDashboard, Users, BookOpen, FileText, Building2, LogOut,
-  GraduationCap, UserCog, Menu, X, Award, CalendarCheck, Wallet, Megaphone,
+  GraduationCap, UserCog, Menu, X, Award, CalendarCheck, Wallet, Megaphone, ScrollText,
 } from "lucide-react";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -19,7 +19,7 @@ export const Route = createFileRoute("/_authenticated")({
   component: AuthedLayout,
 });
 
-const PAGE_ACCESS: Record<string, SchoolPermission> = { "/students": "students.view", "/admissions": "students.view", "/classes": "academics.view", "/academics": "academics.view", "/promotion": "promotion.edit", "/results": "results.edit", "/attendance": "attendance.view", "/fees": "fees.view", "/announcements": "communication.view", "/report-cards": "results.view", "/users": "users.edit", "/settings": "settings.edit" };
+const PAGE_ACCESS: Record<string, SchoolPermission> = { "/students": "students.view", "/admissions": "students.view", "/classes": "academics.view", "/academics": "academics.view", "/promotion": "promotion.edit", "/results": "results.edit", "/attendance": "attendance.view", "/fees": "fees.view", "/announcements": "communication.view", "/report-cards": "results.view", "/documents": "students.view", "/users": "users.edit", "/settings": "settings.edit" };
 
 const NAV = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard, roles: ["super_admin","school_admin","teacher","accountant","student","parent"] },
@@ -34,6 +34,7 @@ const NAV = [
   { to: "/fees", label: "Fees", icon: Wallet, roles: ["super_admin","school_admin","accountant"] },
   { to: "/announcements", label: "Announcements", icon: Megaphone, roles: ["super_admin","school_admin"] },
   { to: "/report-cards", label: "Report Cards", icon: Award, roles: ["super_admin","school_admin","teacher","student","parent"] },
+  { to: "/documents", label: "Certificates & Reports", icon: ScrollText, roles: ["super_admin","school_admin"] },
   { to: "/users", label: "Users & Roles", icon: UserCog, roles: ["super_admin","school_admin"] },
   { to: "/settings", search: { tab: "reports" }, label: "Report Card Design", icon: Award, roles: ["super_admin","school_admin"] },
   { to: "/settings", label: "School Settings", icon: Settings2, roles: ["super_admin","school_admin"] },
