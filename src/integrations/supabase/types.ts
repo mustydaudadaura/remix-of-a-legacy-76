@@ -690,6 +690,150 @@ export type Database = {
           },
         ]
       }
+      school_audit_logs: {
+        Row: {
+          action: string
+          actor_id: string | null
+          created_at: string
+          entity: string
+          id: string
+          new_value: Json | null
+          old_value: Json | null
+          record_id: string | null
+          school_id: string
+        }
+        Insert: {
+          action: string
+          actor_id?: string | null
+          created_at?: string
+          entity: string
+          id?: string
+          new_value?: Json | null
+          old_value?: Json | null
+          record_id?: string | null
+          school_id: string
+        }
+        Update: {
+          action?: string
+          actor_id?: string | null
+          created_at?: string
+          entity?: string
+          id?: string
+          new_value?: Json | null
+          old_value?: Json | null
+          record_id?: string | null
+          school_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "school_audit_logs_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      school_controls: {
+        Row: {
+          enabled_modules: string[]
+          enabled_sections: string[]
+          school_id: string
+          updated_at: string
+        }
+        Insert: {
+          enabled_modules?: string[]
+          enabled_sections?: string[]
+          school_id: string
+          updated_at?: string
+        }
+        Update: {
+          enabled_modules?: string[]
+          enabled_sections?: string[]
+          school_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "school_controls_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: true
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      school_custom_roles: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          permissions: string[]
+          school_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          permissions?: string[]
+          school_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          permissions?: string[]
+          school_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "school_custom_roles_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      school_role_assignments: {
+        Row: {
+          created_at: string
+          id: string
+          role_id: string
+          school_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role_id: string
+          school_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role_id?: string
+          school_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "school_role_assignments_role_id_school_id_fkey"
+            columns: ["role_id", "school_id"]
+            isOneToOne: false
+            referencedRelation: "school_custom_roles"
+            referencedColumns: ["id", "school_id"]
+          },
+          {
+            foreignKeyName: "school_role_assignments_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       schools: {
         Row: {
           address: string | null
@@ -982,6 +1126,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      can_manage_school: {
+        Args: { _school_id: string; _user_id: string }
+        Returns: boolean
+      }
       find_parent_by_phone: {
         Args: { _phone: string }
         Returns: {
@@ -1018,6 +1166,14 @@ export type Database = {
       notify_fee_defaulters: {
         Args: { _created_by: string; _school_id: string }
         Returns: number
+      }
+      school_module_enabled: {
+        Args: { _module: string; _school_id: string }
+        Returns: boolean
+      }
+      school_permission: {
+        Args: { _permission: string; _school_id: string; _user_id: string }
+        Returns: boolean
       }
       student_school_id: { Args: { _student_id: string }; Returns: string }
       verify_report_card: {
