@@ -57,7 +57,7 @@ function StudentProfile() {
   const save = async () => {
     const patch: Record<string, string | null> = {};
     BIO.forEach(([k]) => { if (k in form) patch[k] = form[k] || null; });
-    const { error } = await supabase.from("students").update(patch).eq("id", id);
+    const { error } = await supabase.from("students").update(patch as any).eq("id", id);
     if (error) return toast.error(error.message);
     toast.success("Profile updated"); setEditing(false); setForm({});
     qc.invalidateQueries({ queryKey: ["student-360", id] });
