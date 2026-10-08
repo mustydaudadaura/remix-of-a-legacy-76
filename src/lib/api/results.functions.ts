@@ -112,10 +112,12 @@ export const publishReportCards = createServerFn({ method: "POST" })
     // Fetch all assessments for this class/session/term
     const { data: assess } = await db
       .from("assessments")
-      .select("student_id, total")
+      .select("student_id, total, status")
       .eq("class_id", data.class_id)
       .eq("session", data.session)
       .eq("term", data.term);
+    const pending = (assess ?? []).filter((a: any) => a.status !== "approved").length;
+    if (pending) throw new Error(`${pending} result(s) in this class are not approved yet. Approve them before publishing.`);
 
     // Aggregate per student
     type Agg = { total: number; count: number };
