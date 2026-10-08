@@ -200,6 +200,67 @@ export type Database = {
           },
         ]
       }
+      assignments: {
+        Row: {
+          class_id: string
+          created_at: string
+          created_by: string | null
+          due_date: string | null
+          id: string
+          instructions: string | null
+          school_id: string
+          subject_id: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          class_id: string
+          created_at?: string
+          created_by?: string | null
+          due_date?: string | null
+          id?: string
+          instructions?: string | null
+          school_id: string
+          subject_id?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          class_id?: string
+          created_at?: string
+          created_by?: string | null
+          due_date?: string | null
+          id?: string
+          instructions?: string | null
+          school_id?: string
+          subject_id?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "assignments_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "assignments_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "assignments_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "subjects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       attendance: {
         Row: {
           class_id: string | null
@@ -1308,6 +1369,122 @@ export type Database = {
           },
         ]
       }
+      teacher_allocations: {
+        Row: {
+          class_id: string
+          created_at: string
+          id: string
+          is_class_teacher: boolean
+          school_id: string
+          subject_id: string | null
+          teacher_id: string
+        }
+        Insert: {
+          class_id: string
+          created_at?: string
+          id?: string
+          is_class_teacher?: boolean
+          school_id: string
+          subject_id?: string | null
+          teacher_id: string
+        }
+        Update: {
+          class_id?: string
+          created_at?: string
+          id?: string
+          is_class_teacher?: boolean
+          school_id?: string
+          subject_id?: string | null
+          teacher_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "teacher_allocations_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "teacher_allocations_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "teacher_allocations_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "subjects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      timetable_slots: {
+        Row: {
+          class_id: string
+          created_at: string
+          day_of_week: number
+          end_time: string
+          id: string
+          label: string | null
+          room: string | null
+          school_id: string
+          start_time: string
+          subject_id: string | null
+          teacher_id: string | null
+        }
+        Insert: {
+          class_id: string
+          created_at?: string
+          day_of_week: number
+          end_time: string
+          id?: string
+          label?: string | null
+          room?: string | null
+          school_id: string
+          start_time: string
+          subject_id?: string | null
+          teacher_id?: string | null
+        }
+        Update: {
+          class_id?: string
+          created_at?: string
+          day_of_week?: number
+          end_time?: string
+          id?: string
+          label?: string | null
+          room?: string | null
+          school_id?: string
+          start_time?: string
+          subject_id?: string | null
+          teacher_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "timetable_slots_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "timetable_slots_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "timetable_slots_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "subjects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -1386,6 +1563,10 @@ export type Database = {
         Args: { _created_by: string; _school_id: string }
         Returns: number
       }
+      parent_has_child_in_class: {
+        Args: { _class_id: string; _user_id: string }
+        Returns: boolean
+      }
       school_module_enabled: {
         Args: { _module: string; _school_id: string }
         Returns: boolean
@@ -1395,6 +1576,10 @@ export type Database = {
         Returns: boolean
       }
       student_school_id: { Args: { _student_id: string }; Returns: string }
+      teaches_class: {
+        Args: { _class_id: string; _user_id: string }
+        Returns: boolean
+      }
       verify_report_card: {
         Args: { _code: string }
         Returns: {
