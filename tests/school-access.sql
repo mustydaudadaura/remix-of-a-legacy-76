@@ -1,0 +1,35 @@
+BEGIN;
+DO $$
+DECLARE sid uuid; other_sid uuid; teacher_uid uuid; admin_uid uuid; demo_uid uuid; unassigned uuid := gen_random_uuid(); rid uuid;
+BEGIN
+ SELECT user_id INTO admin_uid FROM public.user_roles WHERE role='super_admin' LIMIT 1;
+ SELECT user_id INTO demo_uid FROM public.user_roles ur JOIN public.schools s ON s.id=ur.school_id WHERE s.code='DEMO001' AND ur.role='school_admin' LIMIT 1;
+ IF admin_uid IS NULL OR demo_uid IS NULL THEN RAISE EXCEPTION 'Test requires existing platform and demo accounts'; END IF;
+ teacher_uid:=demo_uid;
+ INSERT INTO public.schools(name,code) VALUES('Transactional test school','TEST-'||gen_random_uuid()::text) RETURNING id INTO sid;
+ INSERT INTO public.schools(name,code) VALUES('Other test school','TEST-'||gen_random_uuid()::text) RETURNING id INTO other_sid;
+ INSERT INTO public.user_roles(user_id,school_id,role) VALUES(teacher_uid,sid,'teacher');
+ ASSERT public.school_permission(teacher_uid,sid,'results.edit'), 'Teacher can enter results';
+ ASSERT NOT public.school_permission(teacher_uid,sid,'fees.edit'), 'Teacher cannot record payments';
+ ASSERT NOT public.school_permission(teacher_uid,sid,'users.edit'), 'Teacher cannot assign roles';
+ ASSERT NOT public.school_permission(teacher_uid,other_sid,'results.edit'), 'Teacher cannot access another school';
+ ASSERT NOT public.school_permission(unassigned,sid,'students.view'), 'Unassigned account denied';
+ INSERT INTO public.school_controls(school_id,enabled_modules) VALUES(sid,ARRAY['students','academics']);
+ ASSERT NOT public.school_permission(teacher_uid,sid,'results.edit'), 'Disabled results denied';
+ ASSERT NOT public.school_permission(admin_uid,sid,'results.publish'), 'Disabled module also blocks admin publishing';
+ UPDATE public.school_controls SET enabled_modules=ARRAY['students','academics','results','fees','attendance'] WHERE school_id=sid;
+ ASSERT public.school_permission(teacher_uid,sid,'results.edit'), 'Reenabled results accessible';
+ DELETE FROM public.user_roles WHERE user_id=teacher_uid AND school_id=sid AND role='teacher';
+ INSERT INTO public.user_roles(user_id,school_id,role) VALUES(teacher_uid,sid,'accountant');
+ ASSERT public.school_permission(teacher_uid,sid,'fees.edit'), 'Accountant can record payments';
+ ASSERT NOT public.school_permission(teacher_uid,sid,'results.publish'), 'Accountant cannot publish results';
+ INSERT INTO public.school_custom_roles(school_id,name,permissions) VALUES(sid,'Attendance officer',ARRAY['attendance.edit','attendance.view']) RETURNING id INTO rid;
+ INSERT INTO public.school_role_assignments(school_id,user_id,role_id) VALUES(sid,teacher_uid,rid);
+ ASSERT public.school_permission(teacher_uid,sid,'attendance.edit'), 'Custom permission applies';
+ ASSERT NOT public.school_permission(teacher_uid,other_sid,'attendance.edit'), 'Custom permission school scoped';
+ ASSERT EXISTS(SELECT 1 FROM public.school_audit_logs WHERE school_id=sid AND entity='school_controls'), 'Module changes audited';
+ BEGIN UPDATE public.school_audit_logs SET action='tampered' WHERE school_id=sid; RAISE EXCEPTION 'Audit mutation accepted'; EXCEPTION WHEN raise_exception THEN IF SQLERRM<>'Audit history is append-only' THEN RAISE; END IF; END;
+ BEGIN INSERT INTO public.school_custom_roles(school_id,name,permissions) VALUES(sid,'Escalation',ARRAY['users.edit']); RAISE EXCEPTION 'Privileged custom role accepted'; EXCEPTION WHEN raise_exception THEN IF SQLERRM<>'Unsupported or privileged permission' THEN RAISE; END IF; END;
+ RAISE NOTICE 'School permission, isolation, module and audit tests passed';
+END $$;
+ROLLBACK;

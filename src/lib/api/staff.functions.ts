@@ -17,6 +17,8 @@ export const inviteStaff = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { supabase: userClient, userId } = context;
 
+    const { data: canManage } = await userClient.rpc("can_manage_school", { _user_id: userId, _school_id: data.school_id });
+    if (!canManage) throw new Error("Staff management is not available for this school");
     // Authorize: must be super_admin OR school_admin of the target school
     const [{ data: isSuper }, { data: rolesRows }] = await Promise.all([
       userClient.rpc("is_super_admin", { _user_id: userId }),
@@ -104,6 +106,8 @@ export const removeStaffRole = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { supabase: userClient, userId } = context;
 
+    const { data: canManage } = await userClient.rpc("can_manage_school", { _user_id: userId, _school_id: data.school_id });
+    if (!canManage) throw new Error("Staff management is not available for this school");
     const [{ data: isSuper }, { data: rolesRows }] = await Promise.all([
       userClient.rpc("is_super_admin", { _user_id: userId }),
       userClient
