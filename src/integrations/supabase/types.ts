@@ -723,6 +723,50 @@ export type Database = {
           },
         ]
       }
+      message_templates: {
+        Row: {
+          body: string
+          created_at: string
+          created_by: string | null
+          id: string
+          name: string
+          school_id: string
+          title: string
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          name: string
+          school_id: string
+          title: string
+          type?: string
+          updated_at?: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          name?: string
+          school_id?: string
+          title?: string
+          type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "message_templates_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notifications: {
         Row: {
           body: string | null
@@ -778,6 +822,7 @@ export type Database = {
           student_id: string | null
           title: string
           type: Database["public"]["Enums"]["parent_notification_type"]
+          visible_from: string
         }
         Insert: {
           body?: string | null
@@ -791,6 +836,7 @@ export type Database = {
           student_id?: string | null
           title: string
           type?: Database["public"]["Enums"]["parent_notification_type"]
+          visible_from?: string
         }
         Update: {
           body?: string | null
@@ -804,6 +850,7 @@ export type Database = {
           student_id?: string | null
           title?: string
           type?: Database["public"]["Enums"]["parent_notification_type"]
+          visible_from?: string
         }
         Relationships: [
           {
@@ -825,6 +872,42 @@ export type Database = {
             columns: ["student_id"]
             isOneToOne: false
             referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      parent_preferences: {
+        Row: {
+          muted_types: string[]
+          parent_id: string
+          school_id: string
+          updated_at: string
+        }
+        Insert: {
+          muted_types?: string[]
+          parent_id: string
+          school_id: string
+          updated_at?: string
+        }
+        Update: {
+          muted_types?: string[]
+          parent_id?: string
+          school_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "parent_preferences_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: true
+            referencedRelation: "parents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "parent_preferences_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
             referencedColumns: ["id"]
           },
         ]
