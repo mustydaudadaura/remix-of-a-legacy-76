@@ -8,7 +8,8 @@
 - [x] Phase 3 (core): teacher allocations, class timetable with clash checks, assignments.
 - [x] AI lesson plan & lesson note generator (NERDC format).
 - [x] Phase 3: result approval before publishing.
-- [ ] Configurable professional report card: school-admin position controls and more than 20 colours for independent sheet sections.
+- [x] Configurable professional report card: school-admin position controls and 26 colours for independent sheet sections; seven configuration tests pass.
+- [ ] Verify report template save/reopen and printed output through signed-in school settings — blocked by authenticated preview navigation stalling during browser checks.
 - [ ] Flexible score patterns (beyond 20/20/60) — waiting on owner decision; brief requires 20/20/60 only.
 - [ ] Phase 4: finance corrections, discounts/scholarships, expenses, payments integration and payroll.
 - [ ] Phase 5: communication templates/scheduling, document templates and notification preferences.
