@@ -14,6 +14,7 @@
 - [x] Phase 4: fee discounts/scholarships, expense book, staff payroll and termly finance report — verified in the demo school (₦810,000 billed, ₦5,000 waived, ₦370,000 collected, ₦30,000 expenses, ₦90,000 salary released, ₦250,000 net in hand).
 - [ ] Online fee payments (Paystack/Flutterwave) with receipt on payment — needs provider keys and webhook setup.
 - [x] Phase 5: message templates, scheduled notices, parent alert choices, name placeholders (SMS copies still need Termii key).
+- [ ] Weekly attendance SMS report to parents: per-child summary of days present/absent/late for the week, with fault alerts, sent on demand and on a weekly schedule.
 - [ ] Phase 6: Tahfiz, Arabic and Islamic programme workflows.
 - [ ] Phase 7: inventory/assets, library, transport, boarding, health and discipline.
 - [ ] Phase 8: permission-aware search, analytics, exports and AI assistant.
