@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -159,7 +159,7 @@ function StudentsPage() {
               {students?.length ? students.map((s: any) => (
                 <TableRow key={s.id}>
                   <TableCell className="font-mono text-sm">{s.admission_no}</TableCell>
-                  <TableCell className="font-medium">{s.first_name} {s.last_name}</TableCell>
+                  <TableCell className="font-medium"><Link to="/students/$id" params={{ id: s.id }} className="text-primary hover:underline">{s.first_name} {s.last_name}</Link></TableCell>
                   <TableCell className="capitalize">{s.gender ?? "—"}</TableCell>
                   <TableCell>{s.classes?.name ?? "—"}</TableCell>
                 </TableRow>
