@@ -9,9 +9,10 @@
 - [x] AI lesson plan & lesson note generator (NERDC format).
 - [x] Phase 3: result approval before publishing.
 - [x] Configurable professional report card: school-admin position controls and 26 colours for independent sheet sections; seven configuration tests pass.
-- [ ] Verify report template save/reopen and printed output through signed-in school settings — blocked by authenticated preview navigation stalling during browser checks.
+- [ ] Verify report template save/reopen and printed output through signed-in school settings — owner is clicking through Report Card Design and Certificates & Reports themselves.
 - [ ] Flexible score patterns (beyond 20/20/60) — waiting on owner decision; brief requires 20/20/60 only.
-- [ ] Phase 4: finance corrections, discounts/scholarships, expenses, payments integration and payroll.
+- [x] Phase 4: fee discounts/scholarships, expense book, staff payroll and termly finance report — verified in the demo school (₦810,000 billed, ₦5,000 waived, ₦370,000 collected, ₦30,000 expenses, ₦90,000 salary released, ₦250,000 net in hand).
+- [ ] Online fee payments (Paystack/Flutterwave) with receipt on payment — needs provider keys and webhook setup.
 - [ ] Phase 5: communication templates/scheduling, document templates and notification preferences.
 - [ ] Phase 6: Tahfiz, Arabic and Islamic programme workflows.
 - [ ] Phase 7: inventory/assets, library, transport, boarding, health and discipline.
