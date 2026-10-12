@@ -342,7 +342,7 @@ export const setPayrollStatus = createServerFn({ method: "POST" })
     if (data.status === "reviewed") Object.assign(patch, { reviewed_by: context.userId, reviewed_at: now });
     if (data.status === "approved") Object.assign(patch, { approved_by: context.userId, approved_at: now });
     if (data.status === "paid") Object.assign(patch, { paid_by: context.userId, paid_at: now });
-    const { error } = await db.from("payroll_periods").update(patch).eq("id", period.id);
+    const { error } = await db.from("payroll_periods").update(patch as never).eq("id", period.id);
     if (error) throw new Error(error.message);
     if (data.status === "paid") {
       const s = await loadSettings(db, period.school_id);
