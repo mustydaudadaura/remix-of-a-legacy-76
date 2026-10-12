@@ -404,7 +404,8 @@ function StaffSetup({ schoolId, me }: P) {
   const staff = useStaffList(schoolId);
   const pinFn = useServerFn(setStaffPin);
   const save = async (s: StaffMember, patch: Partial<StaffMember>) => {
-    const row = { staff_no: s.staff_no, department: s.department, category: s.category, photo_url: s.photo_url, active: s.active, attendance_exempt: s.attendance_exempt, ...patch };
+    const m = { ...s, ...patch };
+    const row = { staff_no: m.staff_no, department: m.department, category: m.category, photo_url: m.photo_url, active: m.active, attendance_exempt: m.attendance_exempt };
     const { error } = s.has_profile ? await supabase.from("staff_profiles").update(row).eq("school_id", schoolId).eq("user_id", s.user_id) : await supabase.from("staff_profiles").insert({ ...row, school_id: schoolId, user_id: s.user_id });
     if (error) toast.error(error.message); else { toast.success("Saved"); qc.invalidateQueries({ queryKey: ["sa-staff", schoolId] }); }
   };

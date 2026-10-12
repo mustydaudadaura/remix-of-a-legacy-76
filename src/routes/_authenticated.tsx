@@ -19,7 +19,7 @@ export const Route = createFileRoute("/_authenticated")({
   component: AuthedLayout,
 });
 
-const PAGE_ACCESS: Record<string, SchoolPermission> = { "/students": "students.view", "/admissions": "students.view", "/classes": "academics.view", "/academics": "academics.view", "/islamic": "academics.view", "/promotion": "promotion.edit", "/results": "results.edit", "/attendance": "attendance.view", "/fees": "fees.view", "/announcements": "communication.view", "/report-cards": "results.view", "/documents": "students.view", "/users": "users.edit", "/settings": "settings.edit" };
+const PAGE_ACCESS: Record<string, SchoolPermission> = { "/staff-attendance": "staffatt.view", "/kiosk": "staffatt.kiosk", "/students": "students.view", "/admissions": "students.view", "/classes": "academics.view", "/academics": "academics.view", "/islamic": "academics.view", "/promotion": "promotion.edit", "/results": "results.edit", "/attendance": "attendance.view", "/fees": "fees.view", "/announcements": "communication.view", "/report-cards": "results.view", "/documents": "students.view", "/users": "users.edit", "/settings": "settings.edit" };
 
 const NAV = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard, roles: ["super_admin","school_admin","teacher","accountant","student","parent"] },
