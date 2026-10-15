@@ -14,6 +14,7 @@ import {
   PieChart, Pie, Cell, XAxis, YAxis, Tooltip, CartesianGrid,
   RadialBarChart, RadialBar,
 } from "recharts";
+import { StudentPerformanceAnalytics } from "@/components/StudentPerformanceAnalytics";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({ meta: [{ title: "Dashboard — EduERP" }, { name: "description", content: "Dashboard for authorized school accounts and families in EduERP." }, { property: "og:title", content: "Dashboard — EduERP" }, { property: "og:description", content: "Dashboard for authorized school accounts and families in EduERP." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
@@ -22,11 +23,12 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
 
 // ---------- shared building blocks ----------
 
-const PINK = "oklch(0.72 0.2 5)";
-const PURPLE = "oklch(0.58 0.22 300)";
-const INDIGO = "oklch(0.55 0.2 270)";
-const BLUE = "oklch(0.68 0.16 240)";
-const ROSE = "oklch(0.68 0.22 15)";
+const PINK = "var(--analytic-pink)";
+const PURPLE = "var(--analytic-purple)";
+const EMERALD = "var(--analytic-emerald)";
+const BLUE = "var(--analytic-blue)";
+const INDIGO = "var(--analytic-indigo)";
+const ROSE = "var(--analytic-rose)";
 
 function DonutStat({ label, value, color }: { label: string; value: number; color: string }) {
   const data = [{ name: label, value, fill: color }];
@@ -158,9 +160,9 @@ function Dashboard() {
         </Badge>
       </div>
 
-      {role === "super_admin" && <SuperAdminView stats={stats} />}
-      {role === "school_admin" && <SchoolAdminView stats={stats} />}
-      {role === "teacher" && <TeacherView />}
+      {role === "super_admin" && <SuperAdminView stats={stats} schoolId={schoolId} />}
+      {role === "school_admin" && <SchoolAdminView stats={stats} schoolId={schoolId} />}
+      {role === "teacher" && <TeacherView schoolId={schoolId} />}
       {role === "accountant" && <AccountantView />}
       {role === "parent" && <ParentView />}
       {role === "student" && <StudentView />}
@@ -171,7 +173,7 @@ function Dashboard() {
 
 // ---------- ROLE VIEWS ----------
 
-function SuperAdminView({ stats }: { stats: any }) {
+function SuperAdminView({ stats, schoolId }: { stats: any; schoolId?: string | null }) {
   return (
     <>
       <div className="grid gap-3 grid-cols-2 sm:gap-4 lg:grid-cols-4">
@@ -188,33 +190,119 @@ function SuperAdminView({ stats }: { stats: any }) {
         <DonutStat label="Attendance Avg" value={57} color={ROSE} />
       </div>
 
+      <StudentPerformanceAnalytics schoolId={schoolId} />
       <ChartsRow seed={3} title="Platform Growth" subtitle="Schools onboarded vs active users" />
     </>
   );
 }
 
-function SchoolAdminView({ stats }: { stats: any }) {
+function SchoolAdminView({ stats, schoolId }: { stats: any; schoolId?: string | null }) {
   return (
     <>
       <div className="grid gap-3 grid-cols-2 sm:gap-4 lg:grid-cols-4">
-        <GradientStat icon={Users} label="Students" value={stats?.students ?? "—"} delta={6} gradient="var(--gradient-analytic-1)" />
-        <GradientStat icon={BookOpen} label="Classes" value={stats?.classes ?? "—"} delta={2} gradient="var(--gradient-analytic-2)" />
-        <GradientStat icon={UserCheck} label="Staff" value={stats?.staff ?? "—"} delta={3} gradient="var(--gradient-analytic-3)" />
-        <GradientStat icon={ClipboardList} label="Assessments" value={stats?.assessments ?? "—"} delta={15} gradient="var(--gradient-analytic-1)" />
+        <GradientStat
+          icon={Users}
+          label="Total Students"
+          value={stats?.students ?? "—"}
+          delta={6}
+          gradient="linear-gradient(135deg, oklch(0.58 0.24 355), oklch(0.48 0.22 355))"
+        />
+        <GradientStat
+          icon={Award}
+          label="Results Published"
+          value={stats?.assessments ? `${stats.assessments}` : "—"}
+          delta={100}
+          gradient="linear-gradient(135deg, oklch(0.56 0.22 305), oklch(0.46 0.20 290))"
+        />
+        <GradientStat
+          icon={Wallet}
+          label="Total Fees Collected"
+          value="₦1,250,000"
+          delta={18}
+          gradient="linear-gradient(135deg, oklch(0.58 0.18 150), oklch(0.48 0.16 160))"
+        />
+        <GradientStat
+          icon={BookOpen}
+          label="Active Classes"
+          value={stats?.classes ?? "—"}
+          delta={2}
+          gradient="linear-gradient(135deg, oklch(0.62 0.16 230), oklch(0.50 0.16 250))"
+        />
       </div>
+
+      <div className="grid gap-4 lg:grid-cols-3">
+        <Card className="lg:col-span-2 overflow-hidden border border-primary/20 bg-gradient-to-r from-primary/10 via-primary/5 to-transparent shadow-sm">
+          <CardContent className="p-5 sm:p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="space-y-1.5 max-w-lg">
+              <span className="text-[11px] font-semibold uppercase tracking-wider text-primary">Publish Results Online</span>
+              <h2 className="text-lg sm:text-xl font-bold tracking-tight text-foreground">
+                Share results with parents instantly
+              </h2>
+              <p className="text-xs sm:text-sm text-muted-foreground">
+                Generate beautiful Nigerian-standard report sheets, share via link or QR code, and keep parents informed in real time.
+              </p>
+            </div>
+            <a
+              href="/results"
+              className="inline-flex items-center justify-center rounded-lg bg-primary px-4 py-2.5 text-xs font-semibold text-primary-foreground shadow-sm transition hover:bg-primary/90 shrink-0"
+            >
+              Publish Results →
+            </a>
+          </CardContent>
+        </Card>
+
+        <Card className="border border-border bg-card shadow-sm">
+          <CardHeader className="p-4 pb-2">
+            <CardTitle className="text-sm font-semibold">Quick Actions</CardTitle>
+          </CardHeader>
+          <CardContent className="p-4 pt-1 grid grid-cols-2 gap-2">
+            <a
+              href="/results"
+              className="flex flex-col items-center justify-center p-2.5 rounded-lg border border-border/60 bg-muted/20 hover:bg-muted/60 transition text-center text-xs font-medium text-foreground"
+            >
+              <FileText className="h-4 w-4 text-primary mb-1.5" />
+              <span>Add Results</span>
+            </a>
+            <a
+              href="/students"
+              className="flex flex-col items-center justify-center p-2.5 rounded-lg border border-border/60 bg-muted/20 hover:bg-muted/60 transition text-center text-xs font-medium text-foreground"
+            >
+              <Users className="h-4 w-4 text-primary mb-1.5" />
+              <span>Students</span>
+            </a>
+            <a
+              href="/report-cards"
+              className="flex flex-col items-center justify-center p-2.5 rounded-lg border border-border/60 bg-muted/20 hover:bg-muted/60 transition text-center text-xs font-medium text-foreground"
+            >
+              <Award className="h-4 w-4 text-primary mb-1.5" />
+              <span>Report Cards</span>
+            </a>
+            <a
+              href="/announcements"
+              className="flex flex-col items-center justify-center p-2.5 rounded-lg border border-border/60 bg-muted/20 hover:bg-muted/60 transition text-center text-xs font-medium text-foreground"
+            >
+              <UserCheck className="h-4 w-4 text-primary mb-1.5" />
+              <span>Noticeboard</span>
+            </a>
+          </CardContent>
+        </Card>
+      </div>
+
       <div className="grid gap-3 grid-cols-2 sm:gap-4 sm:grid-cols-4">
         <DonutStat label="Attendance" value={92} color={PINK} />
         <DonutStat label="Pass Rate" value={81} color={PURPLE} />
-        <DonutStat label="Fees Paid" value={67} color={INDIGO} />
+        <DonutStat label="Fees Paid" value={67} color={EMERALD} />
         <DonutStat label="Reports Published" value={58} color={ROSE} />
       </div>
+
+      <StudentPerformanceAnalytics schoolId={schoolId} />
       <ChartsRow seed={5} title="School Performance" subtitle="Enrolment trend vs assessment volume" />
       <ProgressCard />
     </>
   );
 }
 
-function TeacherView() {
+function TeacherView({ schoolId }: { schoolId?: string | null }) {
   return (
     <>
       <div className="grid gap-3 grid-cols-2 sm:gap-4 lg:grid-cols-4">
@@ -229,6 +317,7 @@ function TeacherView() {
         <DonutStat label="Graded" value={64} color={INDIGO} />
         <DonutStat label="Approved" value={52} color={ROSE} />
       </div>
+      <StudentPerformanceAnalytics schoolId={schoolId} />
       <ChartsRow seed={7} title="Class Performance" subtitle="Average score across subjects" />
     </>
   );

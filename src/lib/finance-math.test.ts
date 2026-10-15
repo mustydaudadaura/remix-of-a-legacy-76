@@ -1,4 +1,4 @@
-import { test, expect } from "bun:test";
+import { test, expect } from "./test-compat";
 import { invoiceOutstanding, maxDiscount } from "./finance-math";
 
 test("a discount is removed before the balance is worked out", () => {

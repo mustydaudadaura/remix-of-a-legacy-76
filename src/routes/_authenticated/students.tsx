@@ -1,16 +1,16 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Plus, UserPlus } from "lucide-react";
+import { Plus, UserPlus, Search, X, SlidersHorizontal, ArrowUpDown } from "lucide-react";
 import { toast } from "sonner";
 import { BulkImportDialog } from "@/components/BulkImportDialog";
 
@@ -29,17 +29,46 @@ function StudentsPage() {
     parent_name: "", parent_phone: "", parent_email: "",
   });
 
-  const { data: students } = useQuery({
+  const [searchQuery, setSearchQuery] = useState("");
+  const [classFilter, setClassFilter] = useState("all");
+  const [genderFilter, setGenderFilter] = useState("all");
+
+  const { data: students, isLoading } = useQuery({
     queryKey: ["students", schoolId],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("students")
-        .select("id, admission_no, first_name, last_name, gender, classes(name)")
+        .select("id, admission_no, first_name, last_name, middle_name, gender, class_id, classes(name)")
         .order("created_at", { ascending: false });
       if (error) throw error;
       return data;
     },
   });
+
+  const filteredStudents = useMemo(() => {
+    if (!students) return [];
+    const q = searchQuery.trim().toLowerCase();
+
+    return students.filter((s: any) => {
+      if (classFilter !== "all" && s.class_id !== classFilter) return false;
+      if (genderFilter !== "all" && (s.gender || "").toLowerCase() !== genderFilter.toLowerCase()) return false;
+      if (!q) return true;
+
+      const fullName = `${s.first_name || ""} ${s.middle_name || ""} ${s.last_name || ""}`.toLowerCase();
+      const adm = (s.admission_no || "").toLowerCase();
+      const className = (s.classes?.name || "").toLowerCase();
+
+      return fullName.includes(q) || adm.includes(q) || className.includes(q);
+    });
+  }, [students, searchQuery, classFilter, genderFilter]);
+
+  const hasActiveFilters = searchQuery.trim() !== "" || classFilter !== "all" || genderFilter !== "all";
+
+  const clearFilters = () => {
+    setSearchQuery("");
+    setClassFilter("all");
+    setGenderFilter("all");
+  };
 
   const { data: classes } = useQuery({
     queryKey: ["classes-for-students", schoolId],
@@ -146,28 +175,166 @@ function StudentsPage() {
       </div>
 
       <Card>
-        <CardHeader><CardTitle>All students</CardTitle></CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Adm. No.</TableHead><TableHead>Name</TableHead>
-                <TableHead>Gender</TableHead><TableHead>Class</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {students?.length ? students.map((s: any) => (
-                <TableRow key={s.id}>
-                  <TableCell className="font-mono text-sm">{s.admission_no}</TableCell>
-                  <TableCell className="font-medium"><Link to="/students/$id" params={{ id: s.id }} className="text-primary hover:underline">{s.first_name} {s.last_name}</Link></TableCell>
-                  <TableCell className="capitalize">{s.gender ?? "—"}</TableCell>
-                  <TableCell>{s.classes?.name ?? "—"}</TableCell>
-                </TableRow>
-              )) : (
-                <TableRow><TableCell colSpan={4} className="text-center text-muted-foreground">No students yet</TableCell></TableRow>
+        <CardHeader className="pb-3">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+            <div>
+              <CardTitle>Student Directory</CardTitle>
+              <CardDescription>
+                Search and filter student profiles by name, admission ID, or class.
+              </CardDescription>
+            </div>
+            {students && (
+              <div className="text-xs text-muted-foreground font-mono tabular-nums">
+                Showing {filteredStudents.length} of {students.length} students
+              </div>
+            )}
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {/* Real-time filtering toolbar */}
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
+            <div className="relative flex-1">
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+              <Input
+                placeholder="Filter by name or admission number (e.g. Aisha, DMA/001)…"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-9 pr-8"
+              />
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery("")}
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                  aria-label="Clear search"
+                >
+                  <X className="h-4 w-4" />
+                </button>
               )}
-            </TableBody>
-          </Table>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <Select value={classFilter} onValueChange={setClassFilter}>
+                <SelectTrigger className="w-36 text-xs" aria-label="Filter by class">
+                  <SelectValue placeholder="All classes" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All classes</SelectItem>
+                  {classes?.map((c) => (
+                    <SelectItem key={c.id} value={c.id}>
+                      {c.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              <Select value={genderFilter} onValueChange={setGenderFilter}>
+                <SelectTrigger className="w-32 text-xs" aria-label="Filter by gender">
+                  <SelectValue placeholder="All genders" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All genders</SelectItem>
+                  <SelectItem value="male">Male</SelectItem>
+                  <SelectItem value="female">Female</SelectItem>
+                </SelectContent>
+              </Select>
+
+              {hasActiveFilters && (
+                <Button variant="ghost" size="sm" onClick={clearFilters} className="text-xs h-9 px-2 text-muted-foreground hover:text-foreground">
+                  <X className="mr-1 h-3.5 w-3.5" /> Clear
+                </Button>
+              )}
+            </div>
+          </div>
+
+          <div className="rounded-md border border-border overflow-hidden">
+            <Table>
+              <TableHeader>
+                <TableRow className="bg-muted/30">
+                  <TableHead className="w-32">Adm. No.</TableHead>
+                  <TableHead>Student Name</TableHead>
+                  <TableHead className="w-28">Gender</TableHead>
+                  <TableHead className="w-36">Class</TableHead>
+                  <TableHead className="w-28 text-right">Action</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {isLoading ? (
+                  <TableRow>
+                    <TableCell colSpan={5} className="h-24 text-center text-muted-foreground">
+                      Loading students…
+                    </TableCell>
+                  </TableRow>
+                ) : filteredStudents.length ? (
+                  filteredStudents.map((s: any) => {
+                    const fullName = [s.first_name, s.middle_name, s.last_name].filter(Boolean).join(" ");
+                    const initials = `${s.first_name?.charAt(0) || ""}${s.last_name?.charAt(0) || ""}`.toUpperCase();
+
+                    return (
+                      <TableRow key={s.id} className="hover:bg-muted/40 transition-colors">
+                        <TableCell className="font-mono text-sm tabular-nums font-medium text-foreground">
+                          {s.admission_no}
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-2.5">
+                            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary text-xs font-semibold">
+                              {initials}
+                            </div>
+                            <Link
+                              to="/students/$id"
+                              params={{ id: s.id }}
+                              className="font-medium text-foreground hover:text-primary transition-colors underline-offset-4 hover:underline"
+                            >
+                              {fullName}
+                            </Link>
+                          </div>
+                        </TableCell>
+                        <TableCell className="capitalize text-muted-foreground text-sm">
+                          {s.gender ?? "—"}
+                        </TableCell>
+                        <TableCell className="text-sm">
+                          {s.classes?.name ? (
+                            <span className="text-foreground">{s.classes.name}</span>
+                          ) : (
+                            <span className="text-muted-foreground italic">Unassigned</span>
+                          )}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <Link
+                            to="/students/$id"
+                            params={{ id: s.id }}
+                            className="text-xs font-medium text-primary hover:underline"
+                          >
+                            Profile →
+                          </Link>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={5} className="py-8 text-center">
+                      <div className="max-w-sm mx-auto space-y-2">
+                        <p className="text-sm font-medium text-foreground">
+                          {hasActiveFilters ? "No students match your filter" : "No students admitted yet"}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {hasActiveFilters
+                            ? "Try adjusting your search terms or clearing the active filters."
+                            : "Click 'Admit student' above to register the first student."}
+                        </p>
+                        {hasActiveFilters && (
+                          <Button variant="outline" size="sm" onClick={clearFilters} className="mt-2 text-xs">
+                            Reset filters
+                          </Button>
+                        )}
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </div>
         </CardContent>
       </Card>
     </div>

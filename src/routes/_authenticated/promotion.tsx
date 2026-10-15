@@ -83,7 +83,7 @@ function PromotionPage() {
           <CardContent className="divide-y divide-border">
             {students?.map((s) => (
               <label key={s.id} className="flex items-center gap-3 py-2 text-sm">
-                <Checkbox checked={!skip.has(s.id)} onCheckedChange={(v) => { const n = new Set(skip); v ? n.delete(s.id) : n.add(s.id); setSkip(n); }} />
+                <Checkbox checked={!skip.has(s.id)} onCheckedChange={(v) => { const n = new Set(skip); if (v) { n.delete(s.id); } else { n.add(s.id); } setSkip(n); }} />
                 <span className="font-mono text-xs text-muted-foreground">{s.admission_no}</span>
                 <span className="font-medium">{s.first_name} {s.last_name}</span>
                 {skip.has(s.id) && <span className="ml-auto text-xs text-destructive">Repeating</span>}

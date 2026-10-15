@@ -102,13 +102,17 @@ function AuthPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background p-4">
-      <div className="w-full max-w-md">
-        <Link to="/" className="mb-6 flex items-center justify-center gap-2">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+    <div className="flex min-h-screen items-center justify-center bg-background p-4 relative overflow-hidden">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(168,0,88,0.06),transparent_55%)] pointer-events-none" />
+      <div className="relative w-full max-w-md">
+        <Link to="/" className="mb-6 flex items-center justify-center gap-2.5">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-md shadow-primary/25">
             <GraduationCap className="h-5 w-5" />
           </div>
-          <span className="text-xl font-bold text-foreground">EduERP</span>
+          <div className="flex flex-col">
+            <span className="text-xl font-bold tracking-tight text-foreground leading-tight">Result Arena</span>
+            <span className="text-[10px] font-medium text-muted-foreground tracking-wide">School Management Platform</span>
+          </div>
         </Link>
         <Card className="shadow-lg">
           <CardHeader>
@@ -117,19 +121,66 @@ function AuthPage() {
           </CardHeader>
           <CardContent>
             <div className="mb-4 rounded-md border border-primary/30 bg-primary/5 p-3 text-sm">
-              <p className="font-medium">Just looking around?</p>
-              <p className="mb-2 text-muted-foreground">Explore a demo school with students, results and fees already filled in.</p>
-              <Button type="button" variant="secondary" className="w-full" disabled={loading} onClick={async () => {
-                setLoading(true);
-                try {
-                  const c = await startDemo();
-                  const { error } = await supabase.auth.signInWithPassword(c);
-                  if (error) throw error;
-                  toast.success("Welcome to the demo school!");
-                } catch (e: any) { toast.error(e?.message ?? "Demo unavailable"); }
-                setLoading(false);
-              }}>{loading ? "Opening…" : "Try the demo school"}</Button>
-              <p className="mt-2 text-xs text-muted-foreground">Parent demo: Parent tab, phone 08090000001</p>
+              <p className="font-medium text-foreground">Just looking around?</p>
+              <p className="mb-3 text-muted-foreground">Explore a demo school with students, results and fees already filled in.</p>
+              <div className="grid grid-cols-2 gap-2">
+                <Button
+                  type="button"
+                  variant="secondary"
+                  className="w-full text-xs font-semibold shadow-sm"
+                  disabled={loading}
+                  onClick={async () => {
+                    setLoading(true);
+                    try {
+                      let creds = { email: "demo.admin@eduerp-demo.ng", password: "DemoSchool#2026" };
+                      try {
+                        const c = await startDemo();
+                        if (c?.email && c?.password) creds = c;
+                      } catch (err) {
+                        console.warn("Using static demo credentials:", err);
+                      }
+                      const { error } = await supabase.auth.signInWithPassword(creds);
+                      if (error) throw error;
+                      toast.success("Welcome to the demo school!");
+                      navigate({ to: "/dashboard" });
+                    } catch (e: any) {
+                      toast.error(e?.message ?? "Demo unavailable");
+                    } finally {
+                      setLoading(false);
+                    }
+                  }}
+                >
+                  {loading ? "Opening…" : "🏫 Admin / Staff Demo"}
+                </Button>
+
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full text-xs font-semibold bg-background hover:bg-muted"
+                  disabled={loading}
+                  onClick={async () => {
+                    setLoading(true);
+                    try {
+                      const res = await fetch("/api/public/parent-login", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ phone: "08031000001" }),
+                      });
+                      const json = await res.json();
+                      if (!res.ok) throw new Error(json.error || "Parent demo login failed");
+                      setParentSession(json.token, json.parent);
+                      toast.success(`Welcome, ${json.parent.full_name}`);
+                      navigate({ to: "/portal" });
+                    } catch (e: any) {
+                      toast.error(e?.message ?? "Parent demo unavailable");
+                    } finally {
+                      setLoading(false);
+                    }
+                  }}
+                >
+                  👨‍👩‍👦 Parent Demo
+                </Button>
+              </div>
             </div>
             <Tabs defaultValue="parent">
               <TabsList className="grid w-full grid-cols-3">

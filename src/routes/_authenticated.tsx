@@ -14,6 +14,7 @@ import { selectSchool, type SchoolPermission } from "@/lib/school-access";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Settings2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { StudentSearchTrigger, StudentSearchDialog } from "@/components/StudentSearch";
 
 export const Route = createFileRoute("/_authenticated")({
   component: AuthedLayout,
@@ -48,6 +49,7 @@ function AuthedLayout() {
   const navigate = useNavigate();
   const { location } = useRouterState();
   const [open, setOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
 
   useEffect(() => {
     if (!loading && !user) navigate({ to: "/auth", replace: true });
@@ -83,11 +85,14 @@ function AuthedLayout() {
         )}
       >
         <div className="flex h-16 items-center justify-between border-b border-sidebar-border px-4">
-          <Link to="/dashboard" className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-md bg-sidebar-primary text-sidebar-primary-foreground">
+          <Link to="/dashboard" className="flex items-center gap-2.5">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-sidebar-primary text-white shadow-sm">
               <GraduationCap className="h-4 w-4" />
             </div>
-            <span className="font-bold">EduERP</span>
+            <div className="flex flex-col">
+              <span className="font-bold text-sm tracking-tight text-white leading-tight">Result Arena</span>
+              <span className="text-[10px] text-sidebar-foreground/60 leading-tight">School Workspace</span>
+            </div>
           </Link>
           <Button variant="ghost" size="icon" className="lg:hidden" aria-label="Close menu" onClick={() => setOpen(false)}><X className="h-5 w-5" /></Button>
         </div>
@@ -130,15 +135,52 @@ function AuthedLayout() {
 
       {/* Main */}
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="sticky top-0 z-20 flex h-16 items-center justify-between border-b border-border bg-card px-4 lg:px-6">
-          <Button variant="ghost" size="icon" className="lg:hidden" aria-label="Open menu" onClick={() => setOpen(true)}><Menu className="h-5 w-5" /></Button>
-          {hasRole(roles, "super_admin") && <Select value={access.schoolId ?? undefined} onValueChange={selectSchool}><SelectTrigger className="ml-3 w-60 max-w-[70vw]" aria-label="Active school"><SelectValue placeholder="Select a school" /></SelectTrigger><SelectContent>{schools.data?.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}</SelectContent></Select>}
-          <div className="flex-1" />
-          <div className="text-sm text-muted-foreground hidden sm:block">{new Date().toLocaleDateString("en-NG", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}</div>
+        <header className="sticky top-0 z-20 flex h-16 items-center justify-between gap-3 border-b border-border bg-card px-4 lg:px-6">
+          <div className="flex items-center gap-2">
+            <Button variant="ghost" size="icon" className="lg:hidden" aria-label="Open menu" onClick={() => setOpen(true)}>
+              <Menu className="h-5 w-5" />
+            </Button>
+            {hasRole(roles, "super_admin") && (
+              <Select value={access.schoolId ?? undefined} onValueChange={selectSchool}>
+                <SelectTrigger className="w-48 sm:w-60 max-w-[50vw]" aria-label="Active school">
+                  <SelectValue placeholder="Select a school" />
+                </SelectTrigger>
+                <SelectContent>
+                  {schools.data?.map((s) => (
+                    <SelectItem key={s.id} value={s.id}>
+                      {s.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+          </div>
+
+          <div className="flex-1 max-w-md mx-2">
+            <StudentSearchTrigger onOpen={() => setSearchOpen(true)} />
+          </div>
+
+          <div className="text-xs text-muted-foreground hidden md:block shrink-0">
+            {new Date().toLocaleDateString("en-NG", { weekday: "short", year: "numeric", month: "short", day: "numeric" })}
+          </div>
         </header>
         <main className="flex-1 p-4 lg:p-6">
-          {access.loading ? <p className="text-muted-foreground">Loading school access…</p> : denied ? <div className="space-y-2"><h1 className="text-xl font-semibold">Access unavailable</h1><p className="text-muted-foreground">{access.schoolId ? "This page is disabled or your account does not have permission." : "Select a school to continue."}</p></div> : <Outlet />}
+          {access.loading ? (
+            <p className="text-muted-foreground">Loading school access…</p>
+          ) : denied ? (
+            <div className="space-y-2">
+              <h1 className="text-xl font-semibold">Access unavailable</h1>
+              <p className="text-muted-foreground">
+                {access.schoolId
+                  ? "This page is disabled or your account does not have permission."
+                  : "Select a school to continue."}
+              </p>
+            </div>
+          ) : (
+            <Outlet />
+          )}
         </main>
+        <StudentSearchDialog open={searchOpen} onOpenChange={setSearchOpen} />
       </div>
     </div>
   );

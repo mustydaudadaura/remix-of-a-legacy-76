@@ -1,4 +1,4 @@
-import { describe, expect, test } from "bun:test";
+import { describe, expect, test } from "./test-compat";
 import { DEFAULT_SETTINGS, arrival, evaluateDay, penaltiesForDay, haversineMeters } from "./staff-attendance";
 import { computePay, canMoveTo } from "./payroll-calc";
 

@@ -1,0 +1,6 @@
+{
+  "name": "EduERP Nigeria - School ERP & Result Management",
+  "description": "Complete modern educational management platform and school ERP for student admissions, attendance, fees, grading, broadsheets, and parent portals.",
+  "permissions": [],
+  "capabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

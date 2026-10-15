@@ -1,4 +1,4 @@
-import { describe, expect, test } from "bun:test";
+import { describe, expect, test } from "./test-compat";
 import { fillTemplate, isMuted } from "./message-template";
 
 describe("fillTemplate", () => {
