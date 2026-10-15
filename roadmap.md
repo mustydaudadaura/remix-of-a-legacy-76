@@ -18,6 +18,7 @@
 - [ ] Automatic weekly send (every Friday evening without staff pressing the button) — needs a scheduled job.
 - [ ] Live SMS delivery test to one real parent number — waiting on the owner's number.
 - [x] Phase 6: Tahfiz, Arabic and Islamic programme workflows — programmes, enrolment, Tahfiz records and printable per-student progress reports; verified in the demo school.
+- [x] Academic assistant: AI breaks uploaded curriculum into classes, terms, weekly topics, then lesson plans/notes with admin approval.
 - [ ] Phase 7: inventory/assets, library, transport, boarding, health and discipline.
 - [ ] Phase 8: permission-aware search, analytics, exports and AI assistant.
 - [ ] Phase 9: offline synchronization, managed backup/recovery, performance/security testing and deployment readiness.
