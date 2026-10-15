@@ -9,3 +9,4 @@
 - Preserve compatibility with existing assessment and report structures until a separately verified data migration replaces them.
 - AI features run in authenticated server functions that check school permissions before calling Lovable AI; prompts and keys never reach the browser.
 - Keep money maths (invoice balance, waivable discount) in one shared browser-safe module that screens, server functions and reports all use, and unit-test it, so collected/outstanding figures never disagree.
+- Curriculum uploads are converted in the browser (Word/Excel to text) and PDFs/photos sent as files to an authenticated server function; the AI breakdown is stored as scheme items that feed the existing lesson-note generator and approval flow rather than a parallel one.
