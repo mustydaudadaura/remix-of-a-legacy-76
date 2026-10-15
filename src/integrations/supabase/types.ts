@@ -585,6 +585,54 @@ export type Database = {
           },
         ]
       }
+      curriculum_documents: {
+        Row: {
+          created_at: string
+          created_by: string
+          file_name: string | null
+          id: string
+          school_id: string
+          subject_id: string | null
+          summary: string | null
+          title: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          file_name?: string | null
+          id?: string
+          school_id: string
+          subject_id?: string | null
+          summary?: string | null
+          title: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          file_name?: string | null
+          id?: string
+          school_id?: string
+          subject_id?: string | null
+          summary?: string | null
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "curriculum_documents_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "curriculum_documents_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "subjects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       fee_invoices: {
         Row: {
           amount_due: number
@@ -1646,6 +1694,105 @@ export type Database = {
             columns: ["student_id"]
             isOneToOne: false
             referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      scheme_items: {
+        Row: {
+          class_id: string | null
+          class_label: string | null
+          created_at: string
+          created_by: string
+          document_id: string
+          id: string
+          lesson_note_id: string | null
+          objectives: Json
+          review_remark: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          school_id: string
+          status: string
+          sub_topics: Json
+          subject_id: string | null
+          term: Database["public"]["Enums"]["term_name"] | null
+          topic: string
+          week: number | null
+        }
+        Insert: {
+          class_id?: string | null
+          class_label?: string | null
+          created_at?: string
+          created_by: string
+          document_id: string
+          id?: string
+          lesson_note_id?: string | null
+          objectives?: Json
+          review_remark?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          school_id: string
+          status?: string
+          sub_topics?: Json
+          subject_id?: string | null
+          term?: Database["public"]["Enums"]["term_name"] | null
+          topic: string
+          week?: number | null
+        }
+        Update: {
+          class_id?: string | null
+          class_label?: string | null
+          created_at?: string
+          created_by?: string
+          document_id?: string
+          id?: string
+          lesson_note_id?: string | null
+          objectives?: Json
+          review_remark?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          school_id?: string
+          status?: string
+          sub_topics?: Json
+          subject_id?: string | null
+          term?: Database["public"]["Enums"]["term_name"] | null
+          topic?: string
+          week?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "scheme_items_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "scheme_items_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "curriculum_documents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "scheme_items_lesson_note_id_fkey"
+            columns: ["lesson_note_id"]
+            isOneToOne: false
+            referencedRelation: "lesson_notes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "scheme_items_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "scheme_items_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "subjects"
             referencedColumns: ["id"]
           },
         ]
