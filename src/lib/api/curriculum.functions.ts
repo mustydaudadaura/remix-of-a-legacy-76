@@ -83,7 +83,7 @@ export const breakdownCurriculum = createServerFn({ method: "POST" })
       return (c.items ?? []).filter((i) => i?.topic).map((i) => ({
         document_id: doc.id, school_id: data.school_id, subject_id: data.subject_id, created_by: userId,
         class_id: match?.id ?? null, class_label: String(c.class_label ?? "").slice(0, 80),
-        term: (TERMS as readonly string[]).includes(i.term) ? i.term : null,
+        term: TERMS.find((t) => String(i.term ?? "").toLowerCase().startsWith(t) || String(i.term ?? "").startsWith({ first: "1", second: "2", third: "3" }[t])) ?? null,
         week: Number.isInteger(i.week) && i.week >= 1 && i.week <= 15 ? i.week : null,
         topic: String(i.topic).slice(0, 200),
         sub_topics: Array.isArray(i.sub_topics) ? i.sub_topics.map(String).slice(0, 8) : [],
