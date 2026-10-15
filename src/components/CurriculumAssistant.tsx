@@ -79,8 +79,8 @@ export function CurriculumAssistant({ schoolId, classes, subjects }: { schoolId:
     const m = new Map<string, any[]>();
     for (const it of items.data ?? []) {
       const key = it.class_id ? classes.find((c) => c.id === it.class_id)?.name ?? it.class_label : it.class_label || "Unassigned class";
-      if (filter && key !== filter) continue;
-      m.set(key, [...(m.get(key) ?? []), it]);
+      if (filter && (key ?? "Unassigned class") !== filter) continue;
+      const k = key ?? "Unassigned class"; m.set(k, [...(m.get(k) ?? []), it]);
     }
     return [...m.entries()];
   }, [items.data, classes, filter]);
@@ -99,7 +99,7 @@ export function CurriculumAssistant({ schoolId, classes, subjects }: { schoolId:
     } catch (e: any) { toast.error(e.message); } finally { setBusy(false); }
   };
 
-  const update = async (id: string, patch: Record<string, any>) => {
+  const update = async (id: string, patch: { topic?: string; status?: string; review_remark?: string | null }) => {
     const { error } = await supabase.from("scheme_items").update(patch).eq("id", id);
     if (error) toast.error(error.message); else refresh();
   };
