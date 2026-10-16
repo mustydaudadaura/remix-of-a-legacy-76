@@ -7,7 +7,7 @@ import {
   getScaleForSection,
 } from "@/lib/grading";
 import QRCode from "qrcode";
-import { ShieldCheck } from "lucide-react";
+import { ShieldCheck, GraduationCap } from "lucide-react";
 
 type Assessment = {
   id: string;
@@ -186,6 +186,37 @@ export function ReportCardView({ rc, assessments }: { rc: any; assessments: Asse
             <div className="border border-[var(--rc)] p-2"><strong>Absent:</strong> {rc.days_absent ?? "—"}</div>
             <div className="border border-[var(--rc)] p-2"><strong>Next Resumption:</strong> {rc.next_resumption_date ?? student?.next_resumption_date ?? "—"}</div>
           </div>
+
+          {rc.annual_evaluation && (
+            <div className="report-promotion mt-3 border-2 border-[var(--rc)] p-2.5 rounded text-[11px]" style={{ background: THEME.soft }}>
+              <div className="flex items-center justify-between border-b border-[var(--rc)] pb-1 mb-1.5">
+                <span className="font-bold text-xs uppercase tracking-wide flex items-center gap-1.5 text-[var(--rc)]">
+                  <GraduationCap className="h-4 w-4" />
+                  Official 3-Term Cumulative Promotion Evaluation ({rc.session})
+                </span>
+                <span
+                  className={`px-2.5 py-0.5 rounded text-[10px] font-extrabold uppercase ${
+                    rc.annual_evaluation.promotion.decision === "promoted" || rc.annual_evaluation.promotion.decision === "graduated"
+                      ? "bg-emerald-600 text-white"
+                      : rc.annual_evaluation.promotion.decision === "trial"
+                      ? "bg-amber-600 text-white"
+                      : "bg-rose-600 text-white"
+                  }`}
+                >
+                  {rc.annual_evaluation.promotion.decisionLabel}
+                </span>
+              </div>
+              <div className="grid grid-cols-4 gap-2 text-[10px]">
+                <div><strong>1st Term:</strong> {rc.annual_evaluation.term1 != null ? `${rc.annual_evaluation.term1}%` : "—"}</div>
+                <div><strong>2nd Term:</strong> {rc.annual_evaluation.term2 != null ? `${rc.annual_evaluation.term2}%` : "—"}</div>
+                <div><strong>3rd Term:</strong> {rc.annual_evaluation.term3 != null ? `${rc.annual_evaluation.term3}%` : "—"}</div>
+                <div><strong>Cumulative Average:</strong> <span className="font-bold">{rc.annual_evaluation.cumulativeAverage}%</span></div>
+              </div>
+              <p className="text-[10px] opacity-90 mt-1">
+                <strong>Status:</strong> {rc.annual_evaluation.promotion.reason} ({rc.annual_evaluation.formula})
+              </p>
+            </div>
+          )}
 
           <div className="report-comments mt-3 space-y-2 text-[12px]">
             <div className="border border-[var(--rc)] p-2"><strong className="text-[var(--rc)]">Class Teacher's Remark:</strong> {rc.teacher_remark || "—"}</div>

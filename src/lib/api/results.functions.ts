@@ -1,6 +1,13 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import {
+  calculateGrade,
+  resolveSchoolAcademicConfig,
+  getScaleForSection,
+  computeCumulativeAverage,
+  evaluatePromotion,
+} from "@/lib/grading";
 
 const PublishInput = z.object({
   class_id: z.string().uuid(),
@@ -55,13 +62,14 @@ export const getReportCardDetail = createServerFn({ method: "GET" })
     if (error) throw new Error(error.message);
     if (!rc) throw new Error("Report card not found");
 
-    const [{ data: school }, { data: student }, { data: klass }, { data: rawAssessments }] = await Promise.all([
+    const [{ data: school }, { data: student }, { data: klass }, { data: rawAssessments }, { data: termReports }] = await Promise.all([
       db.from("schools").select("name, motto, address, email, phone, logo_url, stamp_url, website, branch_name, principal_name, principal_signature_url, report_template, current_session, current_term").eq("id", (rc as any).school_id).maybeSingle(),
       db.from("students").select("first_name, middle_name, last_name, admission_no, gender, dob, photo_url, house, next_resumption_date").eq("id", (rc as any).student_id).maybeSingle(),
       (rc as any).class_id
         ? db.from("classes").select("name, arm, level, section").eq("id", (rc as any).class_id).maybeSingle()
         : Promise.resolve({ data: null }),
       db.from("assessments").select("id, subject_id, ca1, ca2, exam, total, grade, remark, created_at").eq("student_id", (rc as any).student_id).eq("session", (rc as any).session).eq("term", (rc as any).term).order("created_at"),
+      db.from("report_cards").select("term, average, total_score, position").eq("student_id", (rc as any).student_id).eq("session", (rc as any).session),
     ]);
 
     const { data: subjectPositions, error: positionError } = await db.rpc("report_subject_positions", { _report_id: rc.id });
@@ -73,8 +81,56 @@ export const getReportCardDetail = createServerFn({ method: "GET" })
       : { data: [] };
     const subjectMap = new Map((subjects ?? []).map((s: any) => [s.id, { name: s.name, code: s.code }]));
 
+    let annualEvaluation: any = null;
+    if (termReports && termReports.length > 0) {
+      const t1 = termReports.find((r: any) => r.term === "first")?.average;
+      const t2 = termReports.find((r: any) => r.term === "second")?.average;
+      const t3 = termReports.find((r: any) => r.term === "third")?.average;
+      const academicConfig = resolveSchoolAcademicConfig(school?.report_template);
+      const cum = computeCumulativeAverage(t1, t2, t3, academicConfig.promotionWeighting);
+
+      const subs = (rawAssessments ?? []).map((a: any) => ({
+        name: subjectMap.get(a.subject_id)?.name || "Subject",
+        score: Number(a.total) || 0,
+        grade: a.grade || "F9",
+      }));
+
+      const scaleType = getScaleForSection((klass as any)?.level || (klass as any)?.section || klass?.name);
+      const isFinalClass = Boolean(
+        klass?.name?.toLowerCase().includes("ss 3") ||
+        klass?.name?.toLowerCase().includes("sss 3") ||
+        klass?.name?.toLowerCase().includes("primary 6") ||
+        klass?.name?.toLowerCase().includes("basic 6")
+      );
+
+      const promo = evaluatePromotion(
+        {
+          cumulativeAverage: cum.cumulativeAverage,
+          subjects: subs,
+          isFinalClass,
+          scaleType,
+        },
+        {
+          passMark: academicConfig.passMark,
+          requireEnglish: academicConfig.requireEnglishAndMaths,
+          requireMaths: academicConfig.requireEnglishAndMaths,
+          weighting: academicConfig.promotionWeighting,
+        }
+      );
+
+      annualEvaluation = {
+        term1: t1 ?? null,
+        term2: t2 ?? null,
+        term3: t3 ?? null,
+        cumulativeAverage: cum.cumulativeAverage,
+        formula: cum.formula,
+        termsAvailable: cum.termsAvailable,
+        promotion: promo,
+      };
+    }
+
     return {
-      rc: { ...(rc as any), schools: school, students: student, classes: klass },
+      rc: { ...(rc as any), schools: school, students: student, classes: klass, annual_evaluation: annualEvaluation },
       assessments: (rawAssessments ?? []).map((a: any) => ({ ...a, subject_position: positionMap.get(a.subject_id) ?? null, subjects: subjectMap.get(a.subject_id) ?? null })),
     };
   });
@@ -93,17 +149,23 @@ export const publishReportCards = createServerFn({ method: "POST" })
     // Verify the caller is staff on the class's school
     const { data: cls, error: clsErr } = await db
       .from("classes")
-      .select("id, school_id, name")
+      .select("id, school_id, name, level, section")
       .eq("id", data.class_id)
       .maybeSingle();
     if (clsErr || !cls) throw new Error("Class not found");
 
-    const { data: staffOk } = await db.rpc("school_permission", {
-      _user_id: userId,
-      _school_id: cls.school_id,
-      _permission: "results.publish",
-    });
+    const [{ data: staffOk }, { data: school }] = await Promise.all([
+      db.rpc("school_permission", {
+        _user_id: userId,
+        _school_id: cls.school_id,
+        _permission: "results.publish",
+      }),
+      db.from("schools").select("report_template").eq("id", cls.school_id).maybeSingle(),
+    ]);
     if (!staffOk) throw new Error("Not authorized for this school");
+
+    const academicConfig = resolveSchoolAcademicConfig(school?.report_template);
+    const scaleType = getScaleForSection((cls as any).level || (cls as any).section || cls.name);
 
     // Fetch students in the class
     const { data: students } = await db
@@ -143,8 +205,7 @@ export const publishReportCards = createServerFn({ method: "POST" })
       }))
       .sort((a, b) => b.total_score - a.total_score);
 
-    const gradeToGpa = (avg: number) =>
-      avg >= 70 ? 4.0 : avg >= 60 ? 3.0 : avg >= 50 ? 2.0 : avg >= 45 ? 1.0 : 0.0;
+    const gradeToGpa = (avg: number) => calculateGrade(avg, scaleType).gpa;
 
     const classSize = ranked.length;
     let written = 0;

@@ -8,6 +8,9 @@ import {
   computeCumulativeAverage,
   evaluatePromotion,
   getScaleForSection,
+  resolveSchoolAcademicConfig,
+  DEFAULT_ACADEMIC_CONFIG,
+  CA_RATIOS,
 } from "./grading";
 
 test("WAEC 9-point grading scale assigns correct national grades and remarks", () => {
@@ -155,3 +158,36 @@ test("Promotion evaluation checks pass mark and mandatory English & Maths credit
   });
   assert.equal(graduatingStudent.decision, "graduated");
 });
+
+test("School Academic Configuration resolution and fallback defaults", () => {
+  // Empty or invalid template uses defaults
+  const def = resolveSchoolAcademicConfig(null);
+  assert.equal(def.caRatio, "20_20_60");
+  assert.equal(def.secondaryScale, "waec_9point");
+  assert.equal(def.primaryScale, "primary_5point");
+  assert.equal(def.passMark, 50);
+  assert.equal(def.requireEnglishAndMaths, true);
+  assert.equal(def.promotionWeighting, "20_20_60");
+
+  // Custom template resolution
+  const custom = resolveSchoolAcademicConfig({
+    academic_config: {
+      caRatio: "30_70",
+      secondaryScale: "waec_9point",
+      primaryScale: "primary_5point",
+      passMark: 55,
+      requireEnglishAndMaths: false,
+      promotionWeighting: "equal",
+    },
+  });
+  assert.equal(custom.caRatio, "30_70");
+  assert.equal(custom.passMark, 55);
+  assert.equal(custom.requireEnglishAndMaths, false);
+  assert.equal(custom.promotionWeighting, "equal");
+
+  // Validate all 3 CA ratios have total 100
+  assert.equal(CA_RATIOS["20_20_60"].ca1Max + CA_RATIOS["20_20_60"].ca2Max + CA_RATIOS["20_20_60"].examMax, 100);
+  assert.equal(CA_RATIOS["30_70"].ca1Max + CA_RATIOS["30_70"].ca2Max + CA_RATIOS["30_70"].examMax, 100);
+  assert.equal(CA_RATIOS["40_60"].ca1Max + CA_RATIOS["40_60"].ca2Max + CA_RATIOS["40_60"].examMax, 100);
+});
+
