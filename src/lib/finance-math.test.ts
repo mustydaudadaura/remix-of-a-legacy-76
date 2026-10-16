@@ -1,5 +1,5 @@
 import { test, expect } from "./test-compat";
-import { invoiceOutstanding, maxDiscount } from "./finance-math";
+import { invoiceOutstanding, maxDiscount, paymentProgressPercentage, calculateCollectionTotals } from "./finance-math";
 
 test("a discount is removed before the balance is worked out", () => {
   // ₦15,000 billed, ₦3,000 sibling discount approved, ₦2,000 paid → ₦10,000 still owing
@@ -20,3 +20,27 @@ test("a discount can never cover money already paid", () => {
   expect(maxDiscount({ amount_due: 20000, amount_paid: 5000 })).toBe(15000);
   expect(maxDiscount({ amount_due: 20000, amount_paid: 20000 })).toBe(0);
 });
+
+test("paymentProgressPercentage calculates correct completion", () => {
+  // 50,000 due, 10,000 discount -> 40,000 net. 20,000 paid -> 50%
+  expect(paymentProgressPercentage({ amount_due: 50000, discount_amount: 10000, amount_paid: 20000 })).toBe(50);
+  // Full payment
+  expect(paymentProgressPercentage({ amount_due: 30000, amount_paid: 30000 })).toBe(100);
+  // Zero paid
+  expect(paymentProgressPercentage({ amount_due: 30000, amount_paid: 0 })).toBe(0);
+});
+
+test("calculateCollectionTotals computes consistent totals", () => {
+  const invs = [
+    { amount_due: 50000, discount_amount: 10000, amount_paid: 40000 }, // paid in full after discount
+    { amount_due: 50000, discount_amount: 0, amount_paid: 20000 },     // 30,000 balance
+  ];
+  const totals = calculateCollectionTotals(invs);
+  expect(totals.billed).toBe(100000);
+  expect(totals.discounts).toBe(10000);
+  expect(totals.netPayable).toBe(90000);
+  expect(totals.collected).toBe(60000);
+  expect(totals.outstanding).toBe(30000);
+  expect(totals.collectionRate).toBe(67);
+});
+

@@ -56,7 +56,17 @@ function AuthedLayout() {
   }, [loading, user, navigate]);
 
   const signOut = async () => {
-    await supabase.auth.signOut();
+    try {
+      const { clearDemoAdminSession } = await import("@/hooks/useAuth");
+      clearDemoAdminSession();
+    } catch {
+      // ignore
+    }
+    try {
+      await supabase.auth.signOut();
+    } catch {
+      // ignore offline signOut
+    }
     navigate({ to: "/auth", replace: true });
   };
 

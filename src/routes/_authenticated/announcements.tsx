@@ -14,8 +14,21 @@ import { Badge } from "@/components/ui/badge";
 import { Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Sparkles, Megaphone } from "lucide-react";
+import { WeeklyFridayDigestManager } from "@/components/WeeklyFridayDigestManager";
+
 export const Route = createFileRoute("/_authenticated/announcements")({
-  head: () => ({ meta: [{ title: "Announcements — EduERP" }, { name: "description", content: "Send, schedule and reuse newsletters and notices to school families in EduERP." }, { property: "og:title", content: "Announcements — EduERP" }, { property: "og:description", content: "Send, schedule and reuse newsletters and notices to school families in EduERP." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
+  head: () => ({
+    meta: [
+      { title: "Parent Communication & Friday Digest — EduERP" },
+      { name: "description", content: "Weekly Friday student performance & punctuality analysis, automated digest, and school broadcasts." },
+      { property: "og:title", content: "Parent Communication & Friday Digest — EduERP" },
+      { property: "og:description", content: "Weekly Friday student performance & punctuality analysis, automated digest, and school broadcasts." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+    ],
+  }),
   component: Page,
 });
 
@@ -25,6 +38,7 @@ const empty = { type: "news" as MsgType, title: "", body: "", class_id: "", publ
 function Page() {
   const { schoolId, user } = useAuth();
   const qc = useQueryClient();
+  const [activeTab, setActiveTab] = useState("friday-digest");
   const [form, setForm] = useState(empty);
   const [tplName, setTplName] = useState("");
   const [busy, setBusy] = useState(false);
@@ -95,14 +109,34 @@ function Page() {
   return (
     <div className="space-y-4">
       <div>
-        <h1 className="text-2xl font-bold">Announcements & Newsletter</h1>
-        <p className="text-sm text-muted-foreground">Send now or schedule news and messages to parents — they appear in the family portal alerts.</p>
+        <h1 className="text-2xl font-bold tracking-tight text-foreground">Communication & Parent Updates</h1>
+        <p className="text-sm text-muted-foreground">
+          Send weekly Friday automated student updates, review AI performance triage, or dispatch school-wide announcements.
+        </p>
       </div>
-      <div className="grid gap-4 lg:grid-cols-3">
-        <Card className="lg:col-span-2">
-          <CardHeader><CardTitle className="text-base">New broadcast</CardTitle></CardHeader>
-          <CardContent>
-            <form onSubmit={submit} className="space-y-3">
+
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+        <TabsList className="bg-muted/60 p-1 rounded-xl">
+          <TabsTrigger value="friday-digest" className="gap-1.5 text-xs sm:text-sm">
+            <Sparkles className="h-4 w-4 text-primary" />
+            Friday Digest & AI Student Analysis
+          </TabsTrigger>
+          <TabsTrigger value="broadcasts" className="gap-1.5 text-xs sm:text-sm">
+            <Megaphone className="h-4 w-4 text-muted-foreground" />
+            Broadcast Newsletters & Notices
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="friday-digest" className="space-y-4">
+          <WeeklyFridayDigestManager classes={classes ?? []} />
+        </TabsContent>
+
+        <TabsContent value="broadcasts" className="space-y-4">
+          <div className="grid gap-4 lg:grid-cols-3">
+            <Card className="lg:col-span-2">
+              <CardHeader><CardTitle className="text-base">New broadcast</CardTitle></CardHeader>
+              <CardContent>
+                <form onSubmit={submit} className="space-y-3">
               <div className="grid gap-3 sm:grid-cols-3">
                 <div>
                   <Label htmlFor="ann_type">Type</Label>
@@ -179,6 +213,8 @@ function Page() {
           ))}
         </CardContent>
       </Card>
+      </TabsContent>
+    </Tabs>
     </div>
   );
 }

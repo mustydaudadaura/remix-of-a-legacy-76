@@ -157,7 +157,15 @@ function WeeklyReport({ classes }: { classes: { id: string; name: string }[] }) 
 
   return (
     <Card>
-      <CardHeader><CardTitle className="text-base">Weekly report to parents</CardTitle></CardHeader>
+      <CardHeader className="flex flex-row items-center justify-between pb-2">
+        <div>
+          <CardTitle className="text-base">Weekly report to parents</CardTitle>
+          <p className="text-xs text-muted-foreground">Quick weekly punctuality dispatch to family phones.</p>
+        </div>
+        <a href="/announcements" className="text-xs font-semibold text-primary hover:underline">
+          AI Performance Digest →
+        </a>
+      </CardHeader>
       <CardContent className="space-y-4">
         <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
           <div className="space-y-2">
