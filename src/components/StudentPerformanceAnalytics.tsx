@@ -85,14 +85,15 @@ export function StudentPerformanceAnalytics({
   const { data: classesData = [], isLoading: loadingClasses } = useQuery({
     queryKey: ["analytics-classes", schoolId],
     queryFn: async () => {
-      let query = supabase.from("classes").select("id, name, level, arm, section").order("name");
-      if (schoolId) query = query.eq("school_id", schoolId);
-      const { data, error } = await query;
-      if (error) {
-        console.error("Error fetching classes for analytics:", error);
+      try {
+        let query = supabase.from("classes").select("id, name, level, arm, section").order("name");
+        if (schoolId) query = query.eq("school_id", schoolId);
+        const { data, error } = await query;
+        if (error) return [];
+        return data ?? [];
+      } catch {
         return [];
       }
-      return data ?? [];
     },
   });
 

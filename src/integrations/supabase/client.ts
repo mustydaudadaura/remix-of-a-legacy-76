@@ -3,22 +3,48 @@ import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 import { brokeredPreviewStorage } from './previewAuthStorage';
 
+function placeholderFetch(input: RequestInfo | URL, _init?: RequestInit): Promise<Response> {
+  const urlStr = typeof input === "string" ? input : input instanceof URL ? input.toString() : input.url;
+  const body = urlStr.includes("/rpc/") || urlStr.includes("/auth/") ? "{}" : "[]";
+  return Promise.resolve(
+    new Response(body, {
+      status: 200,
+      headers: {
+        "Content-Type": "application/json",
+        "content-range": "0-0/0",
+      },
+    })
+  );
+}
+
+export const isSupabaseConfigured = Boolean(
+  ((typeof import.meta !== "undefined" && import.meta.env?.VITE_SUPABASE_URL) || process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL) &&
+  !String((typeof import.meta !== "undefined" && import.meta.env?.VITE_SUPABASE_URL) || process.env.SUPABASE_URL || "").includes("placeholder.supabase.co") &&
+  ((typeof import.meta !== "undefined" && import.meta.env?.VITE_SUPABASE_PUBLISHABLE_KEY) || process.env.SUPABASE_PUBLISHABLE_KEY || process.env.VITE_SUPABASE_PUBLISHABLE_KEY) &&
+  !String((typeof import.meta !== "undefined" && import.meta.env?.VITE_SUPABASE_PUBLISHABLE_KEY) || process.env.SUPABASE_PUBLISHABLE_KEY || "").includes("placeholder-key")
+);
+
 function createSupabaseClient() {
   // Use import.meta.env for client-side (Vite build-time replacement)
   // Fall back to process.env for SSR (server-side rendering)
-  const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
+  const SUPABASE_URL =
+    (typeof import.meta !== "undefined" && import.meta.env?.VITE_SUPABASE_URL) ||
+    process.env.SUPABASE_URL ||
+    process.env.VITE_SUPABASE_URL;
   const SUPABASE_PUBLISHABLE_KEY =
-    import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ||
+    (typeof import.meta !== "undefined" && import.meta.env?.VITE_SUPABASE_PUBLISHABLE_KEY) ||
     process.env.SUPABASE_PUBLISHABLE_KEY ||
     process.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 
-  if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
+  if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY || !isSupabaseConfigured) {
     const missing = [
       ...(!SUPABASE_URL ? ['SUPABASE_URL'] : []),
       ...(!SUPABASE_PUBLISHABLE_KEY ? ['SUPABASE_PUBLISHABLE_KEY'] : []),
     ];
-    const message = `Missing Supabase environment variable(s): ${missing.join(', ')}.`;
-    console.warn(`[Supabase] ${message}`);
+    if (missing.length > 0) {
+      const message = `Missing Supabase environment variable(s): ${missing.join(', ')}.`;
+      console.warn(`[Supabase] ${message}`);
+    }
     return createClient<Database>(
       SUPABASE_URL || 'https://placeholder.supabase.co',
       SUPABASE_PUBLISHABLE_KEY || 'placeholder-key',
@@ -27,6 +53,9 @@ function createSupabaseClient() {
           storage: brokeredPreviewStorage(),
           persistSession: true,
           autoRefreshToken: true,
+        },
+        global: {
+          fetch: placeholderFetch,
         },
       }
     );

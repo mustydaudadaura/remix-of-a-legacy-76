@@ -13,8 +13,15 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { FileDown, Send } from "lucide-react";
+import { FileDown, Send, Scale } from "lucide-react";
 import { publishReportCards } from "@/lib/api/results.functions";
+import {
+  calculateGrade,
+  validateScores,
+  CA_RATIOS,
+  resolveSchoolAcademicConfig,
+  getScaleForSection,
+} from "@/lib/grading";
 
 export const Route = createFileRoute("/_authenticated/results")({
   head: () => ({ meta: [{ title: "Results — EduERP" }, { name: "description", content: "Results for authorized school accounts and families in EduERP." }, { property: "og:title", content: "Results — EduERP" }, { property: "og:description", content: "Results for authorized school accounts and families in EduERP." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
@@ -43,10 +50,28 @@ function ResultsPage() {
     qc.invalidateQueries({ queryKey: ["assessments"] });
   };
 
+  const { data: activeSchool } = useQuery({
+    queryKey: ["active-school-academic", schoolId],
+    enabled: !!schoolId,
+    queryFn: async () => {
+      const { data } = await supabase.from("schools").select("id, name, report_template").eq("id", schoolId!).maybeSingle();
+      return data;
+    },
+  });
+
+  const academicConfig = resolveSchoolAcademicConfig(activeSchool?.report_template);
+  const caRatioConfig = CA_RATIOS[academicConfig.caRatio] || CA_RATIOS["20_20_60"];
+
   const { data: classes } = useQuery({
     queryKey: ["res-classes"],
-    queryFn: async () => (await supabase.from("classes").select("id, name").order("name")).data ?? [],
+    queryFn: async () => (await supabase.from("classes").select("id, name, level, section, arm").order("name")).data ?? [],
   });
+
+  const selectedClass = classes?.find((c: any) => c.id === filters.class_id);
+  const scaleType = selectedClass
+    ? getScaleForSection(selectedClass.level || selectedClass.section || selectedClass.name)
+    : academicConfig.secondaryScale;
+
   const { data: subjects } = useQuery({
     queryKey: ["res-subjects", filters.class_id],
     queryFn: async () => {
@@ -80,7 +105,16 @@ function ResultsPage() {
 
   const saveScore = async (studentId: string) => {
     if (!schoolId) return toast.error("No school");
-    const s = scores[studentId] ?? { ca1: 0, ca2: 0, exam: 0 };
+    const ex = existing?.[studentId];
+    const s = scores[studentId] ?? { ca1: ex?.ca1 ?? 0, ca2: ex?.ca2 ?? 0, exam: ex?.exam ?? 0 };
+
+    const validation = validateScores(s.ca1, s.ca2, s.exam, academicConfig.caRatio);
+    if (!validation.isValid) {
+      return toast.error(validation.error || "Invalid score values entered");
+    }
+
+    const gradeDef = calculateGrade(validation.total, scaleType);
+
     const { error } = await supabase.from("assessments").upsert({
       school_id: schoolId,
       student_id: studentId,
@@ -88,11 +122,16 @@ function ResultsPage() {
       class_id: filters.class_id,
       session: filters.session,
       term: filters.term,
-      ca1: s.ca1, ca2: s.ca2, exam: s.exam,
+      ca1: s.ca1,
+      ca2: caRatioConfig.ca2Max > 0 ? s.ca2 : 0,
+      exam: s.exam,
+      total: validation.total,
+      grade: gradeDef.grade,
+      remark: gradeDef.remark,
       status: "submitted",
     }, { onConflict: "student_id,subject_id,session,term" });
     if (error) return toast.error(error.message);
-    toast.success("Saved");
+    toast.success(`Score saved (${gradeDef.grade} — ${gradeDef.remark})`);
     qc.invalidateQueries({ queryKey: ["assessments"] });
   };
 
@@ -246,22 +285,71 @@ function ResultsPage() {
             <Table>
               <TableHeader><TableRow>
                 <TableHead>Adm. No.</TableHead><TableHead>Student</TableHead>
-                <TableHead>CA1</TableHead><TableHead>CA2</TableHead><TableHead>Exam</TableHead>
-                <TableHead>Total</TableHead><TableHead>Grade</TableHead><TableHead>Status</TableHead><TableHead></TableHead>
+                <TableHead>{caRatioConfig.ca1Label} ({caRatioConfig.ca1Max})</TableHead>
+                {caRatioConfig.ca2Max > 0 && <TableHead>{caRatioConfig.ca2Label} ({caRatioConfig.ca2Max})</TableHead>}
+                <TableHead>{caRatioConfig.examLabel} ({caRatioConfig.examMax})</TableHead>
+                <TableHead>Total (100)</TableHead>
+                <TableHead>Grade ({scaleType === "waec_9point" ? "WAEC/NECO" : "Basic"})</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead></TableHead>
               </TableRow></TableHeader>
               <TableBody>
                 {students?.length ? students.map((st) => {
                   const ex = existing?.[st.id];
                   const cur = scores[st.id] ?? { ca1: ex?.ca1 ?? 0, ca2: ex?.ca2 ?? 0, exam: ex?.exam ?? 0 };
+                  const liveTotal = (cur.ca1 || 0) + (caRatioConfig.ca2Max > 0 ? (cur.ca2 || 0) : 0) + (cur.exam || 0);
+                  const liveGrade = calculateGrade(liveTotal, scaleType);
                   return (
                     <TableRow key={st.id}>
                       <TableCell className="font-mono text-xs">{st.admission_no}</TableCell>
-                      <TableCell>{st.first_name} {st.last_name}</TableCell>
-                      <TableCell><Input type="number" min={0} max={20} className="w-20" value={cur.ca1} onChange={(e) => setScores({ ...scores, [st.id]: { ...cur, ca1: +e.target.value } })} /></TableCell>
-                      <TableCell><Input type="number" min={0} max={20} className="w-20" value={cur.ca2} onChange={(e) => setScores({ ...scores, [st.id]: { ...cur, ca2: +e.target.value } })} /></TableCell>
-                      <TableCell><Input type="number" min={0} max={60} className="w-20" value={cur.exam} onChange={(e) => setScores({ ...scores, [st.id]: { ...cur, exam: +e.target.value } })} /></TableCell>
-                      <TableCell className="font-semibold">{(cur.ca1 || 0) + (cur.ca2 || 0) + (cur.exam || 0)}</TableCell>
-                      <TableCell>{ex?.grade ? <Badge>{ex.grade}</Badge> : <span className="text-muted-foreground">—</span>}</TableCell>
+                      <TableCell className="font-medium">{st.first_name} {st.last_name}</TableCell>
+                      <TableCell>
+                        <Input
+                          type="number"
+                          min={0}
+                          max={caRatioConfig.ca1Max}
+                          className="w-20"
+                          value={cur.ca1}
+                          onChange={(e) => setScores({ ...scores, [st.id]: { ...cur, ca1: +e.target.value } })}
+                        />
+                      </TableCell>
+                      {caRatioConfig.ca2Max > 0 && (
+                        <TableCell>
+                          <Input
+                            type="number"
+                            min={0}
+                            max={caRatioConfig.ca2Max}
+                            className="w-20"
+                            value={cur.ca2}
+                            onChange={(e) => setScores({ ...scores, [st.id]: { ...cur, ca2: +e.target.value } })}
+                          />
+                        </TableCell>
+                      )}
+                      <TableCell>
+                        <Input
+                          type="number"
+                          min={0}
+                          max={caRatioConfig.examMax}
+                          className="w-20"
+                          value={cur.exam}
+                          onChange={(e) => setScores({ ...scores, [st.id]: { ...cur, exam: +e.target.value } })}
+                        />
+                      </TableCell>
+                      <TableCell className="font-bold text-sm">{liveTotal}</TableCell>
+                      <TableCell>
+                        <div className="flex flex-col gap-0.5">
+                          <span className={`inline-flex items-center w-fit px-2 py-0.5 rounded text-xs font-bold ${
+                            liveGrade.isCredit
+                              ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400"
+                              : liveGrade.isPass
+                              ? "bg-amber-500/15 text-amber-700 dark:text-amber-400"
+                              : "bg-rose-500/15 text-rose-700 dark:text-rose-400"
+                          }`}>
+                            {ex?.grade || liveGrade.grade}
+                          </span>
+                          <span className="text-[10px] text-muted-foreground">{ex?.remark || liveGrade.remark}</span>
+                        </div>
+                      </TableCell>
                       <TableCell className="min-w-[140px]">
                         {!ex ? <span className="text-xs text-muted-foreground">Not entered</span>
                           : ex.status === "approved" ? <Badge>Approved</Badge>
@@ -281,7 +369,7 @@ function ResultsPage() {
                       </TableCell>
                     </TableRow>
                   );
-                }) : <TableRow><TableCell colSpan={9} className="text-center text-muted-foreground">No students in this class</TableCell></TableRow>}
+                }) : <TableRow><TableCell colSpan={caRatioConfig.ca2Max > 0 ? 9 : 8} className="text-center text-muted-foreground">No students in this class</TableCell></TableRow>}
               </TableBody>
             </Table>
           </CardContent>

@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import {
   LayoutDashboard, Users, BookOpen, FileText, Building2, LogOut,
   GraduationCap, UserCog, Menu, X, Award, CalendarCheck, Wallet, Megaphone, ScrollText, MoonStar,
+  Sparkles, Palette,
 } from "lucide-react";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -26,6 +27,7 @@ const NAV = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard, roles: ["super_admin","school_admin","teacher","accountant","student","parent"] },
   { to: "/schools", label: "Schools", icon: Building2, roles: ["super_admin"] },
   { to: "/admissions", label: "Admissions", icon: UserCog, roles: ["super_admin","school_admin"] },
+  { to: "/admissions", search: { tab: "ai-assistant" }, label: "AI Admission Assistant", icon: Sparkles, roles: ["super_admin","school_admin"] },
   { to: "/students", label: "Students", icon: Users, roles: ["super_admin","school_admin","teacher"] },
   { to: "/classes", label: "Classes & Subjects", icon: BookOpen, roles: ["super_admin","school_admin","teacher"] },
   { to: "/academics", label: "Teaching & Timetable", icon: CalendarCheck, roles: ["super_admin","school_admin","teacher"] },
@@ -38,6 +40,8 @@ const NAV = [
   { to: "/report-cards", label: "Report Cards", icon: Award, roles: ["super_admin","school_admin","teacher","student","parent"] },
   { to: "/documents", label: "Certificates & Reports", icon: ScrollText, roles: ["super_admin","school_admin"] },
   { to: "/users", label: "Users & Roles", icon: UserCog, roles: ["super_admin","school_admin"] },
+  { to: "/settings", search: { tab: "academics" }, label: "Grading & CA System", icon: GraduationCap, roles: ["super_admin","school_admin"] },
+  { to: "/settings", search: { tab: "themes" }, label: "App Themes", icon: Palette, roles: ["super_admin","school_admin"] },
   { to: "/settings", search: { tab: "reports" }, label: "Report Card Design", icon: Award, roles: ["super_admin","school_admin"] },
   { to: "/settings", label: "School Settings", icon: Settings2, roles: ["super_admin","school_admin"] },
 ] as const;
@@ -78,6 +82,7 @@ function AuthedLayout() {
     if (n.to === "/dashboard") return true;
     if (n.to === "/schools") return hasRole(roles, "super_admin");
     if (n.to === "/report-cards" && hasRole(roles, "parent", "student")) return true;
+    if (n.to === "/settings") return hasRole(roles, "super_admin", "school_admin") || access.can("settings.edit");
     const permission = PAGE_ACCESS[n.to];
     return permission ? access.can(permission) : false;
   });
@@ -108,7 +113,9 @@ function AuthedLayout() {
         </div>
         <nav className="space-y-1 p-3">
           {visibleNav.map((n) => {
-            const active = location.pathname.startsWith(n.to) && ("search" in n ? (location.search as { tab?: string }).tab === "reports" : (location.search as { tab?: string }).tab !== "reports");
+            const currentTab = (location.search as { tab?: string })?.tab;
+            const targetTab = "search" in n ? (n.search as { tab?: string })?.tab : undefined;
+            const active = location.pathname === n.to && (targetTab ? currentTab === targetTab : !currentTab || currentTab === "list");
             const Icon = n.icon;
             return (
               <Link
@@ -170,8 +177,20 @@ function AuthedLayout() {
             <StudentSearchTrigger onOpen={() => setSearchOpen(true)} />
           </div>
 
-          <div className="text-xs text-muted-foreground hidden md:block shrink-0">
-            {new Date().toLocaleDateString("en-NG", { weekday: "short", year: "numeric", month: "short", day: "numeric" })}
+          <div className="flex items-center gap-2">
+            <Link
+              to="/settings"
+              search={{ tab: "themes" }}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-background px-2.5 py-1 text-xs font-medium text-foreground hover:bg-muted transition shadow-2xs"
+              title="Toggle School Theme"
+            >
+              <Palette className="h-3.5 w-3.5 text-primary" />
+              <span className="hidden sm:inline">Theme Settings</span>
+            </Link>
+
+            <div className="text-xs text-muted-foreground hidden md:block shrink-0">
+              {new Date().toLocaleDateString("en-NG", { weekday: "short", year: "numeric", month: "short", day: "numeric" })}
+            </div>
           </div>
         </header>
         <main className="flex-1 p-4 lg:p-6">

@@ -1,5 +1,11 @@
 import { useEffect, useState, type CSSProperties } from "react";
 import { resolveReportTemplate, positionVisibility } from "@/lib/report-template";
+import {
+  resolveSchoolAcademicConfig,
+  CA_RATIOS,
+  getGradingScale,
+  getScaleForSection,
+} from "@/lib/grading";
 import QRCode from "qrcode";
 import { ShieldCheck } from "lucide-react";
 
@@ -31,6 +37,11 @@ export function ReportCardView({ rc, assessments }: { rc: any; assessments: Asse
       ? rawSection
       : "secondary";
   const template = resolveReportTemplate(school?.report_template, section);
+  const academicConfig = resolveSchoolAcademicConfig(school?.report_template);
+  const caRatioConfig = CA_RATIOS[academicConfig.caRatio] || CA_RATIOS["20_20_60"];
+  const scaleType = getScaleForSection(section);
+  const activeScale = getGradingScale(scaleType);
+
   const positions = positionVisibility(template.positions);
   const themeStyle = Object.fromEntries(Object.entries(template).filter(([key]) => key !== 'positions').map(([key, value]) => [`--rc-${key}`, `var(--report-colour-${value})`])) as CSSProperties;
   const THEME = { c: `var(--report-colour-${template.border})`, soft: `color-mix(in oklab, var(--report-colour-${template.border}) 10%, transparent)` };
@@ -94,9 +105,9 @@ export function ReportCardView({ rc, assessments }: { rc: any; assessments: Asse
             <thead>
               <tr className="bg-[var(--rc)] text-[var(--report-paper)]">
                 <th className="border border-[var(--rc)] px-2 py-1 text-left">Subject</th>
-                <th className="border border-[var(--rc)] px-2 py-1">CA1 (20)</th>
-                <th className="border border-[var(--rc)] px-2 py-1">CA2 (20)</th>
-                <th className="border border-[var(--rc)] px-2 py-1">Exam (60)</th>
+                <th className="border border-[var(--rc)] px-2 py-1">{caRatioConfig.ca1Label} ({caRatioConfig.ca1Max})</th>
+                {caRatioConfig.ca2Max > 0 && <th className="border border-[var(--rc)] px-2 py-1">{caRatioConfig.ca2Label} ({caRatioConfig.ca2Max})</th>}
+                <th className="border border-[var(--rc)] px-2 py-1">{caRatioConfig.examLabel} ({caRatioConfig.examMax})</th>
                 <th className="border border-[var(--rc)] px-2 py-1">Total (100)</th>
                 {positions.subject && <th className="border px-2 py-1">Position</th>}
                 <th className="border border-[var(--rc)] px-2 py-1">Grade</th>
@@ -108,7 +119,7 @@ export function ReportCardView({ rc, assessments }: { rc: any; assessments: Asse
                 <tr key={a.id}>
                   <td className="border px-2 py-1">{a.subjects?.name}</td>
                   <td className="border px-2 py-1 text-center">{a.ca1}</td>
-                  <td className="border px-2 py-1 text-center">{a.ca2}</td>
+                  {caRatioConfig.ca2Max > 0 && <td className="border px-2 py-1 text-center">{a.ca2}</td>}
                   <td className="border px-2 py-1 text-center">{a.exam}</td>
                   <td className="border px-2 py-1 text-center font-semibold">{a.total}</td>
                   {positions.subject && <td className="border px-2 py-1 text-center">{a.subject_position ?? "—"}</td>}
@@ -117,13 +128,13 @@ export function ReportCardView({ rc, assessments }: { rc: any; assessments: Asse
                 </tr>
               ))}
               {!assessments?.length && (
-                <tr><td colSpan={positions.subject ? 8 : 7} className="border px-2 py-3 text-center text-muted-foreground">No subject assessments captured.</td></tr>
+                <tr><td colSpan={positions.subject ? (caRatioConfig.ca2Max > 0 ? 8 : 7) : (caRatioConfig.ca2Max > 0 ? 7 : 6)} className="border px-2 py-3 text-center text-muted-foreground">No subject assessments captured.</td></tr>
               )}
             </tbody>
             <tfoot>
               <tr className="font-semibold">
                 <td className="border px-2 py-1">Total / Average</td>
-                <td className="border px-2 py-1 text-center" colSpan={3}>Subjects: {rc.subjects_count}</td>
+                <td className="border px-2 py-1 text-center" colSpan={caRatioConfig.ca2Max > 0 ? 3 : 2}>Subjects: {rc.subjects_count}</td>
                 <td className="border px-2 py-1 text-center">{rc.total_score}</td>
                 <td className="border px-2 py-1 text-center">{rc.average}%</td>
                 {positions.subject && <td className="border px-2 py-1" />}
@@ -134,13 +145,17 @@ export function ReportCardView({ rc, assessments }: { rc: any; assessments: Asse
 
           <div className="report-development grid grid-cols-3 gap-3 mt-3 text-[11px]">
             <div>
-              <h3 className="font-bold text-[var(--rc)] border-b border-[var(--rc)] mb-1">Grading Key</h3>
-              <ul className="space-y-0.5">
-                <li>A — 70–100 — Excellent</li>
-                <li>B — 60–69 — Very Good</li>
-                <li>C — 50–59 — Good</li>
-                <li>D — 45–49 — Fair</li>
-                <li>F — 0–44 — Fail</li>
+              <h3 className="font-bold text-[var(--rc)] border-b border-[var(--rc)] mb-1">
+                {scaleType === "waec_9point" ? "WAEC/NECO 9-Point Scale" : "Basic Education Grading Key"}
+              </h3>
+              <ul className="space-y-0.5 text-[10px]">
+                {activeScale.map((s) => (
+                  <li key={s.grade} className="flex justify-between items-center pr-1">
+                    <span className="font-bold font-mono">{s.grade}</span>
+                    <span className="text-muted-foreground">{s.min}–{s.max}%</span>
+                    <span className="truncate">{s.remark}</span>
+                  </li>
+                ))}
               </ul>
             </div>
             <div>
