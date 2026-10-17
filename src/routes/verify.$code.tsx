@@ -58,6 +58,14 @@ function VerifyPage() {
               <p className="text-[11px] text-muted-foreground text-center pt-2 border-t">
                 Verification code: <span className="font-mono">{code}</span>
               </p>
+              <div className="pt-2 text-center">
+                <a
+                  href={`/verify-credential?token=${encodeURIComponent(code)}`}
+                  className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground shadow-xs hover:bg-primary/90"
+                >
+                  View Full Official Verification Certificate →
+                </a>
+              </div>
             </div>
           )}
         </CardContent>

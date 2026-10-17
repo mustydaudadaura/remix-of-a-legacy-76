@@ -1,6 +1,6 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useMemo } from "react";
 import QRCode from "qrcode";
-import { formatNaira, invoiceOutstanding } from "@/lib/finance-math";
+import { formatNaira, invoiceOutstanding, resolveFeeBreakdown, allocatePaymentToBreakdown } from "@/lib/finance-math";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Printer, Download, Copy, Check, ShieldCheck, CheckCircle2 } from "lucide-react";
@@ -65,6 +65,14 @@ export function DigitalReceipt({ data, onClose }: { data: ReceiptData; onClose?:
   const totalPaid = Number(invoice?.amount_paid ?? payment.amount);
   const pendingBalance = invoice ? invoiceOutstanding(invoice) : 0;
   const isFullyPaid = pendingBalance <= 0;
+
+  const breakdownItems = useMemo(() => {
+    return resolveFeeBreakdown(invoice?.title || "Tuition / Term Fee", originalBilled);
+  }, [invoice?.title, originalBilled]);
+
+  const allocatedBreakdown = useMemo(() => {
+    return allocatePaymentToBreakdown(breakdownItems, totalPaid);
+  }, [breakdownItems, totalPaid]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -295,6 +303,29 @@ export function DigitalReceipt({ data, onClose }: { data: ReceiptData; onClose?:
               </tfoot>
             </table>
           </div>
+
+          {/* Standard Nigerian Fee Itemization (Tuition, PTA, Uniforms, Books, Boarding) */}
+          {breakdownItems.length > 1 && (
+            <div className="mt-3 p-3 rounded-lg border border-border/70 bg-muted/20">
+              <div className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-2 flex items-center justify-between">
+                <span>Statutory Nigerian Fee Breakdown</span>
+                <span className="text-[10px] font-normal lowercase">Tuition • PTA • Uniforms • Books • Boarding</span>
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-[11px]">
+                {allocatedBreakdown.map((item) => (
+                  <div key={item.category} className="p-2 rounded bg-background/80 border border-border/60">
+                    <div className="text-muted-foreground truncate">{item.name}</div>
+                    <div className="flex items-center justify-between mt-1 font-mono font-semibold">
+                      <span>{formatNaira(item.amount)}</span>
+                      <span className={item.remaining === 0 ? "text-emerald-600 text-[10px]" : "text-amber-600 text-[10px]"}>
+                        {item.remaining === 0 ? "✓ Cleared" : `${formatNaira(item.allocated)} pd`}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         {payment.notes && (

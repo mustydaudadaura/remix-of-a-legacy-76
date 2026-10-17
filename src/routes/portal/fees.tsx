@@ -4,7 +4,8 @@ import { useQuery } from "@tanstack/react-query";
 import { useParentAuth } from "@/hooks/useParentAuth";
 import { getActiveChildId } from "@/routes/portal";
 import { getPortalFees } from "@/lib/api/portal.functions";
-import { formatNaira, invoiceOutstanding, paymentProgressPercentage, calculateCollectionTotals } from "@/lib/finance-math";
+import { formatNaira, invoiceOutstanding, paymentProgressPercentage, calculateCollectionTotals, resolveFeeBreakdown } from "@/lib/finance-math";
+import { generateStudentVirtualAccount, formatNubanDisplay } from "@/lib/virtual-accounts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -12,7 +13,7 @@ import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { DigitalReceipt, type ReceiptData } from "@/components/finance/DigitalReceipt";
-import { Download, Receipt, Wallet, AlertCircle, CheckCircle2, Clock, Building2, Copy, ShieldCheck } from "lucide-react";
+import { Download, Receipt, Wallet, AlertCircle, CheckCircle2, Clock, Building2, Copy, ShieldCheck, Zap, CreditCard, ArrowRight } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/portal/fees")({
@@ -47,6 +48,22 @@ function Page() {
 
   const totals = calculateCollectionTotals(invoices);
   const now = new Date();
+
+  const virtualAccount = student
+    ? generateStudentVirtualAccount({
+        schoolCode: (school as any)?.code || "SCH",
+        schoolName: school?.name || "School",
+        studentId: student.id,
+        admissionNo: student.admission_no,
+        firstName: student.first_name,
+        lastName: student.last_name,
+      })
+    : null;
+
+  const currentInvoice = invoices[0];
+  const feeBreakdown = currentInvoice
+    ? resolveFeeBreakdown(currentInvoice.title, Number(currentInvoice.amount_due) || 0)
+    : [];
 
   const handleOpenReceipt = (p: any) => {
     // Find matching invoice for this payment
@@ -381,19 +398,134 @@ function Page() {
           </Card>
         </TabsContent>
 
-        {/* Tab 3: Payment Instructions */}
-        <TabsContent value="payment-info" className="space-y-3">
+        {/* Tab 3: Dedicated Virtual Account & Payment Instructions */}
+        <TabsContent value="payment-info" className="space-y-4">
+          {/* Dedicated Student Virtual Account Card */}
+          {virtualAccount && (
+            <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 via-slate-800 to-indigo-950 p-6 text-white shadow-lg border border-slate-700">
+              <div className="flex items-center justify-between border-b border-white/10 pb-4 mb-4">
+                <div className="flex items-center gap-2.5">
+                  <div className="h-9 w-9 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center border border-emerald-500/30">
+                    <Zap className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-base tracking-tight">Dedicated Student Virtual Account</h3>
+                    <p className="text-xs text-slate-300">Central Bank of Nigeria (CBN) Instant Automated Fee Clearing</p>
+                  </div>
+                </div>
+                <Badge className="bg-emerald-500/20 text-emerald-300 border-emerald-500/30 text-[11px] font-semibold">
+                  Instant NUBAN
+                </Badge>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 py-2">
+                <div>
+                  <span className="text-[11px] uppercase tracking-wider text-slate-400 block">Bank Name</span>
+                  <span className="text-base font-bold text-white">{virtualAccount.bankName}</span>
+                </div>
+
+                <div>
+                  <span className="text-[11px] uppercase tracking-wider text-slate-400 block">Account Number (10-Digit NUBAN)</span>
+                  <div className="flex items-center gap-2 mt-0.5">
+                    <span className="font-mono text-xl sm:text-2xl font-extrabold text-emerald-400 tracking-wider">
+                      {formatNubanDisplay(virtualAccount.accountNumber)}
+                    </span>
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      onClick={() => copyToClipboard(virtualAccount.accountNumber, "Virtual Account Number")}
+                      className="h-7 px-2 text-xs bg-white/10 hover:bg-white/20 text-white border border-white/20"
+                    >
+                      <Copy className="h-3 w-3 mr-1" />
+                      Copy
+                    </Button>
+                  </div>
+                </div>
+
+                <div>
+                  <span className="text-[11px] uppercase tracking-wider text-slate-400 block">Account Beneficiary</span>
+                  <span className="text-sm font-semibold text-white font-mono truncate block">{virtualAccount.accountName}</span>
+                </div>
+              </div>
+
+              <div className="mt-4 pt-3 border-t border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs text-slate-300">
+                <div className="flex items-center gap-1.5">
+                  <ShieldCheck className="h-4 w-4 text-emerald-400 shrink-0" />
+                  <span>Transfers to this dedicated NUBAN clear pending invoices automatically within 30 seconds.</span>
+                </div>
+                <span className="font-mono text-[11px] text-slate-400">Ref: {virtualAccount.paymentReference}</span>
+              </div>
+            </div>
+          )}
+
+          {/* Nigerian Statutory Fee Breakdown Table */}
+          {feeBreakdown.length > 0 && (
+            <Card className="rounded-xl border border-border shadow-sm">
+              <CardHeader className="py-4 border-b border-border">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="text-base font-bold">Standard Nigerian Fee Structure</CardTitle>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      Statutory itemization across Tuition, PTA, Uniforms, Books, and Boarding.
+                    </p>
+                  </div>
+                  <Badge variant="outline" className="text-xs font-semibold">
+                    Total: {formatNaira(sumBreakdown(feeBreakdown))}
+                  </Badge>
+                </div>
+              </CardHeader>
+              <CardContent className="p-0">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-xs">
+                    <thead className="bg-muted/50 border-b border-border text-left text-muted-foreground font-semibold">
+                      <tr>
+                        <th className="py-2.5 px-4">Fee Component</th>
+                        <th className="py-2.5 px-4">Classification</th>
+                        <th className="py-2.5 px-4 text-right">Amount (₦)</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-border">
+                      {feeBreakdown.map((item, idx) => (
+                        <tr key={idx} className="hover:bg-muted/20">
+                          <td className="py-3 px-4 font-medium text-foreground">
+                            {item.name}
+                          </td>
+                          <td className="py-3 px-4">
+                            <Badge variant="secondary" className="text-[10px] uppercase font-semibold">
+                              {item.category}
+                            </Badge>
+                          </td>
+                          <td className="py-3 px-4 text-right font-mono font-bold text-foreground">
+                            {formatNaira(item.amount)}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                    <tfoot className="bg-muted/30 font-bold border-t border-border">
+                      <tr>
+                        <td colSpan={2} className="py-2.5 px-4 text-right text-muted-foreground">Composite Total:</td>
+                        <td className="py-2.5 px-4 text-right font-mono text-primary text-sm">
+                          {formatNaira(sumBreakdown(feeBreakdown))}
+                        </td>
+                      </tr>
+                    </tfoot>
+                  </table>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* General School Bank Account (Manual Fallback) */}
           <Card className="rounded-xl border border-border shadow-sm">
             <CardHeader className="py-4">
               <CardTitle className="text-base font-semibold flex items-center gap-2">
                 <Building2 className="h-5 w-5 text-primary" />
-                School Bank Account & Payment Instructions
+                School Main Account & Bursary Over-the-Counter
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4 text-xs sm:text-sm">
               <p className="text-muted-foreground">
-                School fees can be paid via direct bank transfer, bank deposit, or at the school bursary via POS.
-                Please ensure you quote the student's admission number in the transfer narration for fast automatic reconciliation.
+                In addition to your child's dedicated virtual account, you may also pay via POS at the bursary or via manual bank deposit. Please quote the student admission number.
               </p>
 
               <div className="rounded-xl border border-primary/20 bg-primary/5 p-4 space-y-3">
@@ -406,13 +538,13 @@ function Page() {
                   <span className="font-bold text-foreground">First Bank of Nigeria / Zenith Bank</span>
                 </div>
                 <div className="flex items-center justify-between border-b border-primary/10 pb-2">
-                  <span className="text-muted-foreground">Account Number:</span>
+                  <span className="text-muted-foreground">Main School Account:</span>
                   <div className="flex items-center gap-2">
                     <span className="font-mono font-extrabold text-base text-foreground">1029384756</span>
                     <Button
                       size="sm"
                       variant="ghost"
-                      onClick={() => copyToClipboard("1029384756", "Account Number")}
+                      onClick={() => copyToClipboard("1029384756", "Main School Account")}
                       className="h-7 w-7 p-0"
                     >
                       <Copy className="h-3.5 w-3.5" />
@@ -420,7 +552,7 @@ function Page() {
                   </div>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-muted-foreground">Mandatory Narration:</span>
+                  <span className="text-muted-foreground">Student Narration Code:</span>
                   <div className="flex items-center gap-2">
                     <span className="font-mono font-bold text-primary">
                       {student?.admission_no || "STUDENT-ADM-NO"} - {student?.last_name || "FEES"}
@@ -442,10 +574,10 @@ function Page() {
               <div className="p-3 rounded-lg bg-muted/40 border border-border text-xs space-y-1">
                 <span className="font-bold text-foreground flex items-center gap-1.5">
                   <ShieldCheck className="h-4 w-4 text-emerald-600" />
-                  Confirmation & Receipt Issuance
+                  Confirmation & Electronic Receipts
                 </span>
                 <p className="text-muted-foreground">
-                  Once your transfer is received, the accounts department verifies and issues your official electronic receipt within 24 hours. You will receive an instant notification on this portal.
+                  Manual transfers are audited and credited within 24 hours. Dedicated virtual account transfers clear instantly. Download or print your verified electronic receipt anytime from the Payment History tab.
                 </p>
               </div>
             </CardContent>

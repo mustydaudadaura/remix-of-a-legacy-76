@@ -13,12 +13,13 @@ import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Save, Trash2, ShieldCheck, Settings2, History, Palette, GraduationCap } from 'lucide-react';
+import { Save, Trash2, ShieldCheck, Settings2, History, Palette, GraduationCap, Stamp } from 'lucide-react';
 import { toast } from 'sonner';
 import { CampusManager } from '@/components/CampusManager';
 import { ReportTemplateSettings } from '@/components/ReportTemplateSettings';
 import { Settings as ThemeSettings } from '@/components/Settings';
 import { AcademicSettings } from '@/components/AcademicSettings';
+import { DigitalCredentialsManager } from '@/components/DigitalCredentialsManager';
 
 export const Route = createFileRoute('/_authenticated/settings')({
   head: () => ({ meta: [
@@ -87,9 +88,10 @@ function SchoolSettings({ schoolId }: { schoolId: string }) {
   const modules = controls?.enabled_modules ?? SCHOOL_MODULES.map(m => m.id);
   const sections = controls?.enabled_sections ?? ['nursery', 'primary', 'secondary'];
   return <Tabs defaultValue={tab ?? "details"} className="space-y-6">
-    <TabsList className="grid h-auto w-full grid-cols-2 sm:grid-cols-4 lg:grid-cols-8">
+    <TabsList className="grid h-auto w-full grid-cols-2 sm:grid-cols-3 lg:grid-cols-9">
       <TabsTrigger value="details"><Settings2 className="mr-2 h-4 w-4" />Details</TabsTrigger>
-      <TabsTrigger value="academics"><GraduationCap className="mr-2 h-4 w-4" />Grading & CA</TabsTrigger>
+      <TabsTrigger value="credentials"><Stamp className="mr-2 h-4 w-4 text-primary" />Stamp &amp; Sign</TabsTrigger>
+      <TabsTrigger value="academics"><GraduationCap className="mr-2 h-4 w-4" />Grading &amp; CA</TabsTrigger>
       <TabsTrigger value="themes"><Palette className="mr-2 h-4 w-4" />Themes</TabsTrigger>
       <TabsTrigger value="modules">Modules</TabsTrigger>
       <TabsTrigger value="campuses">Campuses</TabsTrigger>
@@ -97,6 +99,7 @@ function SchoolSettings({ schoolId }: { schoolId: string }) {
       <TabsTrigger value="permissions"><ShieldCheck className="mr-2 h-4 w-4" />Permissions</TabsTrigger>
       <TabsTrigger value="history"><History className="mr-2 h-4 w-4" />History</TabsTrigger>
     </TabsList>
+    <TabsContent value="credentials"><DigitalCredentialsManager school={school} /></TabsContent>
     <TabsContent value="academics"><AcademicSettings school={school} /></TabsContent>
     <TabsContent value="themes"><ThemeSettings schoolId={schoolId} initialTheme={school.theme_color} /></TabsContent>
     <TabsContent value="campuses"><CampusManager schoolId={schoolId} /></TabsContent>

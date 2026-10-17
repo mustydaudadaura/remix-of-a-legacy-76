@@ -21,8 +21,23 @@ export function expect<T>(actual: T) {
     toHaveLength(expected: number) {
       assert.strictEqual((actual as any).length, expected);
     },
+    toBeLessThan(expected: number) {
+      assert.ok((actual as any) < expected, `Expected ${actual} < ${expected}`);
+    },
     toBeLessThanOrEqual(expected: number) {
       assert.ok((actual as any) <= expected, `Expected ${actual} <= ${expected}`);
+    },
+    toBeGreaterThan(expected: number) {
+      assert.ok((actual as any) > expected, `Expected ${actual} > ${expected}`);
+    },
+    toBeGreaterThanOrEqual(expected: number) {
+      assert.ok((actual as any) >= expected, `Expected ${actual} >= ${expected}`);
+    },
+    toBeTruthy() {
+      assert.ok(actual, `Expected ${actual} to be truthy`);
+    },
+    toBeFalsy() {
+      assert.ok(!actual, `Expected ${actual} to be falsy`);
     },
     toThrow(msg?: string) {
       if (msg) {
@@ -32,6 +47,9 @@ export function expect<T>(actual: T) {
       }
     },
     not: {
+      toBe(expected: unknown) {
+        assert.notStrictEqual(actual, expected);
+      },
       toContain(expected: any) {
         if (typeof actual === "string") {
           assert.ok(!actual.includes(expected), `Expected "${actual}" not to contain "${expected}"`);

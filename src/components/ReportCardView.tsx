@@ -48,10 +48,11 @@ export function ReportCardView({ rc, assessments }: { rc: any; assessments: Asse
 
 
   useEffect(() => {
-    if (!rc?.verification_code || typeof window === "undefined") return;
-    const url = `${window.location.origin}/verify/${rc.verification_code}`;
+    const code = rc?.verification_code || rc?.id;
+    if (!code || typeof window === "undefined") return;
+    const url = `${window.location.origin}/verify-credential?token=${encodeURIComponent(code)}`;
     QRCode.toDataURL(url, { width: 160, margin: 1 }).then(setQrDataUrl);
-  }, [rc?.verification_code]);
+  }, [rc?.verification_code, rc?.id]);
 
   return (
     <>
@@ -238,17 +239,29 @@ export function ReportCardView({ rc, assessments }: { rc: any; assessments: Asse
             </div>
             <div className="text-center">
               {qrDataUrl ? (
-                <img src={qrDataUrl} className="h-20 w-20 mx-auto" alt="QR verify" />
+                <a
+                  href={`${typeof window !== "undefined" ? window.location.origin : ""}/verify-credential?token=${encodeURIComponent(rc.verification_code || rc.id)}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  title="Click to view public verification certificate"
+                  className="inline-block"
+                >
+                  <img src={qrDataUrl} className="h-20 w-20 mx-auto hover:opacity-90 transition-opacity" alt="QR verify" />
+                </a>
               ) : <div className="h-20 w-20 mx-auto bg-muted" />}
-              <div className="flex items-center justify-center gap-1 text-[10px] mt-1">
+              <div className="flex items-center justify-center gap-1 text-[10px] mt-1 font-mono font-semibold">
                 <ShieldCheck className="h-3 w-3 text-[var(--rc)]" />
-                Verify: {rc.verification_code}
+                Verify: {rc.verification_code || "OFFICIAL"}
               </div>
             </div>
           </div>
 
           {school?.stamp_url && (
-            <img src={school.stamp_url} alt="stamp" className="absolute right-10 bottom-20 h-24 w-24 opacity-30 pointer-events-none" />
+            <img
+              src={school.stamp_url}
+              alt="Official School Stamp"
+              className="absolute right-8 bottom-16 h-28 w-28 object-contain opacity-85 pointer-events-none print:opacity-95"
+            />
           )}
         </div>
       </div>

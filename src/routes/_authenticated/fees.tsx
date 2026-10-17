@@ -15,7 +15,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plus, BellRing, Percent, Receipt, Wallet, AlertCircle, Clock } from "lucide-react";
+import { Plus, BellRing, Percent, Receipt, Wallet, AlertCircle, Clock, Zap, Layers, Building2 } from "lucide-react";
 import { toast } from "sonner";
 import { ScholarshipManager } from "@/components/finance/ScholarshipManager";
 import { ExpenseManager } from "@/components/finance/ExpenseManager";
@@ -24,6 +24,8 @@ import { FinanceReports } from "@/components/finance/FinanceReports";
 import { PaymentHistoryTable, type PaymentRecord } from "@/components/finance/PaymentHistoryTable";
 import { PendingBalancesTracker, type PendingInvoice } from "@/components/finance/PendingBalancesTracker";
 import { DigitalReceipt, type ReceiptData } from "@/components/finance/DigitalReceipt";
+import { VirtualAccountsManager } from "@/components/finance/VirtualAccountsManager";
+import { FeeBreakdownStructureManager } from "@/components/finance/FeeBreakdownStructureManager";
 
 export const Route = createFileRoute("/_authenticated/fees")({
   head: () => ({
@@ -89,6 +91,11 @@ function Page() {
   const { data: classes } = useQuery({
     queryKey: ["classes-fees"],
     queryFn: async () => (await supabase.from("classes").select("id, name").order("name")).data ?? [],
+  });
+
+  const { data: students } = useQuery({
+    queryKey: ["students-fees", schoolId],
+    queryFn: async () => (await supabase.from("students").select("id, school_id, first_name, last_name, middle_name, admission_no, class_id, classes(id, name)").order("last_name")).data ?? [],
   });
 
   const list = (invoices ?? []) as Invoice[];
@@ -168,6 +175,14 @@ function Page() {
               </Badge>
             )}
           </TabsTrigger>
+          <TabsTrigger value="virtual-accounts" className="gap-1.5 text-xs sm:text-sm">
+            <Zap className="h-4 w-4 text-emerald-600" />
+            Virtual Accounts & Webhook
+          </TabsTrigger>
+          <TabsTrigger value="breakdown" className="gap-1.5 text-xs sm:text-sm">
+            <Layers className="h-4 w-4 text-blue-600" />
+            Fee Breakdown Structure
+          </TabsTrigger>
           <TabsTrigger value="invoices" className="text-xs sm:text-sm">All Invoices</TabsTrigger>
           <TabsTrigger value="items" className="text-xs sm:text-sm">Fee Items</TabsTrigger>
           <TabsTrigger value="scholarships" className="text-xs sm:text-sm">Scholarships & Waivers</TabsTrigger>
@@ -193,6 +208,36 @@ function Page() {
             payments={(payments ?? []) as PaymentRecord[]}
             school={school}
             isLoading={isPaymentsLoading}
+          />
+        </TabsContent>
+
+        {/* Tab: Virtual Accounts & Webhook Auto-Reconciliation */}
+        <TabsContent value="virtual-accounts" className="space-y-4">
+          <VirtualAccountsManager
+            schoolId={schoolId}
+            students={students ?? []}
+            invoices={invoices ?? []}
+            payments={payments ?? []}
+            classes={classes ?? []}
+            school={school}
+            onPaymentReconciled={() => {
+              qc.invalidateQueries({ queryKey: ["fee-invoices"] });
+              qc.invalidateQueries({ queryKey: ["fee-payments"] });
+            }}
+          />
+        </TabsContent>
+
+        {/* Tab: Nigerian Statutory Fee Structure & Breakdown */}
+        <TabsContent value="breakdown" className="space-y-4">
+          <FeeBreakdownStructureManager
+            schoolId={schoolId}
+            invoices={invoices ?? []}
+            items={items ?? []}
+            classes={classes ?? []}
+            onScheduleCreated={() => {
+              qc.invalidateQueries({ queryKey: ["fee-items"] });
+              qc.invalidateQueries({ queryKey: ["fee-invoices"] });
+            }}
           />
         </TabsContent>
 
