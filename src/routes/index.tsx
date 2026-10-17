@@ -23,13 +23,13 @@ export const Route = createFileRoute("/")({
     meta: [
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { title: "Alegace — Publish Your School Results Faster, Cheaper & More Efficiently" },
+      { title: "Alegacy — Publish Your School Results Faster, Cheaper & More Efficiently" },
       {
         name: "description",
         content:
           "All-in-one ERP for Nigerian schools: admissions, automatic WAEC grading, beautiful PDF report cards, parent portal, and fees.",
       },
-      { property: "og:title", content: "Alegace — Modern School Management" },
+      { property: "og:title", content: "Alegacy — Modern School Management" },
       {
         property: "og:description",
         content:
@@ -77,7 +77,7 @@ function Landing() {
             </div>
             <div className="flex flex-col">
               <span className="text-lg font-bold tracking-tight text-foreground leading-none">
-                Alegace
+                Alegacy
               </span>
               <span className="text-[10px] font-medium text-muted-foreground tracking-wide">
                 School Management Platform
@@ -99,7 +99,7 @@ function Landing() {
         </div>
       </header>
 
-      {/* Hero Section with exact Alegace Colour Separation */}
+      {/* Hero Section with exact Alegacy Colour Separation */}
       <section
         className="relative overflow-hidden text-white"
         style={{ background: "var(--gradient-hero)" }}
@@ -113,7 +113,7 @@ function Landing() {
               {/* Trust Badge matching the flyer */}
               <div className="inline-flex items-center gap-2 rounded-xl bg-white/10 px-3.5 py-1.5 backdrop-blur-md border border-white/20 text-xs font-medium text-white/95 shadow-sm">
                 <Sparkles className="h-3.5 w-3.5 text-pink-300" />
-                <span>Over 100 Schools Already Trust Alegace</span>
+                <span>Over 100 Schools Already Trust Alegacy</span>
               </div>
 
               {/* Bold Title */}
@@ -190,7 +190,7 @@ function Landing() {
                           <div className="flex h-6 w-6 items-center justify-center rounded-md bg-sidebar-primary text-white text-xs font-bold">
                             R
                           </div>
-                          <span className="font-bold text-xs truncate">Alegace</span>
+                          <span className="font-bold text-xs truncate">Alegacy</span>
                         </div>
                         <nav className="space-y-1 text-xs">
                           <div className="flex items-center gap-2 rounded-md bg-sidebar-accent px-2 py-1.5 font-medium text-white">

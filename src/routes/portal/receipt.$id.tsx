@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Printer } from "lucide-react";
 
 export const Route = createFileRoute("/portal/receipt/$id")({
-  head: () => ({ meta: [{ title: "Payment Receipt — Alegace Parent Portal" }, { name: "description", content: "Payment Receipt for authorized school accounts and families in Alegace." }, { property: "og:title", content: "Payment Receipt — Alegace Parent Portal" }, { property: "og:description", content: "Payment Receipt for authorized school accounts and families in Alegace." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
+  head: () => ({ meta: [{ title: "Payment Receipt — Alegacy Parent Portal" }, { name: "description", content: "Payment Receipt for authorized school accounts and families in Alegacy." }, { property: "og:title", content: "Payment Receipt — Alegacy Parent Portal" }, { property: "og:description", content: "Payment Receipt for authorized school accounts and families in Alegacy." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: Page,
 });
 

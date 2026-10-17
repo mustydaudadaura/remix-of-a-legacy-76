@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/portal/report-cards")({
-  head: () => ({ meta: [{ title: "Child Results — Alegace Parent Portal" }, { name: "description", content: "Child Results for authorized school accounts and families in Alegace." }, { property: "og:title", content: "Child Results — Alegace Parent Portal" }, { property: "og:description", content: "Child Results for authorized school accounts and families in Alegace." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
+  head: () => ({ meta: [{ title: "Child Results — Alegacy Parent Portal" }, { name: "description", content: "Child Results for authorized school accounts and families in Alegacy." }, { property: "og:title", content: "Child Results — Alegacy Parent Portal" }, { property: "og:description", content: "Child Results for authorized school accounts and families in Alegacy." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: Page,
 });
 
