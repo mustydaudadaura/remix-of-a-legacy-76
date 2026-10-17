@@ -2,7 +2,6 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { setParentSession } from "@/hooks/useParentAuth";
-import { setDemoAdminSession, isDemoAdminActive } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -138,31 +137,13 @@ function AuthPage() {
                   onClick={async () => {
                     setLoading(true);
                     try {
-                      // Attempt Supabase sign in if configured, otherwise activate demo admin session
-                      let creds = { email: "demo.admin@eduerp-demo.ng", password: "DemoSchool#2026" };
-                      try {
-                        const c = await startDemo();
-                        if (c?.email && c?.password) creds = c;
-                      } catch (err) {
-                        console.warn("Using static demo credentials:", err);
-                      }
-                      try {
-                        const { error } = await supabase.auth.signInWithPassword(creds);
-                        if (!error) {
-                          toast.success("Welcome to the demo school!");
-                          navigate({ to: "/dashboard" });
-                          return;
-                        }
-                      } catch {
-                        // Offline or placeholder Supabase
-                      }
-                      setDemoAdminSession();
-                      toast.success("Welcome to Result Arena Academy! (Administrator Mode)");
+                      const creds = await startDemo();
+                      const { error } = await supabase.auth.signInWithPassword(creds);
+                      if (error) throw error;
+                      toast.success("Welcome to the demo school!");
                       navigate({ to: "/dashboard" });
                     } catch (e: any) {
-                      setDemoAdminSession();
-                      toast.success("Welcome to Result Arena Academy! (Administrator Mode)");
-                      navigate({ to: "/dashboard" });
+                      toast.error(e?.message ?? "Demo is unavailable right now. Please try again.");
                     } finally {
                       setLoading(false);
                     }
