@@ -3,8 +3,9 @@ import { supabaseAdmin } from "../src/integrations/supabase/client.server";
 const SCHOOL_ID = "af91ff67-95eb-4b62-93a0-5617d23a2f1d";
 const DEMO_EMAIL = "demo.admin@eduerp-demo.ng";
 const DEMO_PASSWORD = "DemoSchool#2026";
-const SESSION = "2025/2026";
+const SESSIONS = ["2024/2025", "2025/2026"] as const;
 const TERMS = ["first", "second", "third"] as const;
+
 
 async function seedCompleteSchool() {
   console.log("Starting complete Alegacy school database seeding...");
@@ -39,7 +40,7 @@ async function seedCompleteSchool() {
       motto: "Excellence, Character and Innovation",
       website: "https://alegacy.sch.ng",
       principal_name: "Dr. Aliyu Mohammed Bello (Ph.D)",
-      current_session: SESSION,
+      current_session: "2025/2026",
       current_term: "third",
       branch_name: "Main Campus (Abuja)",
       theme_color: "#0a6d3b",
@@ -288,38 +289,41 @@ async function seedCompleteSchool() {
   }
   console.log(`✓ Seeded ${attendanceInserts.length} daily attendance register entries`);
 
-  // 8. Complete 3-Term Continuous Assessments (CA1 20%, CA2 20%, Exam 60%)
+  // 8. Complete Continuous Assessments across 2 Sessions and 3 Terms (CA1 20%, CA2 20%, Exam 60%)
   const coreSubjects = Array.from(subjectMap.entries()).slice(0, 8); // 8 subjects per student
   const assessmentInserts: any[] = [];
 
-  for (const term of TERMS) {
-    for (const st of studentList) {
-      for (const [subjName, subjId] of coreSubjects) {
-        // Deterministic realistic high-school Nigerian scores
-        const seed = st.first_name.charCodeAt(0) + subjName.length + (term === "first" ? 1 : term === "second" ? 2 : 3);
-        const ca1 = 14 + (seed % 6); // 14 - 19 / 20
-        const ca2 = 15 + ((seed * 3) % 5); // 15 - 19 / 20
-        const exam = 42 + ((seed * 7) % 17); // 42 - 58 / 60
-        const total = ca1 + ca2 + exam; // 71 - 96
+  for (const session of SESSIONS) {
+    for (const term of TERMS) {
+      for (const st of studentList) {
+        for (const [subjName, subjId] of coreSubjects) {
+          // Deterministic realistic high-school Nigerian scores
+          const sessionOffset = session === "2024/2025" ? 0 : 2;
+          const seed = st.first_name.charCodeAt(0) + subjName.length + (term === "first" ? 1 : term === "second" ? 2 : 3) + sessionOffset;
+          const ca1 = 14 + (seed % 6); // 14 - 19 / 20
+          const ca2 = 15 + ((seed * 3) % 5); // 15 - 19 / 20
+          const exam = 42 + ((seed * 7) % 17); // 42 - 58 / 60
+          const total = ca1 + ca2 + exam; // 71 - 96
 
-        const grade = total >= 75 ? "A1" : total >= 70 ? "B2" : total >= 65 ? "B3" : total >= 60 ? "C4" : total >= 55 ? "C5" : "C6";
-        const remark = total >= 75 ? "Distinction" : total >= 65 ? "Very Good" : "Credit";
+          const grade = total >= 75 ? "A1" : total >= 70 ? "B2" : total >= 65 ? "B3" : total >= 60 ? "C4" : total >= 55 ? "C5" : "C6";
+          const remark = total >= 75 ? "Distinction" : total >= 65 ? "Very Good" : "Credit";
 
-        assessmentInserts.push({
-          school_id: SCHOOL_ID,
-          student_id: st.id,
-          class_id: st.class_id,
-          subject_id: subjId,
-          session: SESSION,
-          term: term,
-          ca1,
-          ca2,
-          exam,
-          grade,
-          remark,
-          status: "approved",
-          teacher_id: adminUserId,
-        });
+          assessmentInserts.push({
+            school_id: SCHOOL_ID,
+            student_id: st.id,
+            class_id: st.class_id,
+            subject_id: subjId,
+            session: session,
+            term: term,
+            ca1,
+            ca2,
+            exam,
+            grade,
+            remark,
+            status: "approved",
+            teacher_id: adminUserId,
+          });
+        }
       }
     }
   }
@@ -331,46 +335,49 @@ async function seedCompleteSchool() {
         onConflict: "student_id,subject_id,session,term",
       });
   }
-  console.log(`✓ Seeded ${assessmentInserts.length} subject assessment records across all 3 terms`);
+  console.log(`✓ Seeded ${assessmentInserts.length} subject assessment records across 2 sessions and all 3 terms`);
 
-  // 9. Published Terminal Report Cards with Positions & Remarks for 3 Terms
-  for (const term of TERMS) {
-    for (let idx = 0; idx < studentList.length; idx++) {
-      const st = studentList[idx];
-      const position = idx + 1;
-      const average = Number((86.5 - idx * 2.8 + (term === "third" ? 3.2 : term === "second" ? 1.5 : 0)).toFixed(1));
-      const totalScore = Math.round(average * 8);
+  // 9. Published Terminal Report Cards with Positions & Remarks for 2 Sessions and all 3 Terms
+  for (const session of SESSIONS) {
+    for (const term of TERMS) {
+      for (let idx = 0; idx < studentList.length; idx++) {
+        const st = studentList[idx];
+        const position = idx + 1;
+        const sessionOffset = session === "2024/2025" ? -1.2 : 0;
+        const average = Number((86.5 - idx * 2.8 + (term === "third" ? 3.2 : term === "second" ? 1.5 : 0) + sessionOffset).toFixed(1));
+        const totalScore = Math.round(average * 8);
 
-      await client
-        .from("report_cards")
-        .upsert(
-          {
-            school_id: SCHOOL_ID,
-            student_id: st.id,
-            session: SESSION,
-            term: term,
-            class_id: st.class_id,
-            class_size: studentList.length + 15,
-            position,
-            total_score: totalScore,
-            average,
-            gpa: Number((average / 20).toFixed(2)),
-            days_present: 58,
-            days_absent: 2,
-            days_total: 60,
-            principal_remark:
-              average >= 80
-                ? "An outstanding performance this term. Consistently demonstrates disciplined scholarship and leadership."
-                : "Good academic progress. Maintain focus and strive for higher distinction next term.",
-            teacher_remark: "Diligent, courteous and active in class discussions and practical projects.",
-            next_resumption_date: "2026-09-14",
-            published: true,
-          },
-          { onConflict: "student_id,session,term" }
-        );
+        await client
+          .from("report_cards")
+          .upsert(
+            {
+              school_id: SCHOOL_ID,
+              student_id: st.id,
+              session: session,
+              term: term,
+              class_id: st.class_id,
+              class_size: studentList.length + 15,
+              position,
+              total_score: totalScore,
+              average,
+              gpa: Number((average / 20).toFixed(2)),
+              days_present: 58,
+              days_absent: 2,
+              days_total: 60,
+              principal_remark:
+                average >= 80
+                  ? "An outstanding performance this term. Consistently demonstrates disciplined scholarship and leadership."
+                  : "Good academic progress. Maintain focus and strive for higher distinction next term.",
+              teacher_remark: "Diligent, courteous and active in class discussions and practical projects.",
+              next_resumption_date: session === "2024/2025" ? "2025-09-15" : "2026-09-14",
+              published: true,
+            },
+            { onConflict: "student_id,session,term" }
+          );
+      }
     }
   }
-  console.log(`✓ Generated and published all 3-term report cards with averages and class positions`);
+  console.log(`✓ Generated and published report cards across 2 sessions (2024/2025, 2025/2026) and all 3 terms with averages and class positions`);
 
   // 10. Nigerian Fee Structure Items & Student Invoices
   const feeItemsData = [
