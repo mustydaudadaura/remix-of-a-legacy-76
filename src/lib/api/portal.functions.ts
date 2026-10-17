@@ -20,23 +20,23 @@ async function admin() {
 }
 
 const DEMO_SCHOOL = {
-  id: "22222222-2222-2222-2222-222222222222",
-  name: "Result Arena Academy",
-  address: "14 Ahmadu Bello Way, Abuja, Nigeria",
-  phone: "+234 803 123 4567",
-  email: "info@eduerp-demo.ng",
-  motto: "Knowledge, Character and Excellence",
-  branch_name: "Main Campus",
+  id: "af91ff67-95eb-4b62-93a0-5617d23a2f1d",
+  name: "Alegacy International College",
+  address: "Plot 104, Independence Avenue, Central Business District, Abuja, FCT",
+  phone: "+234 803 555 0199",
+  email: "info@alegacy.sch.ng",
+  motto: "Excellence, Character and Innovation",
+  branch_name: "Main Campus (Abuja)",
   current_session: "2025/2026",
-  current_term: "first",
+  current_term: "third",
 };
 
 const DEMO_STUDENT = {
-  id: "33333333-3333-3333-3333-333333333333",
-  admission_no: "ADM/2026/014",
+  id: "19589251-064f-48d3-8483-735002ff7886",
+  admission_no: "ALG/2025/001",
   first_name: "Zainab",
   last_name: "Bello",
-  classes: { name: "Primary 5A" },
+  classes: { name: "Primary 5 Gold" },
 };
 
 /** List parent's children + school. */
