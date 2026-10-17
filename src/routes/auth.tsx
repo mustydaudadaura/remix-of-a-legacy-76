@@ -27,10 +27,6 @@ function AuthPage() {
   const [parentPhone, setParentPhone] = useState("");
 
   useEffect(() => {
-    if (isDemoAdminActive()) {
-      navigate({ to: "/dashboard", replace: true });
-      return;
-    }
     supabase.auth.getSession().then(({ data }) => {
       if (data.session) navigate({ to: "/dashboard", replace: true });
     }).catch(() => {});
@@ -43,35 +39,12 @@ function AuthPage() {
   const signIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    const cleanEmail = email.trim().toLowerCase();
-    if (cleanEmail === "demo.admin@eduerp-demo.ng" || cleanEmail.includes("admin")) {
-      setDemoAdminSession();
-      setLoading(false);
-      toast.success("Welcome, Administrator!");
-      navigate({ to: "/dashboard" });
-      return;
-    }
     try {
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) {
-        if (error.message.includes("fetch") || error.message.includes("Failed to fetch")) {
-          setDemoAdminSession();
-          toast.success("Welcome back! (Signed in as Administrator)");
-          navigate({ to: "/dashboard" });
-          return;
-        }
-        toast.error(error.message);
-      } else {
-        toast.success("Welcome back!");
-      }
+      const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
+      if (error) toast.error(error.message);
+      else toast.success("Welcome back!");
     } catch (err: any) {
-      if (err?.message?.includes("fetch") || cleanEmail.includes("admin")) {
-        setDemoAdminSession();
-        toast.success("Welcome back! (Signed in as Administrator)");
-        navigate({ to: "/dashboard" });
-      } else {
-        toast.error(err?.message || "Sign in failed");
-      }
+      toast.error(err?.message || "Sign in failed. Check your connection and try again.");
     } finally {
       setLoading(false);
     }
