@@ -8,7 +8,7 @@ import { CalendarCheck, Wallet, Award, Bell, Users } from "lucide-react";
 import { getPortalContext } from "@/lib/api/portal.functions";
 
 export const Route = createFileRoute("/portal/")({
-  head: () => ({ meta: [{ title: "Family Overview — EduERP Parent Portal" }, { name: "description", content: "Family Overview for authorized school accounts and families in EduERP." }, { property: "og:title", content: "Family Overview — EduERP Parent Portal" }, { property: "og:description", content: "Family Overview for authorized school accounts and families in EduERP." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
+  head: () => ({ meta: [{ title: "Family Overview — Alegace Parent Portal" }, { name: "description", content: "Family Overview for authorized school accounts and families in Alegace." }, { property: "og:title", content: "Family Overview — Alegace Parent Portal" }, { property: "og:description", content: "Family Overview for authorized school accounts and families in Alegace." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: PortalHome,
 });
 

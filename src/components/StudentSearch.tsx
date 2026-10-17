@@ -11,7 +11,7 @@ import {
   CommandGroup,
   CommandItem,
 } from "@/components/ui/command";
-import { Search, User, ArrowRight, History, X, GraduationCap } from "lucide-react";
+import { Search, User, ArrowRight, History, X, GraduationCap, Command } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export interface StudentRecord {
@@ -80,8 +80,8 @@ export function StudentSearchTrigger({
         <span className="hidden sm:inline">Search students by name or ID…</span>
         <span className="inline sm:hidden">Search students…</span>
       </div>
-      <kbd className="hidden sm:inline-flex h-5 select-none items-center gap-0.5 rounded border border-border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground">
-        <span className="text-xs">⌘</span>K
+      <kbd className="hidden sm:inline-flex h-5 select-none items-center gap-1 rounded border border-border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground">
+        <Command className="h-3 w-3" />K
       </kbd>
     </button>
   );

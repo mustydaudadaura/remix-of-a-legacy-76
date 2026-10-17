@@ -38,7 +38,7 @@ export function LessonNotes({ schoolId, classes, subjects }: { schoolId: string;
   const isAdmin = can("academics.edit");
   const [f, setF] = useState({ cls: "", subject: "", topic: "", week: "1", weekStart: mondayOf(), extra: "" });
   const [doc, setDoc] = useState<Doc | null>(null);
-  const [legacy, setLegacy] = useState<string>("");
+  const [legacy, setAlegacy] = useState<string>("");
   const [busy, setBusy] = useState(false);
   const [editing, setEditing] = useState(false);
   const [rv, setRv] = useState({ score: "", remark: "", reply: "" });
@@ -61,7 +61,7 @@ export function LessonNotes({ schoolId, classes, subjects }: { schoolId: string;
     setBusy(true);
     try {
       const r = await generateLessonNote({ data: { school_id: schoolId, class_id: f.cls, subject_id: f.subject, topic: f.topic, week: Number(f.week), week_start: f.weekStart, extra: f.extra || undefined } });
-      open(r); setEditing(true); setLegacy(""); toast.success("Lesson plan ready — edit anything you want, then submit");
+      open(r); setEditing(true); setAlegacy(""); toast.success("Lesson plan ready — edit anything you want, then submit");
     } catch (e: any) { toast.error(e.message); } finally { setBusy(false); }
   };
   const save = async (status: "draft" | "submitted") => {
@@ -176,7 +176,7 @@ export function LessonNotes({ schoolId, classes, subjects }: { schoolId: string;
             const d: Doc | null = n.plan && n.header ? { id: n.id, header: n.header as unknown as LessonHeader, plan: n.plan as unknown as LessonPlan, meta: n as unknown as Review } : null;
             return (
               <div key={n.id} className="flex items-center justify-between gap-2 p-3 text-sm">
-                <button className="min-w-0 text-left" onClick={() => { if (d) { open(d); setLegacy(""); if (d.meta?.class_id) setF((x) => ({ ...x, cls: d.meta!.class_id!, subject: d.meta!.subject_id ?? x.subject })); } else { open(null); setLegacy(n.content); } window.scrollTo({ top: 0, behavior: "smooth" }); }}>
+                <button className="min-w-0 text-left" onClick={() => { if (d) { open(d); setAlegacy(""); if (d.meta?.class_id) setF((x) => ({ ...x, cls: d.meta!.class_id!, subject: d.meta!.subject_id ?? x.subject })); } else { open(null); setAlegacy(n.content); } window.scrollTo({ top: 0, behavior: "smooth" }); }}>
                   <p className="truncate font-medium">{n.topic} <Badge variant={STATUS[n.status]?.variant ?? "secondary"} className="ml-1">{STATUS[n.status]?.label ?? n.status}</Badge>{n.review_score != null && <span className="ml-1 text-xs text-muted-foreground">{n.review_score}/100</span>}{n.review_remark && !n.acknowledged_at && <span className="ml-1 text-xs text-destructive">• remark</span>}</p>
                   <p className="truncate text-muted-foreground">{n.teacher} · {classes.find((c) => c.id === n.class_id)?.name ?? ""} {subjects.find((s) => s.id === n.subject_id)?.name ?? ""} · week {n.week}</p>
                 </button>

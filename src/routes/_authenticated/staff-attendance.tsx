@@ -28,10 +28,10 @@ const TABS = ["dashboard", "records", "leave", "penalties", "payroll", "reports"
 export const Route = createFileRoute("/_authenticated/staff-attendance")({
   validateSearch: z.object({ tab: z.enum(TABS).optional() }),
   head: () => ({ meta: [
-    { title: "Staff Attendance & Payroll — EduERP" },
-    { name: "description", content: "Staff attendance dashboard, leave, exemptions, penalties, payroll periods and reports." },
-    { property: "og:title", content: "Staff Attendance & Payroll — EduERP" },
-    { property: "og:description", content: "Smart staff attendance with GPS, kiosk, penalties and payroll." },
+    { title: "Staff Attendance Portal — Alegacy" },
+    { name: "description", content: "Staff attendance portal with strict school geolocation, kiosk PIN punch, automated deduction penalties and payroll." },
+    { property: "og:title", content: "Staff Attendance Portal — Alegacy" },
+    { property: "og:description", content: "Smart staff attendance portal with GPS geofencing, kiosk, penalties and payroll." },
     { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" },
   ] }),
   component: Page,
@@ -50,13 +50,28 @@ function Page() {
   const current = tab ?? (view ? "dashboard" : "payroll");
   return (
     <div className="space-y-4">
-      <h1 className="text-2xl font-bold">Staff Attendance & Payroll</h1>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-bold">Staff Attendance Portal</h1>
+          <p className="text-xs text-muted-foreground">
+            Strict school geolocation geofencing, PIN attendance kiosk, automated late/absence deduction penalties, and monthly payroll.
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" asChild>
+            <a href="/kiosk">Open Attendance Kiosk</a>
+          </Button>
+          <Button variant="secondary" size="sm" asChild>
+            <a href="/my-attendance">My Check-in / Out</a>
+          </Button>
+        </div>
+      </div>
       <Tabs value={current} onValueChange={(v) => navigate({ search: { tab: v as never } })}>
         <TabsList className="flex h-auto flex-wrap justify-start">
           {view && <TabsTrigger value="dashboard">Dashboard</TabsTrigger>}
           {view && <TabsTrigger value="records">History</TabsTrigger>}
           {view && <TabsTrigger value="leave">Leave & Exemptions</TabsTrigger>}
-          {view && <TabsTrigger value="penalties">Penalties</TabsTrigger>}
+          {view && <TabsTrigger value="penalties">Deduction Penalties</TabsTrigger>}
           {p.payView && <TabsTrigger value="payroll">Payroll</TabsTrigger>}
           {view && <TabsTrigger value="reports">Reports</TabsTrigger>}
           {edit && <TabsTrigger value="staff">Staff & PINs</TabsTrigger>}

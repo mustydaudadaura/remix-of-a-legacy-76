@@ -23,13 +23,13 @@ export const Route = createFileRoute("/")({
     meta: [
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { title: "Result Arena / EduERP — Publish Your School Results Faster, Cheaper & More Efficiently" },
+      { title: "Alegace — Publish Your School Results Faster, Cheaper & More Efficiently" },
       {
         name: "description",
         content:
           "All-in-one ERP for Nigerian schools: admissions, automatic WAEC grading, beautiful PDF report cards, parent portal, and fees.",
       },
-      { property: "og:title", content: "Result Arena / EduERP — Modern School Management" },
+      { property: "og:title", content: "Alegace — Modern School Management" },
       {
         property: "og:description",
         content:
@@ -77,7 +77,7 @@ function Landing() {
             </div>
             <div className="flex flex-col">
               <span className="text-lg font-bold tracking-tight text-foreground leading-none">
-                Result Arena
+                Alegace
               </span>
               <span className="text-[10px] font-medium text-muted-foreground tracking-wide">
                 School Management Platform
@@ -99,7 +99,7 @@ function Landing() {
         </div>
       </header>
 
-      {/* Hero Section with exact Result Arena Colour Separation */}
+      {/* Hero Section with exact Alegace Colour Separation */}
       <section
         className="relative overflow-hidden text-white"
         style={{ background: "var(--gradient-hero)" }}
@@ -113,7 +113,7 @@ function Landing() {
               {/* Trust Badge matching the flyer */}
               <div className="inline-flex items-center gap-2 rounded-xl bg-white/10 px-3.5 py-1.5 backdrop-blur-md border border-white/20 text-xs font-medium text-white/95 shadow-sm">
                 <Sparkles className="h-3.5 w-3.5 text-pink-300" />
-                <span>Over 100 Schools Already Trust Result Arena</span>
+                <span>Over 100 Schools Already Trust Alegace</span>
               </div>
 
               {/* Bold Title */}
@@ -190,7 +190,7 @@ function Landing() {
                           <div className="flex h-6 w-6 items-center justify-center rounded-md bg-sidebar-primary text-white text-xs font-bold">
                             R
                           </div>
-                          <span className="font-bold text-xs truncate">Result Arena</span>
+                          <span className="font-bold text-xs truncate">Alegace</span>
                         </div>
                         <nav className="space-y-1 text-xs">
                           <div className="flex items-center gap-2 rounded-md bg-sidebar-accent px-2 py-1.5 font-medium text-white">
@@ -229,8 +229,9 @@ function Landing() {
                       {/* Top greeting bar */}
                       <div className="flex items-center justify-between border-b border-border pb-2">
                         <div>
-                          <p className="font-bold text-foreground text-xs sm:text-sm">
-                            Welcome back, Great Minds Academy 👋
+                          <p className="font-bold text-foreground text-xs sm:text-sm flex items-center gap-1.5">
+                            Welcome back, Great Minds Academy
+                            <Sparkles className="h-3.5 w-3.5 text-primary" />
                           </p>
                           <p className="text-[10px] text-muted-foreground">
                             Here's what's happening in your school today
@@ -430,10 +431,10 @@ function Landing() {
         <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 px-4 py-8 sm:flex-row sm:px-6">
           <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
             <GraduationCap className="h-4 w-4 text-primary" />
-            <span>Result Arena / EduERP</span>
+            <span>Alegacy</span>
           </div>
           <p className="text-xs text-muted-foreground">
-            © {new Date().getFullYear()} Result Arena. All rights reserved. Built for Nigerian schools.
+            © {new Date().getFullYear()} Alegacy. All rights reserved. Built for Nigerian schools.
           </p>
           <Link to="/auth" className="text-xs font-semibold text-primary hover:underline">
             Authorized Sign In →

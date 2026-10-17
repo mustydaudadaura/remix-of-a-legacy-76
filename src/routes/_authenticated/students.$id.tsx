@@ -13,7 +13,7 @@ import { ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/students/$id")({
-  head: () => ({ meta: [{ title: "Student Profile — EduERP" }, { name: "description", content: "Complete student profile: biodata, guardians, academics and fees." }, { property: "og:title", content: "Student Profile — EduERP" }, { property: "og:description", content: "Complete student profile: biodata, guardians, academics and fees." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
+  head: () => ({ meta: [{ title: "Student Profile — Alegacy" }, { name: "description", content: "Complete student profile: biodata, guardians, academics and fees." }, { property: "og:title", content: "Student Profile — Alegacy" }, { property: "og:description", content: "Complete student profile: biodata, guardians, academics and fees." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: StudentProfile,
 });
 

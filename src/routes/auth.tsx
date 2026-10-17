@@ -9,11 +9,11 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { GraduationCap, Phone } from "lucide-react";
+import { GraduationCap, Phone, School, Users } from "lucide-react";
 import { startDemo } from "@/lib/api/demo.functions";
 
 export const Route = createFileRoute("/auth")({
-  head: () => ({ meta: [{ title: "Sign in — EduERP" }, { name: "description", content: "Sign in for authorized school accounts and families in EduERP." }, { property: "og:title", content: "Sign in — EduERP" }, { property: "og:description", content: "Sign in for authorized school accounts and families in EduERP." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
+  head: () => ({ meta: [{ title: "Sign in — Alegacy" }, { name: "description", content: "Sign in for authorized school accounts and families in Alegacy." }, { property: "og:title", content: "Sign in — Alegacy" }, { property: "og:description", content: "Sign in for authorized school accounts and families in Alegacy." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: AuthPage,
 });
 
@@ -143,7 +143,7 @@ function AuthPage() {
             <GraduationCap className="h-5 w-5" />
           </div>
           <div className="flex flex-col">
-            <span className="text-xl font-bold tracking-tight text-foreground leading-tight">Result Arena</span>
+            <span className="text-xl font-bold tracking-tight text-foreground leading-tight">Alegacy</span>
             <span className="text-[10px] font-medium text-muted-foreground tracking-wide">School Management Platform</span>
           </div>
         </Link>
@@ -195,7 +195,14 @@ function AuthPage() {
                     }
                   }}
                 >
-                  {loading ? "Opening…" : "🏫 Admin / Staff Demo"}
+                  {loading ? (
+                    "Opening…"
+                  ) : (
+                    <>
+                      <School className="mr-1.5 h-4 w-4" />
+                      Admin / Staff Demo
+                    </>
+                  )}
                 </Button>
 
                 <Button
@@ -223,7 +230,8 @@ function AuthPage() {
                     }
                   }}
                 >
-                  👨‍👩‍👦 Parent Demo
+                  <Users className="mr-1.5 h-4 w-4" />
+                  Parent Demo
                 </Button>
               </div>
             </div>

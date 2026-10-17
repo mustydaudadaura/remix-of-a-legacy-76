@@ -13,7 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/classes")({
-  head: () => ({ meta: [{ title: "Classes & Subjects — EduERP" }, { name: "description", content: "Classes & Subjects for authorized school accounts and families in EduERP." }, { property: "og:title", content: "Classes & Subjects — EduERP" }, { property: "og:description", content: "Classes & Subjects for authorized school accounts and families in EduERP." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
+  head: () => ({ meta: [{ title: "Classes & Subjects — Alegacy" }, { name: "description", content: "Classes & Subjects for authorized school accounts and families in Alegacy." }, { property: "og:title", content: "Classes & Subjects — Alegacy" }, { property: "og:description", content: "Classes & Subjects for authorized school accounts and families in Alegacy." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: ClassesPage,
 });
 

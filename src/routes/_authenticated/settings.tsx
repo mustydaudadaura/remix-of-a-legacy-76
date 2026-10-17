@@ -23,9 +23,9 @@ import { DigitalCredentialsManager } from '@/components/DigitalCredentialsManage
 
 export const Route = createFileRoute('/_authenticated/settings')({
   head: () => ({ meta: [
-    { title: 'School Settings — EduERP' },
-    { name: 'description', content: 'Manage school details, active modules, staff permissions and change history in EduERP.' },
-    { property: 'og:title', content: 'School Settings — EduERP' },
+    { title: 'School Settings — Alegacy' },
+    { name: 'description', content: 'Manage school details, active modules, staff permissions and change history in Alegacy.' },
+    { property: 'og:title', content: 'School Settings — Alegacy' },
     { property: 'og:description', content: 'School configuration and authorized staff access.' },
     { property: 'og:type', content: 'website' }, { name: 'twitter:card', content: 'summary' },
   ] }),

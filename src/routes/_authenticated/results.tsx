@@ -24,7 +24,7 @@ import {
 } from "@/lib/grading";
 
 export const Route = createFileRoute("/_authenticated/results")({
-  head: () => ({ meta: [{ title: "Results — EduERP" }, { name: "description", content: "Results for authorized school accounts and families in EduERP." }, { property: "og:title", content: "Results — EduERP" }, { property: "og:description", content: "Results for authorized school accounts and families in EduERP." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
+  head: () => ({ meta: [{ title: "Results — Alegacy" }, { name: "description", content: "Results for authorized school accounts and families in Alegacy." }, { property: "og:title", content: "Results — Alegacy" }, { property: "og:description", content: "Results for authorized school accounts and families in Alegacy." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: ResultsPage,
 });
 

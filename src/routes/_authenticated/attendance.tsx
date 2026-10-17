@@ -17,7 +17,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/attendance")({
-  head: () => ({ meta: [{ title: "Attendance — EduERP" }, { name: "description", content: "Attendance for authorized school accounts and families in EduERP." }, { property: "og:title", content: "Attendance — EduERP" }, { property: "og:description", content: "Attendance for authorized school accounts and families in EduERP." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
+  head: () => ({ meta: [{ title: "Attendance — Alegacy" }, { name: "description", content: "Attendance for authorized school accounts and families in Alegacy." }, { property: "og:title", content: "Attendance — Alegacy" }, { property: "og:description", content: "Attendance for authorized school accounts and families in Alegacy." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: Page,
 });
 

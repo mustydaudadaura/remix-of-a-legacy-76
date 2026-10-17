@@ -36,7 +36,7 @@ import {
   CheckCircle2,
 } from "lucide-react";
 
-// Design token colors matching EduERP design color separation
+// Design token colors matching Alegacy design color separation
 const PINK = "var(--analytic-pink)";
 const PURPLE = "var(--analytic-purple)";
 const EMERALD = "var(--analytic-emerald)";

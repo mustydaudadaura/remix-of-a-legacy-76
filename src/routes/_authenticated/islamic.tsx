@@ -17,9 +17,9 @@ import { toast } from 'sonner';
 
 export const Route = createFileRoute('/_authenticated/islamic')({
   head: () => ({ meta: [
-    { title: 'Islamic Programmes — EduERP' },
+    { title: 'Islamic Programmes — Alegacy' },
     { name: 'description', content: 'Manage Tahfiz, Arabic and Islamiyya programmes, enrolments and memorisation records.' },
-    { property: 'og:title', content: 'Islamic Programmes — EduERP' },
+    { property: 'og:title', content: 'Islamic Programmes — Alegacy' },
     { property: 'og:description', content: 'Tahfiz tracking, Arabic and Islamic programme management for schools.' },
     { property: 'og:type', content: 'website' }, { name: 'twitter:card', content: 'summary' },
   ] }),

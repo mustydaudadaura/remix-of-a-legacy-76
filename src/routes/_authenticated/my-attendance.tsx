@@ -20,9 +20,9 @@ import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/my-attendance")({
   head: () => ({ meta: [
-    { title: "My Attendance — EduERP" },
+    { title: "My Attendance — Alegacy" },
     { name: "description", content: "Check in and out of school with location verification and view your own attendance and leave." },
-    { property: "og:title", content: "My Attendance — EduERP" },
+    { property: "og:title", content: "My Attendance — Alegacy" },
     { property: "og:description", content: "Staff check-in and check-out with GPS verification." },
     { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" },
   ] }),

@@ -17,9 +17,9 @@ import { yearlySummary, type TermReport } from '@/lib/yearly-summary';
 
 export const Route = createFileRoute('/_authenticated/documents')({
   head: () => ({ meta: [
-    { title: 'Certificates & Yearly Reports — EduERP' },
+    { title: 'Certificates & Yearly Reports — Alegacy' },
     { name: 'description', content: 'Issue transfer and first school leaving certificates and print yearly summary reports.' },
-    { property: 'og:title', content: 'Certificates & Yearly Reports — EduERP' },
+    { property: 'og:title', content: 'Certificates & Yearly Reports — Alegacy' },
     { property: 'og:description', content: 'Transfer certificates, leaving certificates and yearly class summaries.' },
     { property: 'og:type', content: 'website' }, { name: 'twitter:card', content: 'summary' },
   ] }),

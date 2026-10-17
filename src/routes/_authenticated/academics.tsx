@@ -16,9 +16,9 @@ import { toast } from "sonner";
 import { LessonNotes } from "@/components/LessonNotes";
 import { CurriculumAssistant } from "@/components/CurriculumAssistant";
 
-const meta = "Teacher allocations, class timetables and assignments in EduERP.";
+const meta = "Teacher allocations, class timetables and assignments in Alegacy.";
 export const Route = createFileRoute("/_authenticated/academics")({
-  head: () => ({ meta: [{ title: "Teaching & Timetable — EduERP" }, { name: "description", content: meta }, { property: "og:title", content: "Teaching & Timetable — EduERP" }, { property: "og:description", content: meta }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
+  head: () => ({ meta: [{ title: "Teaching & Timetable — Alegacy" }, { name: "description", content: meta }, { property: "og:title", content: "Teaching & Timetable — Alegacy" }, { property: "og:description", content: meta }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: Page,
 });
 

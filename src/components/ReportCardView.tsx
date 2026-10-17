@@ -1,13 +1,8 @@
 import { useEffect, useState, type CSSProperties } from "react";
 import { resolveReportTemplate, positionVisibility } from "@/lib/report-template";
-import {
-  resolveSchoolAcademicConfig,
-  CA_RATIOS,
-  getGradingScale,
-  getScaleForSection,
-} from "@/lib/grading";
+import { resolveSchoolGradingConfig, getScaleForSection } from "@/lib/grading-engine";
 import QRCode from "qrcode";
-import { ShieldCheck, GraduationCap } from "lucide-react";
+import { ShieldCheck } from "lucide-react";
 
 type Assessment = {
   id: string;
@@ -37,22 +32,17 @@ export function ReportCardView({ rc, assessments }: { rc: any; assessments: Asse
       ? rawSection
       : "secondary";
   const template = resolveReportTemplate(school?.report_template, section);
-  const academicConfig = resolveSchoolAcademicConfig(school?.report_template);
-  const caRatioConfig = CA_RATIOS[academicConfig.caRatio] || CA_RATIOS["20_20_60"];
-  const scaleType = getScaleForSection(section);
-  const activeScale = getGradingScale(scaleType);
-
-  const positions = positionVisibility(template.positions);
+  const gradingConfig = resolveSchoolGradingConfig(school?.report_template);
+  const scale = getScaleForSection(section);
   const themeStyle = Object.fromEntries(Object.entries(template).filter(([key]) => key !== 'positions').map(([key, value]) => [`--rc-${key}`, `var(--report-colour-${value})`])) as CSSProperties;
   const THEME = { c: `var(--report-colour-${template.border})`, soft: `color-mix(in oklab, var(--report-colour-${template.border}) 10%, transparent)` };
 
 
   useEffect(() => {
-    const code = rc?.verification_code || rc?.id;
-    if (!code || typeof window === "undefined") return;
-    const url = `${window.location.origin}/verify-credential?token=${encodeURIComponent(code)}`;
+    if (!rc?.verification_code || typeof window === "undefined") return;
+    const url = `${window.location.origin}/verify/${rc.verification_code}`;
     QRCode.toDataURL(url, { width: 160, margin: 1 }).then(setQrDataUrl);
-  }, [rc?.verification_code, rc?.id]);
+  }, [rc?.verification_code]);
 
   return (
     <>
@@ -106,9 +96,9 @@ export function ReportCardView({ rc, assessments }: { rc: any; assessments: Asse
             <thead>
               <tr className="bg-[var(--rc)] text-[var(--report-paper)]">
                 <th className="border border-[var(--rc)] px-2 py-1 text-left">Subject</th>
-                <th className="border border-[var(--rc)] px-2 py-1">{caRatioConfig.ca1Label} ({caRatioConfig.ca1Max})</th>
-                {caRatioConfig.ca2Max > 0 && <th className="border border-[var(--rc)] px-2 py-1">{caRatioConfig.ca2Label} ({caRatioConfig.ca2Max})</th>}
-                <th className="border border-[var(--rc)] px-2 py-1">{caRatioConfig.examLabel} ({caRatioConfig.examMax})</th>
+                <th className="border border-[var(--rc)] px-2 py-1">CA1 (20)</th>
+                <th className="border border-[var(--rc)] px-2 py-1">CA2 (20)</th>
+                <th className="border border-[var(--rc)] px-2 py-1">Exam (60)</th>
                 <th className="border border-[var(--rc)] px-2 py-1">Total (100)</th>
                 {positions.subject && <th className="border px-2 py-1">Position</th>}
                 <th className="border border-[var(--rc)] px-2 py-1">Grade</th>
@@ -120,7 +110,7 @@ export function ReportCardView({ rc, assessments }: { rc: any; assessments: Asse
                 <tr key={a.id}>
                   <td className="border px-2 py-1">{a.subjects?.name}</td>
                   <td className="border px-2 py-1 text-center">{a.ca1}</td>
-                  {caRatioConfig.ca2Max > 0 && <td className="border px-2 py-1 text-center">{a.ca2}</td>}
+                  <td className="border px-2 py-1 text-center">{a.ca2}</td>
                   <td className="border px-2 py-1 text-center">{a.exam}</td>
                   <td className="border px-2 py-1 text-center font-semibold">{a.total}</td>
                   {positions.subject && <td className="border px-2 py-1 text-center">{a.subject_position ?? "—"}</td>}
@@ -129,13 +119,13 @@ export function ReportCardView({ rc, assessments }: { rc: any; assessments: Asse
                 </tr>
               ))}
               {!assessments?.length && (
-                <tr><td colSpan={positions.subject ? (caRatioConfig.ca2Max > 0 ? 8 : 7) : (caRatioConfig.ca2Max > 0 ? 7 : 6)} className="border px-2 py-3 text-center text-muted-foreground">No subject assessments captured.</td></tr>
+                <tr><td colSpan={positions.subject ? 8 : 7} className="border px-2 py-3 text-center text-muted-foreground">No subject assessments captured.</td></tr>
               )}
             </tbody>
             <tfoot>
               <tr className="font-semibold">
                 <td className="border px-2 py-1">Total / Average</td>
-                <td className="border px-2 py-1 text-center" colSpan={caRatioConfig.ca2Max > 0 ? 3 : 2}>Subjects: {rc.subjects_count}</td>
+                <td className="border px-2 py-1 text-center" colSpan={3}>Subjects: {rc.subjects_count}</td>
                 <td className="border px-2 py-1 text-center">{rc.total_score}</td>
                 <td className="border px-2 py-1 text-center">{rc.average}%</td>
                 {positions.subject && <td className="border px-2 py-1" />}
@@ -146,17 +136,13 @@ export function ReportCardView({ rc, assessments }: { rc: any; assessments: Asse
 
           <div className="report-development grid grid-cols-3 gap-3 mt-3 text-[11px]">
             <div>
-              <h3 className="font-bold text-[var(--rc)] border-b border-[var(--rc)] mb-1">
-                {scaleType === "waec_9point" ? "WAEC/NECO 9-Point Scale" : "Basic Education Grading Key"}
-              </h3>
-              <ul className="space-y-0.5 text-[10px]">
-                {activeScale.map((s) => (
-                  <li key={s.grade} className="flex justify-between items-center pr-1">
-                    <span className="font-bold font-mono">{s.grade}</span>
-                    <span className="text-muted-foreground">{s.min}–{s.max}%</span>
-                    <span className="truncate">{s.remark}</span>
-                  </li>
-                ))}
+              <h3 className="font-bold text-[var(--rc)] border-b border-[var(--rc)] mb-1">Grading Key</h3>
+              <ul className="space-y-0.5">
+                <li>A — 70–100 — Excellent</li>
+                <li>B — 60–69 — Very Good</li>
+                <li>C — 50–59 — Good</li>
+                <li>D — 45–49 — Fair</li>
+                <li>F — 0–44 — Fail</li>
               </ul>
             </div>
             <div>
@@ -188,37 +174,6 @@ export function ReportCardView({ rc, assessments }: { rc: any; assessments: Asse
             <div className="border border-[var(--rc)] p-2"><strong>Next Resumption:</strong> {rc.next_resumption_date ?? student?.next_resumption_date ?? "—"}</div>
           </div>
 
-          {rc.annual_evaluation && (
-            <div className="report-promotion mt-3 border-2 border-[var(--rc)] p-2.5 rounded text-[11px]" style={{ background: THEME.soft }}>
-              <div className="flex items-center justify-between border-b border-[var(--rc)] pb-1 mb-1.5">
-                <span className="font-bold text-xs uppercase tracking-wide flex items-center gap-1.5 text-[var(--rc)]">
-                  <GraduationCap className="h-4 w-4" />
-                  Official 3-Term Cumulative Promotion Evaluation ({rc.session})
-                </span>
-                <span
-                  className={`px-2.5 py-0.5 rounded text-[10px] font-extrabold uppercase ${
-                    rc.annual_evaluation.promotion.decision === "promoted" || rc.annual_evaluation.promotion.decision === "graduated"
-                      ? "bg-emerald-600 text-white"
-                      : rc.annual_evaluation.promotion.decision === "trial"
-                      ? "bg-amber-600 text-white"
-                      : "bg-rose-600 text-white"
-                  }`}
-                >
-                  {rc.annual_evaluation.promotion.decisionLabel}
-                </span>
-              </div>
-              <div className="grid grid-cols-4 gap-2 text-[10px]">
-                <div><strong>1st Term:</strong> {rc.annual_evaluation.term1 != null ? `${rc.annual_evaluation.term1}%` : "—"}</div>
-                <div><strong>2nd Term:</strong> {rc.annual_evaluation.term2 != null ? `${rc.annual_evaluation.term2}%` : "—"}</div>
-                <div><strong>3rd Term:</strong> {rc.annual_evaluation.term3 != null ? `${rc.annual_evaluation.term3}%` : "—"}</div>
-                <div><strong>Cumulative Average:</strong> <span className="font-bold">{rc.annual_evaluation.cumulativeAverage}%</span></div>
-              </div>
-              <p className="text-[10px] opacity-90 mt-1">
-                <strong>Status:</strong> {rc.annual_evaluation.promotion.reason} ({rc.annual_evaluation.formula})
-              </p>
-            </div>
-          )}
-
           <div className="report-comments mt-3 space-y-2 text-[12px]">
             <div className="border border-[var(--rc)] p-2"><strong className="text-[var(--rc)]">Class Teacher's Remark:</strong> {rc.teacher_remark || "—"}</div>
             <div className="border border-[var(--rc)] p-2"><strong className="text-[var(--rc)]">Principal's Remark:</strong> {rc.principal_remark || "—"}</div>
@@ -239,29 +194,17 @@ export function ReportCardView({ rc, assessments }: { rc: any; assessments: Asse
             </div>
             <div className="text-center">
               {qrDataUrl ? (
-                <a
-                  href={`${typeof window !== "undefined" ? window.location.origin : ""}/verify-credential?token=${encodeURIComponent(rc.verification_code || rc.id)}`}
-                  target="_blank"
-                  rel="noreferrer"
-                  title="Click to view public verification certificate"
-                  className="inline-block"
-                >
-                  <img src={qrDataUrl} className="h-20 w-20 mx-auto hover:opacity-90 transition-opacity" alt="QR verify" />
-                </a>
+                <img src={qrDataUrl} className="h-20 w-20 mx-auto" alt="QR verify" />
               ) : <div className="h-20 w-20 mx-auto bg-muted" />}
-              <div className="flex items-center justify-center gap-1 text-[10px] mt-1 font-mono font-semibold">
+              <div className="flex items-center justify-center gap-1 text-[10px] mt-1">
                 <ShieldCheck className="h-3 w-3 text-[var(--rc)]" />
-                Verify: {rc.verification_code || "OFFICIAL"}
+                Verify: {rc.verification_code}
               </div>
             </div>
           </div>
 
           {school?.stamp_url && (
-            <img
-              src={school.stamp_url}
-              alt="Official School Stamp"
-              className="absolute right-8 bottom-16 h-28 w-28 object-contain opacity-85 pointer-events-none print:opacity-95"
-            />
+            <img src={school.stamp_url} alt="stamp" className="absolute right-10 bottom-20 h-24 w-24 opacity-30 pointer-events-none" />
           )}
         </div>
       </div>

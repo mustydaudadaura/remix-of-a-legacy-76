@@ -7,7 +7,7 @@ import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import {
   Users, Building2, FileText, BookOpen, GraduationCap, Wallet,
-  TrendingUp, TrendingDown, Award, UserCheck, ClipboardList,
+  TrendingUp, TrendingDown, Award, UserCheck, ClipboardList, Sparkles,
 } from "lucide-react";
 import {
   ResponsiveContainer, AreaChart, Area, BarChart, Bar,
@@ -17,7 +17,7 @@ import {
 import { StudentPerformanceAnalytics } from "@/components/StudentPerformanceAnalytics";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
-  head: () => ({ meta: [{ title: "Dashboard — EduERP" }, { name: "description", content: "Dashboard for authorized school accounts and families in EduERP." }, { property: "og:title", content: "Dashboard — EduERP" }, { property: "og:description", content: "Dashboard for authorized school accounts and families in EduERP." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
+  head: () => ({ meta: [{ title: "Dashboard — Alegacy" }, { name: "description", content: "Dashboard for authorized school accounts and families in Alegacy." }, { property: "og:title", content: "Dashboard — Alegacy" }, { property: "og:description", content: "Dashboard for authorized school accounts and families in Alegacy." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: Dashboard,
 });
 
@@ -148,8 +148,9 @@ function Dashboard() {
       >
         <div className="min-w-0">
           <p className="text-xs sm:text-sm opacity-80">{title}</p>
-          <h1 className="text-xl font-bold sm:text-3xl truncate">
-            Welcome{fullName ? `, ${fullName.split(" ")[0]}` : ""} 👋
+          <h1 className="text-xl font-bold sm:text-3xl truncate flex items-center gap-2">
+            <span>Welcome{fullName ? `, ${fullName.split(" ")[0]}` : ""}</span>
+            <Sparkles className="h-6 w-6 text-white/90" />
           </h1>
           <p className="mt-1 text-xs sm:text-sm opacity-90">
             {new Date().toLocaleDateString("en-NG", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
