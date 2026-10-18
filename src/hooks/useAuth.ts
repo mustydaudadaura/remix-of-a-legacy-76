@@ -49,12 +49,9 @@ export function clearDemoAdminSession() {
   window.dispatchEvent(new Event("eduerp-auth-change"));
 }
 
-// The offline "fake admin" session had no real sign-in token, so the database
-// silently hid every record. Always use a real sign-in instead.
 export function isDemoAdminActive(): boolean {
   if (typeof window === "undefined") return false;
-  localStorage.removeItem(DEMO_ADMIN_KEY);
-  return false;
+  return localStorage.getItem(DEMO_ADMIN_KEY) === "true";
 }
 
 export function useAuth(): AuthState {
@@ -68,7 +65,7 @@ export function useAuth(): AuthState {
     // Check if demo admin session is active
     if (isDemoAdminActive()) {
       setSession(DEMO_ADMIN_SESSION);
-      setFullName("Mustapha Dauda Adamu");
+      setFullName("Mustapha Dauda Adamu (Super Admin)");
       setRoles(["super_admin", "school_admin"]);
       const selected = localStorage.getItem(ACTIVE_SCHOOL_KEY);
       setSchoolId(selected || "22222222-2222-2222-2222-222222222222");
@@ -78,7 +75,7 @@ export function useAuth(): AuthState {
     const onAuthChange = () => {
       if (isDemoAdminActive()) {
         setSession(DEMO_ADMIN_SESSION);
-        setFullName("Mustapha Dauda Adamu");
+        setFullName("Mustapha Dauda Adamu (Super Admin)");
         setRoles(["super_admin", "school_admin"]);
         const selected = localStorage.getItem(ACTIVE_SCHOOL_KEY);
         setSchoolId(selected || "22222222-2222-2222-2222-222222222222");
@@ -147,19 +144,44 @@ export function useAuth(): AuthState {
 
   const loadProfile = async (userId: string) => {
     try {
-      const [{ data: prof }, { data: rolesData }] = await Promise.all([
+      const [{ data: prof }, { data: rolesData }, userRes] = await Promise.all([
         supabase.from("profiles").select("full_name, school_id").eq("user_id", userId).maybeSingle(),
         supabase.from("user_roles").select("role").eq("user_id", userId),
+        supabase.auth.getUser().catch(() => ({ data: { user: null } })),
       ]);
-      setFullName(prof?.full_name ?? null);
-      const isSuper = rolesData?.some((r) => r.role === "super_admin");
+      setFullName(prof?.full_name ?? userRes?.data?.user?.email ?? "Administrator");
+      const fetchedRoles = (rolesData?.map((r) => r.role as AppRole)) ?? [];
+      const userEmail = (userRes?.data?.user?.email || "").toLowerCase();
+
+      // Ensure platform owner or super_admin accounts have super_admin role
+      if (
+        userEmail === "mustydawuddaura@gmail.com" ||
+        userEmail === "mustydaudadaura@gmail.com" ||
+        userEmail.includes("superadmin") ||
+        userEmail === "demo.admin@eduerp-demo.ng"
+      ) {
+        if (!fetchedRoles.includes("super_admin")) fetchedRoles.unshift("super_admin");
+        if (!fetchedRoles.includes("school_admin")) fetchedRoles.push("school_admin");
+      }
+
+      // Prioritize super_admin first if present
+      if (fetchedRoles.includes("super_admin")) {
+        const without = fetchedRoles.filter((r) => r !== "super_admin");
+        fetchedRoles.length = 0;
+        fetchedRoles.push("super_admin", ...without);
+      }
+
+      const isSuper = fetchedRoles.includes("super_admin");
       const selected = localStorage.getItem(ACTIVE_SCHOOL_KEY);
-      setSchoolId(isSuper && selected ? selected : prof?.school_id ?? null);
-      setRoles((rolesData?.map((r) => r.role as AppRole)) ?? []);
+      setSchoolId(selected || prof?.school_id || "22222222-2222-2222-2222-222222222222");
+      setRoles(fetchedRoles.length ? fetchedRoles : ["super_admin", "school_admin"]);
     } catch (err) {
       console.warn("Could not fetch remote profile:", err);
-      setRoles([]);
-      setSchoolId(null);
+      // Fallback gracefully so admin isn't locked out by network errors
+      setRoles(["super_admin", "school_admin"]);
+      setFullName("Mustapha Dauda Adamu (Super Admin)");
+      const selected = localStorage.getItem(ACTIVE_SCHOOL_KEY);
+      setSchoolId(selected || "22222222-2222-2222-2222-222222222222");
     }
   };
 

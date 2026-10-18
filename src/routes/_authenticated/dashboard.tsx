@@ -109,7 +109,17 @@ const bars = (seed: number) =>
 
 function Dashboard() {
   const { fullName, roles, schoolId } = useAuth();
-  const role = roles[0] ?? "student";
+  const role = roles.includes("super_admin")
+    ? "super_admin"
+    : roles.includes("school_admin")
+    ? "school_admin"
+    : roles.includes("teacher")
+    ? "teacher"
+    : roles.includes("accountant")
+    ? "accountant"
+    : roles.includes("parent")
+    ? "parent"
+    : roles[0] ?? "student";
 
   const { data: stats } = useQuery({
     queryKey: ["dashboard-stats", schoolId, role],
