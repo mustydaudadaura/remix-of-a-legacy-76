@@ -150,23 +150,12 @@ function AuthPage() {
                       } catch (err) {
                         console.warn("Using static demo credentials:", err);
                       }
-                      try {
-                        const { error } = await supabase.auth.signInWithPassword(creds);
-                        if (!error) {
-                          toast.success("Welcome to the demo school!");
-                          navigate({ to: "/dashboard" });
-                          return;
-                        }
-                      } catch {
-                        // Offline or placeholder Supabase
-                      }
-                      setDemoAdminSession();
-                      toast.success("Welcome to Result Arena Academy! (Administrator Mode)");
+                      const { error } = await supabase.auth.signInWithPassword(creds);
+                      if (error) throw error;
+                      toast.success("Welcome to the demo school!");
                       navigate({ to: "/dashboard" });
                     } catch (e: any) {
-                      setDemoAdminSession();
-                      toast.success("Welcome to Result Arena Academy! (Administrator Mode)");
-                      navigate({ to: "/dashboard" });
+                      toast.error(e?.message || "Demo sign-in failed. Please reload and try again.");
                     } finally {
                       setLoading(false);
                     }
