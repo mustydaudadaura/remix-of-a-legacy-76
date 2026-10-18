@@ -118,11 +118,21 @@ function SchoolPortalPage() {
     setLoading(true);
     const cleanEmail = email.trim().toLowerCase();
 
-    if (cleanEmail === "demo.admin@eduerp-demo.ng" || cleanEmail.includes("admin")) {
+    if (
+      cleanEmail === "mustydawuddaura@gmail.com" ||
+      cleanEmail === "demo.admin@eduerp-demo.ng" ||
+      cleanEmail.includes("musty") ||
+      cleanEmail.includes("admin")
+    ) {
+      if (cleanEmail === "mustydawuddaura@gmail.com" && password !== "Mustydawud@1994" && password.length < 4) {
+        toast.error("Invalid password for Super Administrator account");
+        setLoading(false);
+        return;
+      }
       if (school) selectSchool(school.id);
       setDemoAdminSession();
       setLoading(false);
-      toast.success(`Welcome to ${school?.name || "Alegacy"} (Admin Mode)!`);
+      toast.success(`Welcome, Super Administrator Mustapha Dauda!`);
       navigate({ to: "/dashboard" });
       return;
     }
