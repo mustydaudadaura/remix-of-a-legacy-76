@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { setParentSession } from "@/hooks/useParentAuth";
-import { setDemoAdminSession, isDemoAdminActive } from "@/hooks/useAuth";
+import { isDemoAdminActive } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
