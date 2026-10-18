@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { setParentSession } from "@/hooks/useParentAuth";
-import { setDemoAdminSession, isDemoAdminActive } from "@/hooks/useAuth";
+import { isDemoAdminActive } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -43,35 +43,12 @@ function AuthPage() {
   const signIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    const cleanEmail = email.trim().toLowerCase();
-    if (cleanEmail === "demo.admin@eduerp-demo.ng" || cleanEmail.includes("admin")) {
-      setDemoAdminSession();
-      setLoading(false);
-      toast.success("Welcome, Administrator!");
-      navigate({ to: "/dashboard" });
-      return;
-    }
     try {
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) {
-        if (error.message.includes("fetch") || error.message.includes("Failed to fetch")) {
-          setDemoAdminSession();
-          toast.success("Welcome back! (Signed in as Administrator)");
-          navigate({ to: "/dashboard" });
-          return;
-        }
-        toast.error(error.message);
-      } else {
-        toast.success("Welcome back!");
-      }
+      const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
+      if (error) toast.error(error.message);
+      else toast.success("Welcome back!");
     } catch (err: any) {
-      if (err?.message?.includes("fetch") || cleanEmail.includes("admin")) {
-        setDemoAdminSession();
-        toast.success("Welcome back! (Signed in as Administrator)");
-        navigate({ to: "/dashboard" });
-      } else {
-        toast.error(err?.message || "Sign in failed");
-      }
+      toast.error(err?.message || "Sign in failed");
     } finally {
       setLoading(false);
     }
@@ -173,23 +150,12 @@ function AuthPage() {
                       } catch (err) {
                         console.warn("Using static demo credentials:", err);
                       }
-                      try {
-                        const { error } = await supabase.auth.signInWithPassword(creds);
-                        if (!error) {
-                          toast.success("Welcome to the demo school!");
-                          navigate({ to: "/dashboard" });
-                          return;
-                        }
-                      } catch {
-                        // Offline or placeholder Supabase
-                      }
-                      setDemoAdminSession();
-                      toast.success("Welcome to Result Arena Academy! (Administrator Mode)");
+                      const { error } = await supabase.auth.signInWithPassword(creds);
+                      if (error) throw error;
+                      toast.success("Welcome to the demo school!");
                       navigate({ to: "/dashboard" });
                     } catch (e: any) {
-                      setDemoAdminSession();
-                      toast.success("Welcome to Result Arena Academy! (Administrator Mode)");
-                      navigate({ to: "/dashboard" });
+                      toast.error(e?.message || "Demo sign-in failed. Please reload and try again.");
                     } finally {
                       setLoading(false);
                     }

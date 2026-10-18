@@ -49,9 +49,12 @@ export function clearDemoAdminSession() {
   window.dispatchEvent(new Event("eduerp-auth-change"));
 }
 
+// The offline "fake admin" session had no real sign-in token, so the database
+// silently hid every record. Always use a real sign-in instead.
 export function isDemoAdminActive(): boolean {
   if (typeof window === "undefined") return false;
-  return localStorage.getItem(DEMO_ADMIN_KEY) === "true";
+  localStorage.removeItem(DEMO_ADMIN_KEY);
+  return false;
 }
 
 export function useAuth(): AuthState {
@@ -155,11 +158,8 @@ export function useAuth(): AuthState {
       setRoles((rolesData?.map((r) => r.role as AppRole)) ?? []);
     } catch (err) {
       console.warn("Could not fetch remote profile:", err);
-      // Fallback gracefully so admin isn't locked out by network errors
-      setRoles(["school_admin"]);
-      setFullName("School Administrator");
-      const selected = localStorage.getItem(ACTIVE_SCHOOL_KEY);
-      setSchoolId(selected || "22222222-2222-2222-2222-222222222222");
+      setRoles([]);
+      setSchoolId(null);
     }
   };
 

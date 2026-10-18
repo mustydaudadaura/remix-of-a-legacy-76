@@ -988,7 +988,7 @@ export function ReportCardView({
                               <p className="text-primary font-semibold">Pupil Score: {d.studentScore}/100 ({d.grade})</p>
                               <p className="text-slate-500 font-medium">Class Average: {d.classAvg}/100</p>
                               <p className="text-[10px] mt-1 pt-1 border-t border-border text-muted-foreground">
-                                Variance: {Number(d.studentScore - d.classAvg).toFixed(1) >= 0 ? "+" : ""}
+                                Variance: {Number(d.studentScore - d.classAvg) >= 0 ? "+" : ""}
                                 {Number(d.studentScore - d.classAvg).toFixed(1)} pts
                               </p>
                             </div>

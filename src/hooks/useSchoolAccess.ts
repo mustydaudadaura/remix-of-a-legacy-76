@@ -1,11 +1,11 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth, hasRole, isDemoAdminActive } from '@/hooks/useAuth';
+import { useAuth, hasRole } from '@/hooks/useAuth';
 import { SCHOOL_PERMISSIONS, type SchoolPermission } from '@/lib/school-access';
 
 export function useSchoolAccess() {
   const { user, schoolId, roles } = useAuth();
-  const isAdmin = isDemoAdminActive() || hasRole(roles, 'super_admin', 'school_admin');
+  const isAdmin = hasRole(roles, 'super_admin', 'school_admin');
 
   const query = useQuery({
     queryKey: ['school-access', user?.id, schoolId, isAdmin],
