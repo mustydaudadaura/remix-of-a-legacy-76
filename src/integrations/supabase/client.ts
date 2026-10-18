@@ -3,18 +3,10 @@ import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 import { brokeredPreviewStorage } from './previewAuthStorage';
 
-function placeholderFetch(input: RequestInfo | URL, _init?: RequestInit): Promise<Response> {
-  const urlStr = typeof input === "string" ? input : input instanceof URL ? input.toString() : input.url;
-  const body = urlStr.includes("/rpc/") || urlStr.includes("/auth/") ? "{}" : "[]";
-  return Promise.resolve(
-    new Response(body, {
-      status: 200,
-      headers: {
-        "Content-Type": "application/json",
-        "content-range": "0-0/0",
-      },
-    })
-  );
+import { mockPostgrestFetch } from './mockDatabase';
+
+function placeholderFetch(input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
+  return mockPostgrestFetch(input, init);
 }
 
 export const isSupabaseConfigured = Boolean(

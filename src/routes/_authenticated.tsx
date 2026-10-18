@@ -58,6 +58,15 @@ function AuthedLayout() {
     if (!loading && !user) navigate({ to: "/auth", replace: true });
   }, [loading, user, navigate]);
 
+  useEffect(() => {
+    if (schools.data && schools.data.length > 0) {
+      const exists = schools.data.some((s) => s.id === access.schoolId);
+      if (!access.schoolId || !exists) {
+        selectSchool(schools.data[0].id);
+      }
+    }
+  }, [schools.data, access.schoolId]);
+
   const signOut = async () => {
     await supabase.auth.signOut();
     navigate({ to: "/auth", replace: true });
