@@ -79,10 +79,10 @@ export function ScratchCardModal({
   });
 
   const handleAutofillDemo = () => {
-    setSerialNo("EDU-2026-DEMO-0001");
+    setSerialNo("ALG-2026-SCRATCH-001");
     setPin("8821-4902-1134");
     setErrorMsg(null);
-    toast.info("Autofilled official demo scratch card credentials");
+    toast.info("Autofilled official Alegacy scratch card credentials");
   };
 
   const handlePinChange = (val: string) => {

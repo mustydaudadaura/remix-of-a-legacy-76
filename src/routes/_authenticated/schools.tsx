@@ -148,39 +148,70 @@ function SchoolsPage() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Name</TableHead><TableHead>Code</TableHead>
-                  <TableHead>Session</TableHead><TableHead>Phone</TableHead>
+                  <TableHead>Name</TableHead>
+                  <TableHead>Code</TableHead>
+                  <TableHead>Direct School Link</TableHead>
+                  <TableHead>Session</TableHead>
+                  <TableHead>Phone</TableHead>
                   <TableHead></TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {schools?.length ? schools.map((s) => (
-                  <TableRow key={s.id}>
-                    <TableCell className="font-medium flex items-center gap-2">
-                      {s.logo_url && <img src={s.logo_url} className="h-7 w-7 object-contain rounded" alt="" />}
-                      {s.name}
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-1">
-                        <code className="px-1.5 py-0.5 rounded bg-muted text-xs font-mono">{s.code}</code>
-                        <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => copyCode(s.code)} title="Copy">
-                          <Copy className="h-3.5 w-3.5" />
+                {schools?.length ? schools.map((s) => {
+                  const slug = s.name.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+                  const directUrl = `${window.location.origin}/s/${slug}`;
+                  return (
+                    <TableRow key={s.id}>
+                      <TableCell className="font-medium flex items-center gap-2">
+                        {s.logo_url && <img src={s.logo_url} className="h-7 w-7 object-contain rounded" alt="" />}
+                        {s.name}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-1">
+                          <code className="px-1.5 py-0.5 rounded bg-muted text-xs font-mono">{s.code}</code>
+                          <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => copyCode(s.code)} title="Copy Code">
+                            <Copy className="h-3.5 w-3.5" />
+                          </Button>
+                          <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => regenerateCode(s)} title="Regenerate">
+                            <RefreshCw className="h-3.5 w-3.5" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-1.5">
+                          <a
+                            href={`/s/${slug}`}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="text-xs font-mono text-primary hover:underline flex items-center gap-1"
+                          >
+                            /s/{slug}
+                          </a>
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            className="h-6 w-6"
+                            title="Copy school link"
+                            onClick={() => {
+                              navigator.clipboard.writeText(directUrl);
+                              toast.success("School portal link copied to clipboard!");
+                            }}
+                          >
+                            <Copy className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                      <TableCell>{s.current_session ?? "—"}</TableCell>
+                      <TableCell>{s.phone ?? "—"}</TableCell>
+                      <TableCell>
+                        <Button size="sm" variant="outline" onClick={() => setEditing(s)}>
+                          <Settings2 className="mr-1 h-3.5 w-3.5" /> Branding
                         </Button>
-                        <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => regenerateCode(s)} title="Regenerate">
-                          <RefreshCw className="h-3.5 w-3.5" />
-                        </Button>
-                      </div>
-                    </TableCell>
-                    <TableCell>{s.current_session ?? "—"}</TableCell>
-                    <TableCell>{s.phone ?? "—"}</TableCell>
-                    <TableCell>
-                      <Button size="sm" variant="outline" onClick={() => setEditing(s)}>
-                        <Settings2 className="mr-1 h-3.5 w-3.5" /> Branding
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                )) : (
-                  <TableRow><TableCell colSpan={5} className="text-center text-muted-foreground">No schools yet</TableCell></TableRow>
+                      </TableCell>
+                    </TableRow>
+                  );
+                }) : (
+                  <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground">No schools yet</TableCell></TableRow>
                 )}
               </TableBody>
             </Table>
