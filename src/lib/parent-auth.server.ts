@@ -3,11 +3,9 @@ import { createHmac, timingSafeEqual } from "crypto";
 const TTL_MS = 1000 * 60 * 60 * 24 * 7; // 7 days
 
 function secret() {
-  const s =
-    process.env.SUPABASE_SERVICE_ROLE_KEY ||
-    process.env.SUPABASE_PUBLISHABLE_KEY ||
-    process.env.VITE_SUPABASE_PUBLISHABLE_KEY ||
-    "parent-auth-secret-salt-key";
+  // Only a server-only secret may sign parent tokens; public keys would let anyone forge them.
+  const s = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!s) throw new Error("Parent sign-in is not configured");
   return s;
 }
 
