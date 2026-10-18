@@ -11,8 +11,10 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
+import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as PortalRouteImport } from './routes/portal'
+import { Route as VerifyCredentialRouteImport } from './routes/verify-credential'
 import { Route as AuthenticatedAcademicsRouteImport } from './routes/_authenticated/academics'
 import { Route as AuthenticatedAdmissionsRouteImport } from './routes/_authenticated/admissions'
 import { Route as AuthenticatedAnnouncementsRouteImport } from './routes/_authenticated/announcements'
@@ -42,6 +44,8 @@ import { Route as VerifyCodeRouteImport } from './routes/verify.$code'
 import { Route as AuthenticatedReportCardIdRouteImport } from './routes/_authenticated/report-card.$id'
 import { Route as AuthenticatedStudentsIdRouteImport } from './routes/_authenticated/students.$id'
 import { Route as ApiPublicParentLoginRouteImport } from './routes/api/public/parent-login'
+import { Route as ApiPublicVirtualAccountWebhookRouteImport } from './routes/api/public/virtual-account-webhook'
+import { Route as ApiWebhooksPaymentsRouteImport } from './routes/api/webhooks/payments'
 import { Route as PortalReceiptIdRouteImport } from './routes/portal/receipt.$id'
 import { Route as PortalReportCardIdRouteImport } from './routes/portal/report-card.$id'
 
@@ -54,6 +58,11 @@ const AuthenticatedRoute = AuthenticatedRouteImport.update({
   id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
@@ -62,6 +71,11 @@ const AuthRoute = AuthRouteImport.update({
 const PortalRoute = PortalRouteImport.update({
   id: '/portal',
   path: '/portal',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const VerifyCredentialRoute = VerifyCredentialRouteImport.update({
+  id: '/verify-credential',
+  path: '/verify-credential',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedAcademicsRoute = AuthenticatedAcademicsRouteImport.update({
@@ -214,6 +228,17 @@ const ApiPublicParentLoginRoute = ApiPublicParentLoginRouteImport.update({
   path: '/api/public/parent-login',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicVirtualAccountWebhookRoute =
+  ApiPublicVirtualAccountWebhookRouteImport.update({
+    id: '/api/public/virtual-account-webhook',
+    path: '/api/public/virtual-account-webhook',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiWebhooksPaymentsRoute = ApiWebhooksPaymentsRouteImport.update({
+  id: '/api/webhooks/payments',
+  path: '/api/webhooks/payments',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PortalReceiptIdRoute = PortalReceiptIdRouteImport.update({
   id: '/receipt/$id',
   path: '/receipt/$id',
@@ -227,8 +252,10 @@ const PortalReportCardIdRoute = PortalReportCardIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
   '/auth': typeof AuthRoute
   '/portal': typeof PortalRouteWithChildren
+  '/verify-credential': typeof VerifyCredentialRoute
   '/academics': typeof AuthenticatedAcademicsRoute
   '/admissions': typeof AuthenticatedAdmissionsRoute
   '/announcements': typeof AuthenticatedAnnouncementsRoute
@@ -258,12 +285,16 @@ export interface FileRoutesByFullPath {
   '/report-card/$id': typeof AuthenticatedReportCardIdRoute
   '/students/$id': typeof AuthenticatedStudentsIdRoute
   '/api/public/parent-login': typeof ApiPublicParentLoginRoute
+  '/api/public/virtual-account-webhook': typeof ApiPublicVirtualAccountWebhookRoute
+  '/api/webhooks/payments': typeof ApiWebhooksPaymentsRoute
   '/portal/receipt/$id': typeof PortalReceiptIdRoute
   '/portal/report-card/$id': typeof PortalReportCardIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
   '/auth': typeof AuthRoute
+  '/verify-credential': typeof VerifyCredentialRoute
   '/academics': typeof AuthenticatedAcademicsRoute
   '/admissions': typeof AuthenticatedAdmissionsRoute
   '/announcements': typeof AuthenticatedAnnouncementsRoute
@@ -293,6 +324,8 @@ export interface FileRoutesByTo {
   '/report-card/$id': typeof AuthenticatedReportCardIdRoute
   '/students/$id': typeof AuthenticatedStudentsIdRoute
   '/api/public/parent-login': typeof ApiPublicParentLoginRoute
+  '/api/public/virtual-account-webhook': typeof ApiPublicVirtualAccountWebhookRoute
+  '/api/webhooks/payments': typeof ApiWebhooksPaymentsRoute
   '/portal/receipt/$id': typeof PortalReceiptIdRoute
   '/portal/report-card/$id': typeof PortalReportCardIdRoute
 }
@@ -300,8 +333,10 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteWithChildren
+  '/admin': typeof AdminRoute
   '/auth': typeof AuthRoute
   '/portal': typeof PortalRouteWithChildren
+  '/verify-credential': typeof VerifyCredentialRoute
   '/_authenticated/academics': typeof AuthenticatedAcademicsRoute
   '/_authenticated/admissions': typeof AuthenticatedAdmissionsRoute
   '/_authenticated/announcements': typeof AuthenticatedAnnouncementsRoute
@@ -331,6 +366,8 @@ export interface FileRoutesById {
   '/_authenticated/report-card/$id': typeof AuthenticatedReportCardIdRoute
   '/_authenticated/students/$id': typeof AuthenticatedStudentsIdRoute
   '/api/public/parent-login': typeof ApiPublicParentLoginRoute
+  '/api/public/virtual-account-webhook': typeof ApiPublicVirtualAccountWebhookRoute
+  '/api/webhooks/payments': typeof ApiWebhooksPaymentsRoute
   '/portal/receipt/$id': typeof PortalReceiptIdRoute
   '/portal/report-card/$id': typeof PortalReportCardIdRoute
 }
@@ -338,8 +375,10 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/admin'
     | '/auth'
     | '/portal'
+    | '/verify-credential'
     | '/academics'
     | '/admissions'
     | '/announcements'
@@ -369,12 +408,16 @@ export interface FileRouteTypes {
     | '/report-card/$id'
     | '/students/$id'
     | '/api/public/parent-login'
+    | '/api/public/virtual-account-webhook'
+    | '/api/webhooks/payments'
     | '/portal/receipt/$id'
     | '/portal/report-card/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/admin'
     | '/auth'
+    | '/verify-credential'
     | '/academics'
     | '/admissions'
     | '/announcements'
@@ -404,14 +447,18 @@ export interface FileRouteTypes {
     | '/report-card/$id'
     | '/students/$id'
     | '/api/public/parent-login'
+    | '/api/public/virtual-account-webhook'
+    | '/api/webhooks/payments'
     | '/portal/receipt/$id'
     | '/portal/report-card/$id'
   id:
     | '__root__'
     | '/'
     | '/_authenticated'
+    | '/admin'
     | '/auth'
     | '/portal'
+    | '/verify-credential'
     | '/_authenticated/academics'
     | '/_authenticated/admissions'
     | '/_authenticated/announcements'
@@ -441,6 +488,8 @@ export interface FileRouteTypes {
     | '/_authenticated/report-card/$id'
     | '/_authenticated/students/$id'
     | '/api/public/parent-login'
+    | '/api/public/virtual-account-webhook'
+    | '/api/webhooks/payments'
     | '/portal/receipt/$id'
     | '/portal/report-card/$id'
   fileRoutesById: FileRoutesById
@@ -448,10 +497,14 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
+  AdminRoute: typeof AdminRoute
   AuthRoute: typeof AuthRoute
   PortalRoute: typeof PortalRouteWithChildren
+  VerifyCredentialRoute: typeof VerifyCredentialRoute
   VerifyCodeRoute: typeof VerifyCodeRoute
   ApiPublicParentLoginRoute: typeof ApiPublicParentLoginRoute
+  ApiPublicVirtualAccountWebhookRoute: typeof ApiPublicVirtualAccountWebhookRoute
+  ApiWebhooksPaymentsRoute: typeof ApiWebhooksPaymentsRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -470,6 +523,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/auth': {
       id: '/auth'
       path: '/auth'
@@ -482,6 +542,13 @@ declare module '@tanstack/react-router' {
       path: '/portal'
       fullPath: '/portal'
       preLoaderRoute: typeof PortalRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/verify-credential': {
+      id: '/verify-credential'
+      path: '/verify-credential'
+      fullPath: '/verify-credential'
+      preLoaderRoute: typeof VerifyCredentialRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/academics': {
@@ -687,6 +754,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicParentLoginRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/virtual-account-webhook': {
+      id: '/api/public/virtual-account-webhook'
+      path: '/api/public/virtual-account-webhook'
+      fullPath: '/api/public/virtual-account-webhook'
+      preLoaderRoute: typeof ApiPublicVirtualAccountWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/webhooks/payments': {
+      id: '/api/webhooks/payments'
+      path: '/api/webhooks/payments'
+      fullPath: '/api/webhooks/payments'
+      preLoaderRoute: typeof ApiWebhooksPaymentsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/portal/receipt/$id': {
       id: '/portal/receipt/$id'
       path: '/receipt/$id'
@@ -795,10 +876,14 @@ const PortalRouteWithChildren =
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
+  AdminRoute: AdminRoute,
   AuthRoute: AuthRoute,
   PortalRoute: PortalRouteWithChildren,
+  VerifyCredentialRoute: VerifyCredentialRoute,
   VerifyCodeRoute: VerifyCodeRoute,
   ApiPublicParentLoginRoute: ApiPublicParentLoginRoute,
+  ApiPublicVirtualAccountWebhookRoute: ApiPublicVirtualAccountWebhookRoute,
+  ApiWebhooksPaymentsRoute: ApiWebhooksPaymentsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
