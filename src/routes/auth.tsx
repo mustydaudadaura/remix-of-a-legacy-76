@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { GraduationCap, Phone, School, Users } from "lucide-react";
-import { startDemo, startParentDemo } from "@/lib/api/demo.functions";
+import { startDemo } from "@/lib/api/demo.functions";
 import { setDemoAdminSession } from "@/hooks/useAuth";
 
 export const Route = createFileRoute("/auth")({
@@ -203,21 +203,13 @@ function AuthPage() {
                   onClick={async () => {
                     setLoading(true);
                     try {
-                      const res = await startParentDemo();
-                      if (res?.token && res?.parent) {
-                        setParentSession(res.token, res.parent);
-                        toast.success(`Welcome, ${res.parent.full_name}`);
-                        navigate({ to: "/portal" });
-                        return;
-                      }
-                      // Fallback via endpoint
-                      const r = await fetch("/api/public/parent-login", {
+                      const res = await fetch("/api/public/parent-login", {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({ phone: "08031000001" }),
                       });
-                      const json = await r.json();
-                      if (!r.ok) throw new Error(json.error || "Parent demo login failed");
+                      const json = await res.json();
+                      if (!res.ok) throw new Error(json.error || "Parent demo login failed");
                       setParentSession(json.token, json.parent);
                       toast.success(`Welcome, ${json.parent.full_name}`);
                       navigate({ to: "/portal" });
