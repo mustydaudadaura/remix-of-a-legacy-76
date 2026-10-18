@@ -165,7 +165,7 @@ function Landing() {
                   </Button>
                 </Link>
                 <a
-                  href="https://wa.me/2349039150719?text=Hello%20Alegacy%20I%20would%20like%20to%20learn%20more"
+                  href="https://wa.me/2348090000000?text=Hello%20Result%20Arena%20I%20would%20like%20to%20learn%20more"
                   target="_blank"
                   rel="noreferrer"
                   className="inline-flex items-center gap-2 rounded-lg bg-[#25D366] hover:bg-[#20ba59] px-5 py-2.5 text-sm font-semibold text-white shadow-md transition-colors"
@@ -414,7 +414,7 @@ function Landing() {
               </Button>
             </Link>
             <a
-              href="https://wa.me/2349039150719?text=Hello%20Alegacy%20I%20would%20like%20to%20learn%20more"
+              href="https://wa.me/2348090000000?text=Hello%20Result%20Arena%20I%20would%20like%20to%20learn%20more"
               target="_blank"
               rel="noreferrer"
               className="inline-flex items-center gap-2 rounded-lg bg-[#25D366] hover:bg-[#20ba59] px-5 py-2 text-sm font-semibold text-white shadow-sm transition"

@@ -220,7 +220,7 @@ export const getPortalReportCardDetail = createServerFn({ method: "POST" })
     const { data: subjects } = subjectIds.length
       ? await db.from("subjects").select("id, name, code").in("id", subjectIds)
       : { data: [] };
-    const subjectMap = new Map<string, { name: string; code: string | null }>((subjects ?? []).map((s: any) => [s.id, { name: s.name, code: s.code }]));
+    const subjectMap = new Map((subjects ?? []).map((s: any) => [s.id, { name: s.name, code: s.code }]));
 
     let annualEvaluation: any = null;
     if (termReports && termReports.length > 0) {

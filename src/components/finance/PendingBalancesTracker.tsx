@@ -276,7 +276,7 @@ export function PendingBalancesTracker({
               {filtered.map((inv) => {
                 const bal = invoiceOutstanding(inv);
                 const progress = paymentProgressPercentage(inv);
-                const isOverdue = inv.due_date ? new Date(inv.due_date).getTime() < nowTime && bal > 0 : false;
+                const isOverdue = inv.due_date ? new Date(inv.due_date) < now && bal > 0 : false;
                 const studentName = `${inv.students?.first_name ?? ""} ${inv.students?.last_name ?? ""}`.trim() || "Student";
 
                 return (

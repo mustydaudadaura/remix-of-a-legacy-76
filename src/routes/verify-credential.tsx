@@ -78,7 +78,7 @@ function VerifyCredentialPage() {
             average: item.average,
             position: item.position,
             verificationCode: trimmed,
-            issuedDate: (item as any).created_at ? new Date((item as any).created_at).toLocaleDateString("en-NG", { dateStyle: "long" }) : "Current Academic Year",
+            issuedDate: item.created_at ? new Date(item.created_at).toLocaleDateString("en-NG", { dateStyle: "long" }) : "Current Academic Year",
             schoolLogo: null,
             stampUrl: null,
             signatureUrl: null,

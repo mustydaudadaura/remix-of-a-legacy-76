@@ -13,22 +13,22 @@ import {
 const IN_MEMORY_PINS = new Map<string, ResultCheckerPin[]>();
 
 // Initialize default demo cards so tester can test immediately
-const DEMO_SCHOOL_ID = "af91ff67-95eb-4b62-93a0-5617d23a2f1d";
-const DEMO_STUDENT_ID = "19589251-064f-48d3-8483-735002ff7886";
+const DEMO_SCHOOL_ID = "22222222-2222-2222-2222-222222222222";
+const DEMO_STUDENT_ID = "33333333-3333-3333-3333-333333333333";
 
 IN_MEMORY_PINS.set(DEMO_SCHOOL_ID, [
   {
     id: "demo-pin-1",
     school_id: DEMO_SCHOOL_ID,
-    serial_no: "ALG-2026-SCRATCH-001",
+    serial_no: "EDU-2026-DEMO-0001",
     pin: "8821-4902-1134",
     session: "2025/2026",
     term: "all",
     student_id: DEMO_STUDENT_ID,
     student_name: "Zainab Bello",
-    student_admission_no: "ALG/2025/001",
+    student_admission_no: "ADM/2026/014",
     max_uses: 5,
-    times_used: 0,
+    times_used: 1,
     is_active: true,
     created_at: new Date().toISOString(),
     unlocked_report_ids: [],
@@ -36,7 +36,7 @@ IN_MEMORY_PINS.set(DEMO_SCHOOL_ID, [
   {
     id: "demo-pin-2",
     school_id: DEMO_SCHOOL_ID,
-    serial_no: "ALG-2026-SCRATCH-002",
+    serial_no: "EDU-2026-DEMO-0002",
     pin: "5512-9043-8871",
     session: "2025/2026",
     term: "all",

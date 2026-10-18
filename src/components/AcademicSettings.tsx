@@ -63,7 +63,7 @@ export function AcademicSettings({ school }: AcademicSettingsProps) {
 
       const { error } = await supabase
         .from("schools")
-        .update({ report_template: updatedTemplate as any })
+        .update({ report_template: updatedTemplate })
         .eq("id", school.id);
 
       if (error) throw error;
