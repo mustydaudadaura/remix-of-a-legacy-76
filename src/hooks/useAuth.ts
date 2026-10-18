@@ -20,10 +20,10 @@ export const DEMO_ADMIN_KEY = "eduerp_demo_admin";
 export const DEMO_ADMIN_USER: User = {
   id: "00000000-0000-0000-0000-000000000001",
   app_metadata: { provider: "email", providers: ["email"] },
-  user_metadata: { full_name: "Mallam Mustapha Dauda", role: "school_admin" },
+  user_metadata: { full_name: "Mustapha Dauda Adamu", role: "super_admin" },
   aud: "authenticated",
   created_at: "2026-01-01T00:00:00.000Z",
-  email: "demo.admin@eduerp-demo.ng",
+  email: "mustydawuddaura@gmail.com",
   phone: "",
   role: "authenticated",
   updated_at: "2026-01-01T00:00:00.000Z",
@@ -68,7 +68,7 @@ export function useAuth(): AuthState {
     // Check if demo admin session is active
     if (isDemoAdminActive()) {
       setSession(DEMO_ADMIN_SESSION);
-      setFullName("Mallam Mustapha Dauda (Admin)");
+      setFullName("Mustapha Dauda Adamu");
       setRoles(["super_admin", "school_admin"]);
       const selected = localStorage.getItem(ACTIVE_SCHOOL_KEY);
       setSchoolId(selected || "22222222-2222-2222-2222-222222222222");
@@ -78,7 +78,7 @@ export function useAuth(): AuthState {
     const onAuthChange = () => {
       if (isDemoAdminActive()) {
         setSession(DEMO_ADMIN_SESSION);
-        setFullName("Mallam Mustapha Dauda (Admin)");
+        setFullName("Mustapha Dauda Adamu");
         setRoles(["super_admin", "school_admin"]);
         const selected = localStorage.getItem(ACTIVE_SCHOOL_KEY);
         setSchoolId(selected || "22222222-2222-2222-2222-222222222222");
