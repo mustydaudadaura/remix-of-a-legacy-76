@@ -3,7 +3,6 @@ import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { setParentSession } from "@/hooks/useParentAuth";
-import { setDemoAdminSession, isDemoAdminActive } from "@/hooks/useAuth";
 import { selectSchool } from "@/lib/school-access";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -26,6 +25,14 @@ import {
 } from "lucide-react";
 
 export const Route = createFileRoute("/s/$slug")({
+  head: () => ({ meta: [
+    { title: "School Sign In — Alegacy" },
+    { name: "description", content: "Access your school’s Alegacy staff and family portals." },
+    { property: "og:title", content: "School Sign In — Alegacy" },
+    { property: "og:description", content: "Access your school’s Alegacy staff and family portals." },
+    { property: "og:type", content: "website" },
+    { name: "twitter:card", content: "summary" },
+  ] }),
   component: SchoolPortalPage,
 });
 
@@ -51,7 +58,7 @@ function SchoolPortalPage() {
       // 1. Try matching by school code
       const { data: byCode } = await supabase
         .from("schools")
-        .select("*")
+        .select("id,name,code,logo_url,motto,address,phone,email,branch_name,current_session,current_term")
         .ilike("code", codeUpper)
         .maybeSingle();
 
@@ -60,7 +67,7 @@ function SchoolPortalPage() {
       // 2. Try matching by slugified name (e.g. "assalamacademy", "assalam-academy")
       const { data: allSchools } = await supabase
         .from("schools")
-        .select("*");
+        .select("id,name,code,logo_url,motto,address,phone,email,branch_name,current_session,current_term");
 
       if (allSchools) {
         const found = allSchools.find((s) => {
@@ -116,45 +123,14 @@ function SchoolPortalPage() {
   const handleStaffLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    const cleanEmail = email.trim().toLowerCase();
-
-    if (
-      cleanEmail === "mustydawuddaura@gmail.com" ||
-      cleanEmail === "demo.admin@eduerp-demo.ng" ||
-      cleanEmail.includes("musty") ||
-      cleanEmail.includes("admin")
-    ) {
-      if (cleanEmail === "mustydawuddaura@gmail.com" && password !== "Mustydawud@1994" && password.length < 4) {
-        toast.error("Invalid password for Super Administrator account");
-        setLoading(false);
-        return;
-      }
-      if (school) selectSchool(school.id);
-      setDemoAdminSession();
-      setLoading(false);
-      toast.success(`Welcome, Super Administrator Mustapha Dauda Adamu!`);
-      navigate({ to: "/dashboard" });
-      return;
-    }
-
     try {
-      const { error: signInErr } = await supabase.auth.signInWithPassword({ email, password });
-      if (signInErr) {
-        if (signInErr.message.includes("fetch") || cleanEmail.includes("admin")) {
-          if (school) selectSchool(school.id);
-          setDemoAdminSession();
-          toast.success(`Signed in as Administrator for ${school?.name || "Alegacy"}`);
-          navigate({ to: "/dashboard" });
-          return;
-        }
-        toast.error(signInErr.message);
-      } else {
-        if (school) selectSchool(school.id);
-        toast.success(`Welcome back to ${school?.name || "Alegacy"}!`);
-        navigate({ to: "/dashboard" });
-      }
-    } catch (err: any) {
-      toast.error(err?.message || "Sign in failed");
+      const { data, error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
+      if (error) throw error;
+      if (!data.session) throw new Error("Sign in did not complete. Please try again.");
+      toast.success("Welcome back!");
+      navigate({ to: "/dashboard" });
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Sign in failed");
     } finally {
       setLoading(false);
     }

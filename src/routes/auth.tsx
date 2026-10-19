@@ -2,18 +2,17 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { setParentSession } from "@/hooks/useParentAuth";
-import { setDemoAdminSession, isDemoAdminActive } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { GraduationCap, Phone, ShieldCheck } from "lucide-react";
+import { GraduationCap, Phone, School, Users } from "lucide-react";
 import { startDemo } from "@/lib/api/demo.functions";
 
 export const Route = createFileRoute("/auth")({
-  head: () => ({ meta: [{ title: "Sign in — EduERP" }, { name: "description", content: "Sign in for authorized school accounts and families in EduERP." }, { property: "og:title", content: "Sign in — EduERP" }, { property: "og:description", content: "Sign in for authorized school accounts and families in EduERP." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
+  head: () => ({ meta: [{ title: "Sign in — Alegacy" }, { name: "description", content: "Sign in for authorized school accounts and families in Alegacy." }, { property: "og:title", content: "Sign in — Alegacy" }, { property: "og:description", content: "Sign in for authorized school accounts and families in Alegacy." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: AuthPage,
 });
 
@@ -27,10 +26,6 @@ function AuthPage() {
   const [parentPhone, setParentPhone] = useState("");
 
   useEffect(() => {
-    if (isDemoAdminActive()) {
-      navigate({ to: "/dashboard", replace: true });
-      return;
-    }
     supabase.auth.getSession().then(({ data }) => {
       if (data.session) navigate({ to: "/dashboard", replace: true });
     }).catch(() => {});
@@ -43,62 +38,12 @@ function AuthPage() {
   const signIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    const cleanEmail = email.trim().toLowerCase();
-
-    // Check for super admin credentials or standard admin emails
-    if (
-      cleanEmail === "mustydawuddaura@gmail.com" ||
-      cleanEmail === "mustydaudadaura@gmail.com" ||
-      cleanEmail === "demo.admin@eduerp-demo.ng" ||
-      password === "Mustydawud@1994" ||
-      cleanEmail.includes("admin") ||
-      cleanEmail.includes("super") ||
-      cleanEmail.includes("proprietor") ||
-      cleanEmail.includes("director")
-    ) {
-      setDemoAdminSession();
-      setLoading(false);
-      toast.success("Welcome, Super Administrator Mustapha Dauda Adamu! (Full Platform Access)");
-      navigate({ to: "/dashboard" });
-      return;
-    }
-
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) {
-        if (
-          error.message.includes("fetch") ||
-          error.message.includes("Failed to fetch") ||
-          error.message.includes("network")
-        ) {
-          setDemoAdminSession();
-          toast.success("Welcome back! (Signed in as Administrator)");
-          navigate({ to: "/dashboard" });
-          return;
-        }
-        toast.error(error.message);
-      } else {
-        if (data?.session) {
-          toast.success("Welcome back!");
-          navigate({ to: "/dashboard" });
-        } else {
-          setDemoAdminSession();
-          toast.success("Welcome back! (Administrator Session)");
-          navigate({ to: "/dashboard" });
-        }
-      }
+      const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
+      if (error) toast.error(error.message);
+      else toast.success("Welcome back!");
     } catch (err: any) {
-      if (
-        err?.message?.includes("fetch") ||
-        cleanEmail.includes("admin") ||
-        cleanEmail.includes("super")
-      ) {
-        setDemoAdminSession();
-        toast.success("Welcome back! (Signed in as Administrator)");
-        navigate({ to: "/dashboard" });
-      } else {
-        toast.error(err?.message || "Sign in failed");
-      }
+      toast.error(err?.message || "Sign in failed");
     } finally {
       setLoading(false);
     }
@@ -170,7 +115,7 @@ function AuthPage() {
             <GraduationCap className="h-5 w-5" />
           </div>
           <div className="flex flex-col">
-            <span className="text-xl font-bold tracking-tight text-foreground leading-tight">Result Arena</span>
+            <span className="text-xl font-bold tracking-tight text-foreground leading-tight">Alegacy</span>
             <span className="text-[10px] font-medium text-muted-foreground tracking-wide">School Management Platform</span>
           </div>
         </Link>
@@ -183,22 +128,7 @@ function AuthPage() {
             <div className="mb-4 rounded-md border border-primary/30 bg-primary/5 p-3 text-sm">
               <p className="font-medium text-foreground">Just looking around?</p>
               <p className="mb-3 text-muted-foreground">Explore a demo school with students, results and fees already filled in.</p>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                <Button
-                  type="button"
-                  variant="default"
-                  className="w-full text-xs font-semibold shadow-sm bg-primary text-primary-foreground hover:bg-primary/90 flex items-center justify-center gap-1.5"
-                  disabled={loading}
-                  onClick={() => {
-                    setDemoAdminSession();
-                    toast.success("Welcome, Super Administrator! (Platform Owner Mode)");
-                    navigate({ to: "/dashboard" });
-                  }}
-                >
-                  <ShieldCheck className="h-3.5 w-3.5" />
-                  Super Admin
-                </Button>
-
+              <div className="grid grid-cols-2 gap-2">
                 <Button
                   type="button"
                   variant="secondary"
@@ -207,36 +137,33 @@ function AuthPage() {
                   onClick={async () => {
                     setLoading(true);
                     try {
-                      let creds = { email: "mustydawuddaura@gmail.com", password: "Mustydawud@1994" };
+                      // Attempt Supabase sign in if configured, otherwise activate demo admin session
+                      let creds = { email: "demo.admin@eduerp-demo.ng", password: "DemoSchool#2026" };
                       try {
                         const c = await startDemo();
                         if (c?.email && c?.password) creds = c;
                       } catch (err) {
                         console.warn("Using static demo credentials:", err);
                       }
-                      try {
-                        const { error } = await supabase.auth.signInWithPassword(creds);
-                        if (!error) {
-                          toast.success("Welcome to the demo school!");
-                          navigate({ to: "/dashboard" });
-                          return;
-                        }
-                      } catch {
-                        // Offline or placeholder Supabase
-                      }
-                      setDemoAdminSession();
-                      toast.success("Welcome to Result Arena Academy! (School Admin Mode)");
+                      const { error } = await supabase.auth.signInWithPassword(creds);
+                      if (error) throw error;
+                      toast.success("Welcome to the demo school!");
                       navigate({ to: "/dashboard" });
-                    } catch {
-                      setDemoAdminSession();
-                      toast.success("Welcome to Result Arena Academy! (School Admin Mode)");
-                      navigate({ to: "/dashboard" });
+                    } catch (e: any) {
+                      toast.error(e?.message || "Demo sign-in failed. Please reload and try again.");
                     } finally {
                       setLoading(false);
                     }
                   }}
                 >
-                  🏫 School Admin
+                  {loading ? (
+                    "Opening…"
+                  ) : (
+                    <>
+                      <School className="mr-1.5 h-4 w-4" />
+                      Admin / Staff Demo
+                    </>
+                  )}
                 </Button>
 
                 <Button
@@ -264,54 +191,17 @@ function AuthPage() {
                     }
                   }}
                 >
-                  👨‍👩‍👦 Parent Demo
+                  <Users className="mr-1.5 h-4 w-4" />
+                  Parent Demo
                 </Button>
               </div>
             </div>
-            <Tabs defaultValue="signin">
+            <Tabs defaultValue="parent">
               <TabsList className="grid w-full grid-cols-3">
-                <TabsTrigger value="signin">Staff & Admin</TabsTrigger>
                 <TabsTrigger value="parent"><Phone className="mr-1 h-3.5 w-3.5" />Parent</TabsTrigger>
+                <TabsTrigger value="signin">Staff</TabsTrigger>
                 <TabsTrigger value="signup">Sign up</TabsTrigger>
               </TabsList>
-              <TabsContent value="signin">
-                <form onSubmit={signIn} className="space-y-4 pt-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="email">Email</Label>
-                    <Input id="email" type="email" required placeholder="mustydawuddaura@gmail.com" value={email} onChange={(e) => setEmail(e.target.value)} />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="password">Password</Label>
-                    <Input id="password" type="password" required placeholder="Mustydawud@1994" value={password} onChange={(e) => setPassword(e.target.value)} />
-                  </div>
-                  <Button type="submit" className="w-full" disabled={loading}>
-                    {loading ? "Signing in…" : "Sign in"}
-                  </Button>
-
-                  <div className="pt-2 text-center">
-                    <div className="relative my-3">
-                      <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-border" /></div>
-                      <div className="relative flex justify-center text-[11px] uppercase tracking-wider"><span className="bg-card px-2 text-muted-foreground font-medium">Or Quick Sign-In</span></div>
-                    </div>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      className="w-full text-xs font-semibold border-primary/40 text-primary hover:bg-primary/10 gap-1.5"
-                      onClick={() => {
-                        setDemoAdminSession();
-                        toast.success("Logged in as Super Administrator Mustapha Dauda Adamu");
-                        navigate({ to: "/dashboard" });
-                      }}
-                    >
-                      <ShieldCheck className="h-4 w-4" />
-                      Instant Super Admin Sign In
-                    </Button>
-                    <p className="mt-2 text-[11px] text-muted-foreground">
-                      Full platform privileges as Mustapha Dauda Adamu across all institutions.
-                    </p>
-                  </div>
-                </form>
-              </TabsContent>
               <TabsContent value="parent">
                 <form onSubmit={parentLogin} className="space-y-4 pt-4">
                   <div className="space-y-2">
@@ -324,6 +214,21 @@ function AuthPage() {
                   </div>
                   <Button type="submit" className="w-full" disabled={loading}>
                     {loading ? "Checking…" : "Enter portal"}
+                  </Button>
+                </form>
+              </TabsContent>
+              <TabsContent value="signin">
+                <form onSubmit={signIn} className="space-y-4 pt-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="email">Email</Label>
+                    <Input id="email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="password">Password</Label>
+                    <Input id="password" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} />
+                  </div>
+                  <Button type="submit" className="w-full" disabled={loading}>
+                    {loading ? "Signing in…" : "Sign in"}
                   </Button>
                 </form>
               </TabsContent>

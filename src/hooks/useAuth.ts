@@ -15,45 +15,6 @@ export interface AuthState {
   fullName: string | null;
 }
 
-export const DEMO_ADMIN_KEY = "eduerp_demo_admin";
-
-export const DEMO_ADMIN_USER: User = {
-  id: "00000000-0000-0000-0000-000000000001",
-  app_metadata: { provider: "email", providers: ["email"] },
-  user_metadata: { full_name: "Mustapha Dauda Adamu", role: "super_admin" },
-  aud: "authenticated",
-  created_at: "2026-01-01T00:00:00.000Z",
-  email: "mustydawuddaura@gmail.com",
-  phone: "",
-  role: "authenticated",
-  updated_at: "2026-01-01T00:00:00.000Z",
-};
-
-export const DEMO_ADMIN_SESSION: Session = {
-  access_token: "demo-admin-bearer-token",
-  refresh_token: "demo-admin-refresh-token",
-  expires_in: 360000,
-  token_type: "bearer",
-  user: DEMO_ADMIN_USER,
-};
-
-export function setDemoAdminSession() {
-  if (typeof window === "undefined") return;
-  localStorage.setItem(DEMO_ADMIN_KEY, "true");
-  window.dispatchEvent(new Event("eduerp-auth-change"));
-}
-
-export function clearDemoAdminSession() {
-  if (typeof window === "undefined") return;
-  localStorage.removeItem(DEMO_ADMIN_KEY);
-  window.dispatchEvent(new Event("eduerp-auth-change"));
-}
-
-export function isDemoAdminActive(): boolean {
-  if (typeof window === "undefined") return false;
-  return localStorage.getItem(DEMO_ADMIN_KEY) === "true";
-}
-
 export function useAuth(): AuthState {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
@@ -62,31 +23,9 @@ export function useAuth(): AuthState {
   const [fullName, setFullName] = useState<string | null>(null);
 
   useEffect(() => {
-    // Check if demo admin session is active
-    if (isDemoAdminActive()) {
-      setSession(DEMO_ADMIN_SESSION);
-      setFullName("Mustapha Dauda Adamu (Super Admin)");
-      setRoles(["super_admin", "school_admin"]);
-      const selected = localStorage.getItem(ACTIVE_SCHOOL_KEY);
-      setSchoolId(selected || "af91ff67-95eb-4b62-93a0-5617d23a2f1d");
-      setLoading(false);
-    }
-
-    const onAuthChange = () => {
-      if (isDemoAdminActive()) {
-        setSession(DEMO_ADMIN_SESSION);
-        setFullName("Mustapha Dauda Adamu (Super Admin)");
-        setRoles(["super_admin", "school_admin"]);
-        const selected = localStorage.getItem(ACTIVE_SCHOOL_KEY);
-        setSchoolId(selected || "af91ff67-95eb-4b62-93a0-5617d23a2f1d");
-        setLoading(false);
-      } else {
-        checkRemoteSession();
-      }
-    };
+    const onAuthChange = () => checkRemoteSession();
 
     const checkRemoteSession = () => {
-      if (isDemoAdminActive()) return;
       supabase.auth.getSession().then(async ({ data }) => {
         setSession(data.session);
         if (data.session?.user) {
@@ -106,8 +45,7 @@ export function useAuth(): AuthState {
     let subscription: { unsubscribe: () => void } | undefined;
     try {
       const res = supabase.auth.onAuthStateChange((_e, s) => {
-        if (isDemoAdminActive()) return;
-        setSession(s);
+          setSession(s);
         if (s?.user) {
           setTimeout(() => loadProfile(s.user.id), 0);
         } else {
@@ -122,11 +60,6 @@ export function useAuth(): AuthState {
     checkRemoteSession();
 
     const refresh = () => {
-      if (isDemoAdminActive()) {
-        const selected = localStorage.getItem(ACTIVE_SCHOOL_KEY);
-        setSchoolId(selected || "22222222-2222-2222-2222-222222222222");
-        return;
-      }
       supabase.auth.getUser().then(({ data }) => { if (data.user) loadProfile(data.user.id); }).catch(() => {});
     };
 
@@ -144,44 +77,22 @@ export function useAuth(): AuthState {
 
   const loadProfile = async (userId: string) => {
     try {
-      const [{ data: prof }, { data: rolesData }, userRes] = await Promise.all([
+      const [profileResult, roleResult] = await Promise.all([
         supabase.from("profiles").select("full_name, school_id").eq("user_id", userId).maybeSingle(),
         supabase.from("user_roles").select("role").eq("user_id", userId),
-        supabase.auth.getUser().catch(() => ({ data: { user: null } })),
       ]);
-      setFullName(prof?.full_name ?? userRes?.data?.user?.email ?? "Administrator");
-      const fetchedRoles = (rolesData?.map((r) => r.role as AppRole)) ?? [];
-      const userEmail = (userRes?.data?.user?.email || "").toLowerCase();
-
-      // Ensure platform owner or super_admin accounts have super_admin role
-      if (
-        userEmail === "mustydawuddaura@gmail.com" ||
-        userEmail === "mustydaudadaura@gmail.com" ||
-        userEmail.includes("superadmin") ||
-        userEmail === "demo.admin@eduerp-demo.ng"
-      ) {
-        if (!fetchedRoles.includes("super_admin")) fetchedRoles.unshift("super_admin");
-        if (!fetchedRoles.includes("school_admin")) fetchedRoles.push("school_admin");
-      }
-
-      // Prioritize super_admin first if present
-      if (fetchedRoles.includes("super_admin")) {
-        const without = fetchedRoles.filter((r) => r !== "super_admin");
-        fetchedRoles.length = 0;
-        fetchedRoles.push("super_admin", ...without);
-      }
-
-      const isSuper = fetchedRoles.includes("super_admin");
+      if (profileResult.error) throw profileResult.error;
+      if (roleResult.error) throw roleResult.error;
+      const fetchedRoles = roleResult.data?.map((r) => r.role) ?? [];
       const selected = localStorage.getItem(ACTIVE_SCHOOL_KEY);
-      setSchoolId(selected || prof?.school_id || "22222222-2222-2222-2222-222222222222");
-      setRoles(fetchedRoles.length ? fetchedRoles : ["super_admin", "school_admin"]);
+      setFullName(profileResult.data?.full_name ?? null);
+      setSchoolId(fetchedRoles.includes("super_admin") && selected ? selected : profileResult.data?.school_id ?? null);
+      setRoles(fetchedRoles);
     } catch (err) {
       console.warn("Could not fetch remote profile:", err);
-      // Fallback gracefully so admin isn't locked out by network errors
-      setRoles(["super_admin", "school_admin"]);
-      setFullName("Mustapha Dauda Adamu (Super Admin)");
-      const selected = localStorage.getItem(ACTIVE_SCHOOL_KEY);
-      setSchoolId(selected || "22222222-2222-2222-2222-222222222222");
+      setRoles([]);
+      setFullName(null);
+      setSchoolId(null);
     }
   };
 

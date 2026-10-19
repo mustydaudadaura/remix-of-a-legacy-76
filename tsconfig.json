@@ -22,6 +22,7 @@
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true,
     "paths": {
+      "@/integrations/supabase/auth-middleware": ["./src/lib/verified-auth.ts"],
       "@/*": ["./src/*"]
     }
   }
