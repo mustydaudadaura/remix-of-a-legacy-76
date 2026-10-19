@@ -369,7 +369,7 @@ function AdmissionsPage() {
 
         {/* Tab 1: AI Admission Assistant */}
         <TabsContent value="ai-assistant" className="space-y-4">
-          <AIAdmissionAssistant schoolId={schoolId!} classes={classes} onCompleted={refresh} />
+          {schoolId && <AIAdmissionAssistant schoolId={schoolId} classes={classes ?? []} onCompleted={refresh} />}
         </TabsContent>
 
         {/* Tab 2: Applications & Pipeline */}
