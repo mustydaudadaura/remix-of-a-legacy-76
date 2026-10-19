@@ -1,11 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import {
-  resolveSchoolAcademicConfig,
-  getScaleForSection,
-  computeCumulativeAverage,
-  evaluatePromotion,
-} from "@/lib/grading";
 
 const TokenOnly = z.object({ token: z.string().min(10) });
 const WithChild = z.object({ token: z.string().min(10), student_id: z.string().uuid().optional() });
@@ -20,23 +14,23 @@ async function admin() {
 }
 
 const DEMO_SCHOOL = {
-  id: "af91ff67-95eb-4b62-93a0-5617d23a2f1d",
-  name: "Alegacy International College",
-  address: "Plot 104, Independence Avenue, Central Business District, Abuja, FCT",
-  phone: "+234 803 555 0199",
-  email: "info@alegacy.sch.ng",
-  motto: "Excellence, Character and Innovation",
-  branch_name: "Main Campus (Abuja)",
+  id: "22222222-2222-2222-2222-222222222222",
+  name: "Result Arena Academy",
+  address: "14 Ahmadu Bello Way, Abuja, Nigeria",
+  phone: "+234 803 123 4567",
+  email: "info@eduerp-demo.ng",
+  motto: "Knowledge, Character and Excellence",
+  branch_name: "Main Campus",
   current_session: "2025/2026",
-  current_term: "third",
+  current_term: "first",
 };
 
 const DEMO_STUDENT = {
-  id: "19589251-064f-48d3-8483-735002ff7886",
-  admission_no: "ALG/2025/001",
+  id: "33333333-3333-3333-3333-333333333333",
+  admission_no: "ADM/2026/014",
   first_name: "Zainab",
   last_name: "Bello",
-  classes: { name: "Primary 5 Gold" },
+  classes: { name: "Primary 5A" },
 };
 
 /** List parent's children + school. */
@@ -140,143 +134,51 @@ export const getPortalReportCards = createServerFn({ method: "POST" })
     } catch {
       // fallback
     }
-
-    const { ALL_DEMO_REPORT_CARDS } = await import("@/lib/demo-school-data");
-    const sid = data.student_id;
-    const matching = ALL_DEMO_REPORT_CARDS.filter((r) => !sid || r.student_id === sid || r.students.admission_no === "03/1643" || r.students.admission_no === "ALG/2025/001");
-    return {
-      rows: (matching.length ? matching : ALL_DEMO_REPORT_CARDS).map((r) => ({
-        id: r.id,
-        session: r.session,
-        term: r.term,
-        average: r.average,
-        total_score: r.total_score,
-        position: r.position,
-        class_size: r.class_size,
-        gpa: r.gpa,
-        published: r.published,
-        verification_code: r.verification_code,
-      })),
-    };
+    return { rows: [] };
   });
 
 export const getPortalReportCardDetail = createServerFn({ method: "POST" })
-  .inputValidator((d) => TokenOnly.extend({ id: z.string().min(1) }).parse(d))
+  .inputValidator((d) => TokenOnly.extend({ id: z.string().uuid() }).parse(d))
   .handler(async ({ data }) => {
     const claims = await verify(data.token);
-    let rc: any = null;
-    let db: any = null;
-    try {
-      db = await admin();
-      const res = await db.from("report_cards").select("*").eq("id", data.id).eq("published", true).maybeSingle();
-      rc = res?.data;
-    } catch {
-      // Database unavailable, fallback to demo dataset
-    }
+    const db = await admin();
+    const { data: rc, error } = await db.from("report_cards").select("*").eq("id", data.id).eq("published", true).maybeSingle();
+    if (error || !rc) throw new Error("Report card not found");
 
-    if (!rc) {
-      const { findDemoReportCard } = await import("@/lib/demo-school-data");
-      const demo = findDemoReportCard(data.id);
-      if (demo) {
-        return {
-          rc: {
-            ...demo,
-            schools: demo.schools,
-            students: demo.students,
-            classes: demo.classes,
-            annual_evaluation: {
-              term1: demo.assessments[0]?.first_term_total || 55,
-              term2: demo.assessments[0]?.second_term_total || 58,
-              term3: demo.average,
-              cumulativeAverage: demo.average,
-              formula: "Equal Weight (33.3% × 3 Terms)",
-              termsAvailable: 3,
-              promotion: {
-                promoted: demo.status_verdict.includes("PROMOTED"),
-                status: demo.status_verdict,
-                reason: "Satisfied cumulative academic benchmark and minimum core pass requirements",
-              },
-            },
-          },
-          assessments: demo.assessments,
-        };
-      }
-      throw new Error("Report card not found");
-    }
-
-    const [{ data: school }, { data: student }, { data: klass }, { data: rawAssessments }, { data: termReports }] = await Promise.all([
+    const [{ data: school }, { data: student }, { data: klass }, { data: rawAssessments }] = await Promise.all([
       db.from("schools").select("name, motto, address, email, phone, logo_url, stamp_url, website, branch_name, principal_name, principal_signature_url, report_template, current_session, current_term").eq("id", (rc as any).school_id).maybeSingle(),
       db.from("students").select("first_name, middle_name, last_name, admission_no, gender, dob, photo_url, house, next_resumption_date").eq("id", (rc as any).student_id).maybeSingle(),
       (rc as any).class_id
         ? db.from("classes").select("name, arm, level, section").eq("id", (rc as any).class_id).maybeSingle()
         : Promise.resolve({ data: null }),
       db.from("assessments").select("id, subject_id, ca1, ca2, exam, total, grade, remark, created_at").eq("student_id", (rc as any).student_id).eq("session", (rc as any).session).eq("term", (rc as any).term).order("created_at"),
-      db.from("report_cards").select("term, average, total_score, position").eq("student_id", (rc as any).student_id).eq("session", (rc as any).session).eq("published", true),
     ]);
 
-    const { data: subjectPositions } = await db.rpc("report_subject_positions", { _report_id: rc.id });
-    const positionMap = new Map((subjectPositions ?? []).map((p: any) => [p.subject_id, p.subject_position]));
     const subjectIds = Array.from(new Set((rawAssessments ?? []).map((a: any) => a.subject_id).filter(Boolean)));
     const { data: subjects } = subjectIds.length
       ? await db.from("subjects").select("id, name, code").in("id", subjectIds)
       : { data: [] };
-    const subjectMap = new Map<string, { name: string; code: string | null }>((subjects ?? []).map((s: any) => [s.id, { name: s.name, code: s.code }]));
+    const subjectMap = new Map((subjects ?? []).map((s: any) => [s.id, { name: s.name, code: s.code }]));
 
-    let annualEvaluation: any = null;
-    if (termReports && termReports.length > 0) {
-      const t1 = termReports.find((r: any) => r.term === "first")?.average;
-      const t2 = termReports.find((r: any) => r.term === "second")?.average;
-      const t3 = termReports.find((r: any) => r.term === "third")?.average;
-      const academicConfig = resolveSchoolAcademicConfig(school?.report_template);
-      const cum = computeCumulativeAverage(t1, t2, t3, academicConfig.promotionWeighting);
-
-      const subs = (rawAssessments ?? []).map((a: any) => ({
-        name: subjectMap.get(a.subject_id)?.name || "Subject",
-        score: Number(a.total) || 0,
-        grade: a.grade || "F9",
-      }));
-
-      const scaleType = getScaleForSection((klass as any)?.level || (klass as any)?.section || klass?.name);
-      const isFinalClass = Boolean(
-        klass?.name?.toLowerCase().includes("ss 3") ||
-        klass?.name?.toLowerCase().includes("sss 3") ||
-        klass?.name?.toLowerCase().includes("primary 6") ||
-        klass?.name?.toLowerCase().includes("basic 6")
-      );
-
-      const promo = evaluatePromotion(
-        {
-          cumulativeAverage: cum.cumulativeAverage,
-          subjects: subs,
-          isFinalClass,
-          scaleType,
-        },
-        {
-          passMark: academicConfig.passMark,
-          requireEnglish: academicConfig.requireEnglishAndMaths,
-          requireMaths: academicConfig.requireEnglishAndMaths,
-          weighting: academicConfig.promotionWeighting,
-        }
-      );
-
-      annualEvaluation = {
-        term1: t1 ?? null,
-        term2: t2 ?? null,
-        term3: t3 ?? null,
-        cumulativeAverage: cum.cumulativeAverage,
-        formula: cum.formula,
-        termsAvailable: cum.termsAvailable,
-        promotion: promo,
-      };
+    let positionMap = new Map<string, number>();
+    try {
+      const { data: subjectPositions } = await db.rpc("report_subject_positions", { _report_id: rc.id });
+      if (subjectPositions) {
+        positionMap = new Map(subjectPositions.map((p: any) => [p.subject_id, p.subject_position]));
+      }
+    } catch {
+      // ignore
     }
 
+    const assessments = (rawAssessments ?? []).map((a: any) => ({
+      ...a,
+      subject_position: positionMap.get(a.subject_id) ?? null,
+      subjects: subjectMap.get(a.subject_id) ?? null,
+    }));
+
     return {
-      rc: { ...(rc as any), schools: school, students: student, classes: klass, annual_evaluation: annualEvaluation },
-      assessments: (rawAssessments ?? []).map((a: any) => ({
-        ...a,
-        subject_position: positionMap.get(a.subject_id) ?? null,
-        subjects: subjectMap.get(a.subject_id) ?? null,
-      })),
+      rc: { ...(rc as any), schools: school, students: student, classes: klass },
+      assessments,
     };
   });
 

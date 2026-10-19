@@ -109,15 +109,59 @@ function SchoolSettings({ schoolId }: { schoolId: string }) {
         e.preventDefault(); const form = new FormData(e.currentTarget);
         const term = form.get('current_term');
         if (term !== 'first' && term !== 'second' && term !== 'third') return;
-        void run(() => supabase.from('schools').update({ name: String(form.get('name')), address: String(form.get('address')), phone: String(form.get('phone')), motto: String(form.get('motto')), current_session: String(form.get('current_session')), current_term: term, principal_name: String(form.get('principal_name')) }).eq('id', schoolId), 'School details saved');
+        void run(() => supabase.from('schools').update({
+          name: String(form.get('name')),
+          address: String(form.get('address')),
+          phone: String(form.get('phone')),
+          email: String(form.get('email')),
+          motto: String(form.get('motto')),
+          website: String(form.get('website')),
+          branch_name: String(form.get('branch_name')),
+          current_session: String(form.get('current_session')),
+          current_term: term,
+          principal_name: String(form.get('principal_name')),
+        }).eq('id', schoolId), 'School details saved');
       }}>
-        <h2 className="text-lg font-semibold">{school.name}</h2>
-        <div className="grid gap-4 sm:grid-cols-2">
-          {([['name', 'School name', school.name], ['phone', 'Phone', school.phone], ['motto', 'Motto', school.motto], ['principal_name', 'Principal', school.principal_name], ['address', 'Address', school.address], ['current_session', 'Academic session', school.current_session]] as [string, string, string | null][]).map(([id, label, value]) => <div key={id}><Label htmlFor={id}>{label}</Label><Input id={id} name={id} defaultValue={value ?? ''} required={id === 'name' || id === 'current_session'} /></div>)}
-          <div><Label htmlFor="current_term">Current term</Label><select id="current_term" name="current_term" defaultValue={school.current_term ?? 'first'} className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"><option value="first">First term</option><option value="second">Second term</option><option value="third">Third term</option></select></div>
-          <div><Label>School code</Label><Input readOnly value={school.code} /></div>
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-lg font-semibold">{school.name}</h2>
+            <p className="text-xs text-muted-foreground">Register your official school name, motto, and contact details for report cards and official documents.</p>
+          </div>
+          <Button disabled={busy} type="submit"><Save className="mr-2 h-4 w-4" />Save details</Button>
         </div>
-        <Button disabled={busy} type="submit"><Save className="mr-2 h-4 w-4" />Save details</Button>
+        <div className="grid gap-4 sm:grid-cols-2">
+          {([
+            ['name', 'School name', school.name],
+            ['motto', 'Motto', school.motto],
+            ['principal_name', 'Principal / Head of School', school.principal_name],
+            ['phone', 'Official Phone', school.phone],
+            ['email', 'Official Email', school.email],
+            ['website', 'Website', school.website],
+            ['branch_name', 'Campus / Branch name', school.branch_name],
+            ['current_session', 'Academic session', school.current_session],
+          ] as [string, string, string | null][]).map(([id, label, value]) => (
+            <div key={id}>
+              <Label htmlFor={id}>{label}</Label>
+              <Input id={id} name={id} defaultValue={value ?? ''} required={id === 'name' || id === 'current_session'} />
+            </div>
+          ))}
+          <div className="sm:col-span-2">
+            <Label htmlFor="address">Address</Label>
+            <Input id="address" name="address" defaultValue={school.address ?? ''} />
+          </div>
+          <div>
+            <Label htmlFor="current_term">Current term</Label>
+            <select id="current_term" name="current_term" defaultValue={school.current_term ?? 'first'} className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm">
+              <option value="first">First term</option>
+              <option value="second">Second term</option>
+              <option value="third">Third term</option>
+            </select>
+          </div>
+          <div>
+            <Label>School code</Label>
+            <Input readOnly value={school.code} className="font-mono bg-muted" />
+          </div>
+        </div>
       </form>
       <fieldset disabled={busy} className="mt-8 space-y-3 border-t border-border pt-6"><legend className="text-base font-semibold">School sections</legend>
         <div className="flex flex-wrap gap-6">{['nursery', 'primary', 'secondary'].map(section => <label key={section} className="flex items-center gap-2 capitalize"><Checkbox checked={sections.includes(section)} onCheckedChange={checked => {

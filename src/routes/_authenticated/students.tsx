@@ -10,7 +10,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Plus, UserPlus, Search, X, SlidersHorizontal, ArrowUpDown } from "lucide-react";
+import { Plus, UserPlus, Search, X, SlidersHorizontal, ArrowUpDown, Download, ShieldCheck } from "lucide-react";
+import * as XLSX from "xlsx";
 import { toast } from "sonner";
 import { BulkImportDialog } from "@/components/BulkImportDialog";
 
@@ -38,12 +39,57 @@ function StudentsPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("students")
-        .select("id, admission_no, first_name, last_name, middle_name, gender, class_id, classes(name)")
+        .select("id, admission_no, first_name, last_name, middle_name, gender, dob, status, class_id, classes(name)")
         .order("created_at", { ascending: false });
       if (error) throw error;
       return data;
     },
   });
+
+  const exportStudentsExcel = () => {
+    if (!filteredStudents.length) return toast.error("No students to export");
+    const headers = ["Admission No", "First Name", "Surname", "Middle Name", "Gender", "Date of Birth", "Class", "Status"];
+    const rows = filteredStudents.map((s: any) => [
+      s.admission_no,
+      s.first_name,
+      s.last_name,
+      s.middle_name || "",
+      s.gender || "",
+      s.dob || "",
+      s.classes?.name || "Unassigned",
+      s.status || "active",
+    ]);
+    const ws = XLSX.utils.aoa_to_sheet([headers, ...rows]);
+    ws["!cols"] = [{ wch: 16 }, { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 10 }, { wch: 14 }, { wch: 16 }, { wch: 12 }];
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Students_Roster");
+    XLSX.writeFile(wb, `Students_Roster_Bulk_${new Date().toISOString().slice(0, 10)}.xlsx`);
+    toast.success("Bulk students exported to Excel (.xlsx)");
+  };
+
+  const exportStudentsCSV = () => {
+    if (!filteredStudents.length) return toast.error("No students to export");
+    const headers = ["Admission No", "First Name", "Surname", "Middle Name", "Gender", "Date of Birth", "Class", "Status"];
+    const rows = filteredStudents.map((s: any) => [
+      `"${s.admission_no}"`,
+      `"${s.first_name}"`,
+      `"${s.last_name}"`,
+      `"${s.middle_name || ""}"`,
+      `"${s.gender || ""}"`,
+      `"${s.dob || ""}"`,
+      `"${s.classes?.name || "Unassigned"}"`,
+      `"${s.status || "active"}"`,
+    ]);
+    const csvContent = "data:text/csv;charset=utf-8," + [headers.join(","), ...rows.map(e => e.join(","))].join("\n");
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `Students_Bulk_${new Date().toISOString().slice(0, 10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    toast.success("Bulk students exported to CSV (.csv)");
+  };
 
   const filteredStudents = useMemo(() => {
     if (!students) return [];
@@ -126,10 +172,18 @@ function StudentsPage() {
           <h1 className="text-2xl font-bold tracking-tight">Students</h1>
           <p className="text-sm text-muted-foreground">Admit and manage students. Parents are auto-linked.</p>
         </div>
-        <div className="flex flex-wrap gap-2">
-        <BulkImportDialog schoolId={schoolId} classes={classes ?? []} onDone={() => qc.invalidateQueries({ queryKey: ["students"] })} />
-        <Dialog open={open} onOpenChange={setOpen}>
-          <DialogTrigger asChild><Button><UserPlus className="mr-2 h-4 w-4" /> Admit student</Button></DialogTrigger>
+        <div className="flex flex-wrap items-center gap-2">
+          <Button variant="outline" size="sm" onClick={exportStudentsExcel} className="text-xs">
+            <Download className="mr-1.5 h-3.5 w-3.5 text-emerald-600" />
+            Export Bulk (Excel)
+          </Button>
+          <Button variant="outline" size="sm" onClick={exportStudentsCSV} className="text-xs">
+            <Download className="mr-1.5 h-3.5 w-3.5 text-blue-600" />
+            Export Bulk (CSV)
+          </Button>
+          <BulkImportDialog schoolId={schoolId} classes={classes ?? []} onDone={() => qc.invalidateQueries({ queryKey: ["students"] })} />
+          <Dialog open={open} onOpenChange={setOpen}>
+            <DialogTrigger asChild><Button size="sm" className="text-xs"><UserPlus className="mr-1.5 h-3.5 w-3.5" /> Admit student</Button></DialogTrigger>
           <DialogContent className="max-h-[90vh] overflow-y-auto">
             <DialogHeader><DialogTitle>New student admission</DialogTitle></DialogHeader>
             <form onSubmit={create} className="space-y-4">
@@ -171,6 +225,18 @@ function StudentsPage() {
             </form>
           </DialogContent>
         </Dialog>
+        </div>
+      </div>
+
+      <div className="rounded-lg border border-emerald-500/30 bg-emerald-50/60 p-3 flex items-start gap-3 text-xs text-emerald-950">
+        <ShieldCheck className="h-4 w-4 text-emerald-700 shrink-0 mt-0.5" />
+        <div className="flex-1">
+          <span className="font-bold text-emerald-900 block">
+            Permanent Academic Records Protected
+          </span>
+          <p className="text-emerald-800/90 text-[11px] mt-0.5 leading-relaxed">
+            In compliance with educational regulations, registered students, admission profiles, and historical enrollment records are permanent and protected from deletion.
+          </p>
         </div>
       </div>
 
