@@ -6,10 +6,11 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Save, RotateCcw, Check, Upload, Trash2, ShieldCheck, Building2 } from 'lucide-react';
+import { Save, RotateCcw, Check, Upload, Trash2, ShieldCheck, Building2, Sparkles, Layout } from 'lucide-react';
 import { toast } from 'sonner';
-import { REPORT_COLOURS, REPORT_PARTS, resolveReportTemplate, type ReportTemplate, type ReportPart } from '@/lib/report-template';
+import { REPORT_COLOURS, REPORT_PARTS, resolveReportTemplate, REPORT_LAYOUTS, type ReportTemplate, type ReportPart, type ReportLayoutId } from '@/lib/report-template';
 import { ReportCardView } from '@/components/ReportCardView';
+import { Badge } from '@/components/ui/badge';
 
 export function ReportTemplateSettings({ school }: { school: { id: string; name: string; report_template: unknown; logo_url?: string | null; stamp_url?: string | null; principal_signature_url?: string | null; motto?: string | null; address?: string | null; phone?: string | null; email?: string | null; principal_name?: string | null; [key: string]: unknown } }) {
   const qc = useQueryClient();
@@ -273,7 +274,57 @@ export function ReportTemplateSettings({ school }: { school: { id: string; name:
         </div>
       </div>
 
-      {/* SECTION 3: Template Colours & Position Options */}
+      {/* SECTION 3: Specialized Nigerian Report Card Templates */}
+      <div className="rounded-xl border border-border bg-card p-4 space-y-3">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div>
+            <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
+              <Layout className="h-4 w-4 text-primary" />
+              Specialized Nigerian Report Sheet Templates
+            </h3>
+            <p className="text-xs text-muted-foreground">
+              Select from authentic Nigerian school formats. All templates fit strictly on a single A4 page and include analytical charts.
+            </p>
+          </div>
+          <Badge variant="outline" className="text-primary border-primary/30 bg-primary/5 text-xs font-mono">
+            6 Specialized Nigerian Templates
+          </Badge>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 pt-1">
+          {REPORT_LAYOUTS.map((layout) => {
+            const isSelected = (draft.layout_id || resolved.layout_id) === layout.id;
+            return (
+              <div
+                key={layout.id}
+                onClick={() => setDraft({ ...draft, layout_id: layout.id })}
+                className={`relative rounded-lg border p-3.5 cursor-pointer transition-all ${
+                  isSelected
+                    ? "border-primary bg-primary/5 shadow-xs ring-1 ring-primary"
+                    : "border-border hover:border-border/80 hover:bg-muted/30"
+                }`}
+              >
+                <div className="flex items-start justify-between gap-2 mb-1.5">
+                  <Badge variant={isSelected ? "default" : "secondary"} className="text-[10px] font-medium">
+                    {layout.badge}
+                  </Badge>
+                  {isSelected && <Check className="h-4 w-4 text-primary shrink-0" />}
+                </div>
+                <h4 className="text-xs font-bold text-foreground leading-snug">{layout.name}</h4>
+                <p className="text-[11px] text-muted-foreground mt-1 leading-normal line-clamp-3">
+                  {layout.description}
+                </p>
+                <div className="mt-2.5 pt-2 border-t border-border/50 text-[10px] text-primary font-medium flex items-center justify-between">
+                  <span>{isSelected ? "Active Template" : "Click to select"}</span>
+                  <span className="font-mono text-muted-foreground">Single A4</span>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* SECTION 4: Template Colours & Position Options */}
       <div className="rounded-xl border border-border bg-card p-4 space-y-4">
         <h3 className="text-sm font-semibold text-foreground">Color Palette & Ranking Format</h3>
         <div className="grid gap-4 sm:grid-cols-3">

@@ -1,14 +1,122 @@
-export const REPORT_COLOURS = ['emerald','forest','green','lime','olive','teal','turquoise','cyan','sky','blue','navy','indigo','violet','purple','plum','magenta','pink','rose','red','crimson','orange','amber','gold','brown','slate','charcoal'] as const;
-export const REPORT_PARTS = { border: 'Sheet border', heading: 'School heading', table: 'Results headings', rows: 'Alternate subject rows', biodata: 'Student details', development: 'Development ratings', comments: 'Staff comments' };
+export const REPORT_COLOURS = [
+  'emerald', 'forest', 'green', 'lime', 'olive', 'teal', 'turquoise', 'cyan', 'sky', 'blue',
+  'navy', 'indigo', 'violet', 'purple', 'plum', 'magenta', 'pink', 'rose', 'red', 'crimson',
+  'orange', 'amber', 'gold', 'brown', 'slate', 'charcoal'
+] as const;
+
+export const REPORT_PARTS = {
+  border: 'Sheet border',
+  heading: 'School heading',
+  table: 'Results headings',
+  rows: 'Alternate subject rows',
+  biodata: 'Student details',
+  development: 'Development ratings',
+  comments: 'Staff comments'
+};
+
 export type ReportColour = typeof REPORT_COLOURS[number];
 export type ReportPart = keyof typeof REPORT_PARTS;
-export type ReportTemplate = Partial<Record<ReportPart, ReportColour>> & { positions?: 'none' | 'class' | 'subject' | 'both' };
+
+export type ReportLayoutId =
+  | 'classic_comprehensive'  // Re-included classic Nigerian comprehensive format
+  | 'premier_standard'       // Standard Single-Page A4
+  | 'modern_executive'       // Modern STEM / Executive Hybrid
+  | 'ubec_basic'             // Universal Basic Education / State Ministry format
+  | 'islamic_integrated'     // Islamic & Arabic Integrated Academy format
+  | 'waec_senior';           // WAEC / NECO Senior Secondary format
+
+export interface ReportLayoutDefinition {
+  id: ReportLayoutId;
+  name: string;
+  tagline: string;
+  description: string;
+  badge: string;
+}
+
+export const REPORT_LAYOUTS: ReportLayoutDefinition[] = [
+  {
+    id: 'classic_comprehensive',
+    name: 'Classic Comprehensive Academy (Re-included)',
+    tagline: 'Traditional Nigerian full-format report sheet with comprehensive psychomotor & affective matrix',
+    description: 'The beloved traditional Nigerian 2-column academic report sheet. Features continuous assessment breakdown (CA1, CA2, CA3/Project, Exam), class statistics, 10-trait behavioral domain ratings, teacher & principal remarks, and performance analytics.',
+    badge: 'Classic 2nd Template (Reincluded)'
+  },
+  {
+    id: 'premier_standard',
+    name: 'Premier Ministry Standard (A4 Single-Page)',
+    tagline: 'Standard Federal Unity College & State Ministry of Education format',
+    description: 'Official single-sheet format with clear continuous assessment weights, position ranking, grade distribution donut chart, and top subject performance bars.',
+    badge: 'Federal / State Standard'
+  },
+  {
+    id: 'modern_executive',
+    name: 'Modern Executive STEM & Cambridge Hybrid',
+    tagline: 'Executive layout for STEM curricula and British-Nigerian schools',
+    description: 'Distinctive grouped subject clusters (Sciences, Arts, Commercials), comparative performance bar index, visual mastery donuts, and termly cumulative progress tracking.',
+    badge: 'Modern STEM / British'
+  },
+  {
+    id: 'ubec_basic',
+    name: 'Universal Basic Education (UBEC / State Ministry)',
+    tagline: 'Official format for Nursery, Primary and Junior Secondary (JSS 1-3)',
+    description: 'Formative continuous assessment (40%) and summative exam (60%) with national core competencies, civic qualities, and physical development index.',
+    badge: 'UBEC / Universal Basic'
+  },
+  {
+    id: 'islamic_integrated',
+    name: 'Islamic & Arabic Integrated Academy',
+    tagline: 'Dual Western & Islamic curriculum report sheet (Daura / Northern standard)',
+    description: 'Accommodates Western academic subjects alongside Arabic Language, Islamic Studies, Tahfeez (Hifz), and moral etiquette (Adab), with clean spaces for official stamp and signature.',
+    badge: 'Islamic Integrated'
+  },
+  {
+    id: 'waec_senior',
+    name: 'WAEC / NECO Senior Secondary Transcript (SS1 - SS3)',
+    tagline: 'Senior Secondary format aligned with WAEC 9-point grading (A1 to F9)',
+    description: 'Designed for senior secondary students preparing for WASSCE/SSCE. Features 9-point WAEC grading bands (A1-F9), cumulative GPA, career stream recommendations, and terminal verification.',
+    badge: 'WAEC / Senior Secondary'
+  }
+];
+
+export type ReportTemplate = Partial<Record<ReportPart, ReportColour>> & {
+  layout_id?: ReportLayoutId;
+  positions?: 'none' | 'class' | 'subject' | 'both';
+};
+
 export function resolveReportTemplate(value: unknown, section?: string | null): Required<ReportTemplate> {
   const fallback = section === 'nursery' ? 'forest' : section === 'primary' ? 'blue' : 'purple';
-  const source = value && typeof value === 'object' ? value as Record<string, unknown> : {};
-  const colour = (key: ReportPart): ReportColour => REPORT_COLOURS.includes(source[key] as ReportColour) ? source[key] as ReportColour : fallback;
-  return { border: colour('border'), heading: colour('heading'), table: colour('table'), rows: colour('rows'), biodata: colour('biodata'), development: colour('development'), comments: colour('comments'), positions: ['none','class','subject','both'].includes(String(source.positions)) ? source.positions as Required<ReportTemplate>['positions'] : 'class' };
+  const source = value && typeof value === 'object' ? (value as Record<string, unknown>) : {};
+  const colour = (key: ReportPart): ReportColour =>
+    REPORT_COLOURS.includes(source[key] as ReportColour) ? (source[key] as ReportColour) : fallback;
+
+  const validLayouts: ReportLayoutId[] = [
+    'classic_comprehensive',
+    'premier_standard',
+    'modern_executive',
+    'ubec_basic',
+    'islamic_integrated',
+    'waec_senior'
+  ];
+
+  const layout_id: ReportLayoutId = validLayouts.includes(source.layout_id as ReportLayoutId)
+    ? (source.layout_id as ReportLayoutId)
+    : 'classic_comprehensive';
+
+  return {
+    layout_id,
+    border: colour('border'),
+    heading: colour('heading'),
+    table: colour('table'),
+    rows: colour('rows'),
+    biodata: colour('biodata'),
+    development: colour('development'),
+    comments: colour('comments'),
+    positions: ['none', 'class', 'subject', 'both'].includes(String(source.positions))
+      ? (source.positions as Required<ReportTemplate>['positions'])
+      : 'class'
+  };
 }
+
 export function positionVisibility(mode: Required<ReportTemplate>['positions']) {
   return { class: mode === 'class' || mode === 'both', subject: mode === 'subject' || mode === 'both' };
 }
