@@ -13,6 +13,12 @@ export default defineConfig({
     server: { entry: "server" },
   },
   vite: {
+    resolve: {
+      alias: [{
+        find: /^@\/integrations\/supabase\/auth-middleware$/,
+        replacement: new URL('./src/lib/verified-auth.ts', import.meta.url).pathname,
+      }],
+    },
     build: {
       rollupOptions: {
         onwarn(warning, defaultHandler) {

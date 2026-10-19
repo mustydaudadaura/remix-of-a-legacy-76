@@ -11,3 +11,4 @@
 - Keep money maths (invoice balance, waivable discount) in one shared browser-safe module that screens, server functions and reports all use, and unit-test it, so collected/outstanding figures never disagree.
 - Curriculum uploads are converted in the browser (Word/Excel to text) and PDFs/photos sent as files to an authenticated server function; the AI breakdown is stored as scheme items that feed the existing lesson-note generator and approval flow rather than a parallel one.
 - Demo access signs in through the real demo account; never add client- or server-side auth bypasses (fake sessions, hardcoded bearer tokens, admin fallbacks on network errors), because they expose every school's data.
+- Resolve the managed auth-middleware import to the app-owned verified-auth middleware until managed regeneration removes imported bypasses; this preserves generated files while enforcing real sessions and typed RLS clients.
