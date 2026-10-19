@@ -1,4 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useAuth } from "@/hooks/useAuth";
+import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getDatabaseSchemaDiagnostics } from "@/lib/api/schema-diagnostics.functions";
@@ -31,17 +33,27 @@ import {
 } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/diagnostics")({
+  head: () => ({ meta: [
+    { title: "School Health Checks — Alegacy" },
+    { name: "description", content: "Review school records and AI service readiness." },
+    { property: "og:title", content: "School Health Checks — Alegacy" },
+    { property: "og:description", content: "Review school records and AI service readiness." },
+    { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" },
+  ] }),
   component: DiagnosticsPage,
 });
 
 function DiagnosticsPage() {
+  const { schoolId } = useAuth();
+  const scan = useServerFn(getDatabaseSchemaDiagnostics);
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [expandedTable, setExpandedTable] = useState<string | null>("subjects");
 
   const { data, isLoading, refetch, isFetching } = useQuery({
-    queryKey: ["database-schema-diagnostics"],
-    queryFn: () => getDatabaseSchemaDiagnostics(),
+    queryKey: ["database-schema-diagnostics", schoolId],
+    enabled: Boolean(schoolId),
+    queryFn: () => { if (!schoolId) throw new Error("Select a school"); return scan({ data: { school_id: schoolId } }); },
   });
 
   const tables = data?.tables ?? [];

@@ -1,6 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
-import { readFileSync } from "fs";
-import { resolve } from "path";
+import { requireSupabaseAuth } from "@/lib/verified-auth";
+import { z } from "zod";
 
 export interface ColumnDefinition {
   name: string;
@@ -59,54 +59,18 @@ function categorizeTable(name: string): TableDefinition["category"] {
   return "other";
 }
 
-export const getDatabaseSchemaDiagnostics = createServerFn({ method: "GET" }).handler(async (): Promise<SchemaDiagnostics> => {
-  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-
-  // Parse types.ts to extract accurate column definitions
-  let typesContent = "";
-  try {
-    const typesPath = resolve(process.cwd(), "src/integrations/supabase/types.ts");
-    typesContent = readFileSync(typesPath, "utf-8");
-  } catch (err) {
-    console.warn("Could not read types.ts directly, using fallback:", err);
-  }
-
+export const getDatabaseSchemaDiagnostics = createServerFn({ method: "GET" })
+.middleware([requireSupabaseAuth])
+.inputValidator(z.object({ school_id: z.string().uuid() }))
+.handler(async ({ data, context }): Promise<SchemaDiagnostics> => {
+  const { supabase: db } = context;
+  const { data: allowed, error: permissionError } = await db.rpc("school_permission", {
+    _user_id: context.userId, _school_id: data.school_id, _permission: "settings.edit",
+  });
+  if (permissionError || !allowed) throw new Error("Not authorized to inspect this school");
   const tableDefs: TableDefinition[] = [];
-  const tablesBlock = typesContent.match(/Tables:\s*\{([\s\S]*?)\n    Views:/)?.[1] || "";
-  const tableMatches = [...tablesBlock.matchAll(/^\s{6}([a-zA-Z0-9_]+):\s*\{\s*Row:\s*\{([\s\S]*?)\}\s*Insert:/gm)];
-
-  for (const match of tableMatches) {
-    const tableName = match[1];
-    const rowBlock = match[2];
-    const columns: ColumnDefinition[] = [];
-
-    const lines = rowBlock.split("\n");
-    for (const rawLine of lines) {
-      const line = rawLine.trim();
-      if (!line || line.startsWith("//")) continue;
-      const colMatch = line.match(/^([a-zA-Z0-9_]+)(\??):\s*(.+)$/);
-      if (colMatch) {
-        const colName = colMatch[1];
-        let colType = colMatch[3].replace(/;$/, "");
-        const isNullable = colType.includes("null") || colMatch[2] === "?";
-        columns.push({
-          name: colName,
-          type: colType.replace(/\s*\|\s*null/, "").trim(),
-          isNullable,
-        });
-      }
-    }
-
-    tableDefs.push({
-      name: tableName,
-      category: categorizeTable(tableName),
-      columns,
-      status: "verified",
-    });
-  }
-
   // Probe live database sample counts for critical tables
-  const criticalTables = ["schools", "classes", "subjects", "students", "assessments", "lesson_notes", "curriculum_documents", "scheme_items"];
+  const criticalTables = ["schools", "classes", "subjects", "students", "assessments", "lesson_notes", "curriculum_documents", "scheme_items"] as const;
   let totalSubjects = 0;
   let subjectsWithClassBinding = 0;
   let schoolWideSubjects = 0;
@@ -114,8 +78,9 @@ export const getDatabaseSchemaDiagnostics = createServerFn({ method: "GET" }).ha
   await Promise.all(
     criticalTables.map(async (tbl) => {
       try {
-        const { count, error } = await supabaseAdmin.from(tbl).select("*", { count: "exact", head: true });
-        const target = tableDefs.find((t) => t.name === tbl);
+        const { count, error } = await db.from(tbl).select("*", { count: "exact", head: true }).eq("school_id", data.school_id);
+        const target: TableDefinition = { name: tbl, category: categorizeTable(tbl), columns: [], status: "empty" };
+        tableDefs.push(target);
         if (target) {
           if (error) {
             target.status = "error";
@@ -127,7 +92,7 @@ export const getDatabaseSchemaDiagnostics = createServerFn({ method: "GET" }).ha
         }
 
         if (tbl === "subjects" && !error) {
-          const { data: subs } = await supabaseAdmin.from("subjects").select("id, class_id");
+          const { data: subs } = await db.from("subjects").select("id, class_id").eq("school_id", data.school_id);
           if (subs) {
             totalSubjects = subs.length;
             subjectsWithClassBinding = subs.filter((s) => s.class_id !== null).length;
