@@ -76,24 +76,47 @@ export const generateLessonNote = createServerFn({ method: "POST" })
       teacher: prof.data?.full_name ?? "",
     };
 
-    const apiKey = process.env.LOVABLE_API_KEY;
-    if (!apiKey) throw new Error("AI is not configured");
-    const { createOpenAI } = await import("@ai-sdk/openai");
-    const { streamText } = await import("ai");
-    const provider = createOpenAI({ baseURL: "https://ai.gateway.lovable.dev/v1", apiKey, headers: { "Lovable-API-Key": apiKey, "X-Lovable-AIG-SDK": "vercel-ai-sdk" } });
-    let failure: unknown = null;
-    const result = streamText({
-      model: provider.responses("openai/gpt-6-astra"),
-      instructions: INSTRUCTIONS,
-      prompt: `Return json. Subject: ${header.subject}\nClass: ${header.class_name}${cls.data.section ? ` (${cls.data.section})` : ""}\nTerm: ${header.term} term, Week ${data.week}, ${header.session} session\nTopic: ${data.topic}\nDuration: ${header.duration} (${header.period})\nLearners: ${header.no_in_class || "unknown"}, ages ${header.average_age || "typical for class"}\n${data.extra ? `Teacher notes: ${data.extra}` : ""}`,
-      onError: ({ error }) => { failure = error; },
-      providerOptions: { openai: { store: false, forceReasoning: true, reasoningEffort: "low", reasoningSummary: "auto", include: ["reasoning.encrypted_content"] } },
-    });
     let text = "";
-    try { text = await result.text; } catch (e) { failure = e; }
-    const status = (failure as any)?.statusCode ?? (failure as any)?.status;
-    if (status === 429) throw new Error("The AI is busy right now. Please wait a minute and try again.");
-    if (status === 402 || status === 403) throw new Error("AI credits have run out. The workspace owner needs to add credits.");
+    const promptText = `Return json. Subject: ${header.subject}\nClass: ${header.class_name}${cls.data.section ? ` (${cls.data.section})` : ""}\nTerm: ${header.term} term, Week ${data.week}, ${header.session} session\nTopic: ${data.topic}\nDuration: ${header.duration} (${header.period})\nLearners: ${header.no_in_class || "unknown"}, ages ${header.average_age || "typical for class"}\n${data.extra ? `Teacher notes: ${data.extra}` : ""}`;
+
+    // Prefer GEMINI_API_KEY if configured in environment
+    if (process.env.GEMINI_API_KEY) {
+      try {
+        const { GoogleGenAI } = await import("@google/genai");
+        const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+        const res = await ai.models.generateContent({
+          model: "gemini-3.5-flash-lite",
+          contents: `${INSTRUCTIONS}\n\n${promptText}`,
+        });
+        text = res.text || "";
+      } catch (geminiErr: any) {
+        console.warn("Gemini lesson plan generation failed, checking alternatives:", geminiErr);
+      }
+    }
+
+    if (!text && process.env.LOVABLE_API_KEY) {
+      const apiKey = process.env.LOVABLE_API_KEY;
+      const { createOpenAI } = await import("@ai-sdk/openai");
+      const { streamText } = await import("ai");
+      const provider = createOpenAI({ baseURL: "https://ai.gateway.lovable.dev/v1", apiKey, headers: { "Lovable-API-Key": apiKey, "X-Lovable-AIG-SDK": "vercel-ai-sdk" } });
+      let failure: unknown = null;
+      const result = streamText({
+        model: provider.responses("openai/gpt-6-astra"),
+        instructions: INSTRUCTIONS,
+        prompt: promptText,
+        onError: ({ error }) => { failure = error; },
+        providerOptions: { openai: { store: false, forceReasoning: true, reasoningEffort: "low", reasoningSummary: "auto", include: ["reasoning.encrypted_content"] } },
+      });
+      try { text = await result.text; } catch (e) { failure = e; }
+      const status = (failure as any)?.statusCode ?? (failure as any)?.status;
+      if (status === 429) throw new Error("The AI is busy right now. Please wait a minute and try again.");
+      if (status === 402 || status === 403) throw new Error("AI credits have run out. The workspace owner needs to add credits.");
+    }
+
+    if (!text) {
+      throw new Error("AI is currently unavailable. Please check API key configuration.");
+    }
+
     let plan: LessonPlan;
     try {
       const raw = text.replace(/^```(?:json)?\s*|\s*```$/g, "");

@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import {
   LayoutDashboard, Users, BookOpen, FileText, Building2, LogOut,
   GraduationCap, UserCog, Menu, X, Award, CalendarCheck, Wallet, Megaphone, ScrollText, MoonStar,
-  UserCheck, Tablet,
+  UserCheck, Tablet, Activity,
 } from "lucide-react";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -43,6 +43,7 @@ const NAV = [
   { to: "/users", label: "Users & Roles", icon: UserCog, roles: ["super_admin","school_admin"] },
   { to: "/settings", search: { tab: "reports" }, label: "Report Card Design", icon: Award, roles: ["super_admin","school_admin"] },
   { to: "/settings", label: "School Settings", icon: Settings2, roles: ["super_admin","school_admin"] },
+  { to: "/diagnostics", label: "Database & AI Diagnostics", icon: Activity, roles: ["super_admin","school_admin"] },
 ] as const;
 
 function AuthedLayout() {

@@ -39,32 +39,66 @@ export const breakdownCurriculum = createServerFn({ method: "POST" })
     ]);
     const classList = classes ?? [];
 
-    const apiKey = process.env.LOVABLE_API_KEY;
-    if (!apiKey) throw new Error("AI is not configured");
-    const { createOpenAI } = await import("@ai-sdk/openai");
-    const { streamText } = await import("ai");
-    const provider = createOpenAI({ baseURL: "https://ai.gateway.lovable.dev/v1", apiKey, headers: { "Lovable-API-Key": apiKey, "X-Lovable-AIG-SDK": "vercel-ai-sdk" } });
-
-    const intro = `Return json. School classes: ${classList.map((c) => c.name).join(", ") || "none listed"}\nSubject: ${subj.data?.name ?? "detect from the document"}\nDocument title: ${data.title}`;
-    const parts: any[] = [{ type: "text", text: intro }];
-    if (data.kind === "pdf") parts.push({ type: "file", filename: data.file_name || "curriculum.pdf", data: data.content, mediaType: "application/pdf" });
-    else if (data.kind === "image") parts.push({ type: "image", image: new URL(`data:${data.mime};base64,${data.content}`) });
-    else parts.push({ type: "text", text: `DOCUMENT TEXT:\n${data.content.slice(0, 400_000)}` });
-
-    let failure: unknown = null;
-    const result = streamText({
-      model: provider.responses("openai/gpt-6-astra"),
-      instructions: INSTRUCTIONS,
-      messages: [{ role: "user", content: parts }],
-      onError: ({ error }) => { failure = error; },
-      providerOptions: { openai: { store: false, forceReasoning: true, reasoningEffort: "low", reasoningSummary: "auto", include: ["reasoning.encrypted_content"] } },
-    });
     let text = "";
-    try { text = await result.text; } catch (e) { failure = e; }
-    const status = (failure as any)?.statusCode ?? (failure as any)?.status;
-    if (status === 429) throw new Error("The AI is busy right now. Please wait a minute and try again.");
-    if (status === 402 || status === 403) throw new Error("AI credits have run out. The workspace owner needs to add credits.");
-    if (status === 400) throw new Error("The AI could not read this file. Try a PDF, Word document, photo or text file under 10 MB.");
+    const intro = `Return json. School classes: ${classList.map((c) => c.name).join(", ") || "none listed"}\nSubject: ${subj.data?.name ?? "detect from the document"}\nDocument title: ${data.title}`;
+
+    if (process.env.GEMINI_API_KEY) {
+      try {
+        const { GoogleGenAI } = await import("@google/genai");
+        const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+        let geminiContents: any;
+        if (data.kind === "text") {
+          geminiContents = `${INSTRUCTIONS}\n\n${intro}\n\nDOCUMENT TEXT:\n${data.content.slice(0, 200_000)}`;
+        } else if (data.kind === "image") {
+          geminiContents = [
+            { text: `${INSTRUCTIONS}\n\n${intro}` },
+            { inlineData: { mimeType: data.mime || "image/jpeg", data: data.content } },
+          ];
+        } else if (data.kind === "pdf") {
+          geminiContents = [
+            { text: `${INSTRUCTIONS}\n\n${intro}` },
+            { inlineData: { mimeType: "application/pdf", data: data.content } },
+          ];
+        }
+        const res = await ai.models.generateContent({
+          model: "gemini-3.5-flash-lite",
+          contents: geminiContents,
+        });
+        text = res.text || "";
+      } catch (geminiErr: any) {
+        console.warn("Gemini curriculum parse failed, falling back to Lovable AI:", geminiErr);
+      }
+    }
+
+    if (!text && process.env.LOVABLE_API_KEY) {
+      const apiKey = process.env.LOVABLE_API_KEY;
+      const { createOpenAI } = await import("@ai-sdk/openai");
+      const { streamText } = await import("ai");
+      const provider = createOpenAI({ baseURL: "https://ai.gateway.lovable.dev/v1", apiKey, headers: { "Lovable-API-Key": apiKey, "X-Lovable-AIG-SDK": "vercel-ai-sdk" } });
+
+      const parts: any[] = [{ type: "text", text: intro }];
+      if (data.kind === "pdf") parts.push({ type: "file", filename: data.file_name || "curriculum.pdf", data: data.content, mediaType: "application/pdf" });
+      else if (data.kind === "image") parts.push({ type: "image", image: new URL(`data:${data.mime};base64,${data.content}`) });
+      else parts.push({ type: "text", text: `DOCUMENT TEXT:\n${data.content.slice(0, 400_000)}` });
+
+      let failure: unknown = null;
+      const result = streamText({
+        model: provider.responses("openai/gpt-6-astra"),
+        instructions: INSTRUCTIONS,
+        messages: [{ role: "user", content: parts }],
+        onError: ({ error }) => { failure = error; },
+        providerOptions: { openai: { store: false, forceReasoning: true, reasoningEffort: "low", reasoningSummary: "auto", include: ["reasoning.encrypted_content"] } },
+      });
+      try { text = await result.text; } catch (e) { failure = e; }
+      const status = (failure as any)?.statusCode ?? (failure as any)?.status;
+      if (status === 429) throw new Error("The AI is busy right now. Please wait a minute and try again.");
+      if (status === 402 || status === 403) throw new Error("AI credits have run out. The workspace owner needs to add credits.");
+      if (status === 400) throw new Error("The AI could not read this file. Try a PDF, Word document, photo or text file under 10 MB.");
+    }
+
+    if (!text) {
+      throw new Error("AI is currently unavailable. Please verify API configuration.");
+    }
 
     let parsed: { summary?: string; classes: { class_label: string; items: any[] }[] };
     try {

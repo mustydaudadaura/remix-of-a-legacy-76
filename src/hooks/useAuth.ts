@@ -68,7 +68,7 @@ export function useAuth(): AuthState {
       setFullName("Mustapha Dauda Adamu (Super Admin)");
       setRoles(["super_admin", "school_admin"]);
       const selected = localStorage.getItem(ACTIVE_SCHOOL_KEY);
-      setSchoolId(selected || "22222222-2222-2222-2222-222222222222");
+      setSchoolId(selected || "af91ff67-95eb-4b62-93a0-5617d23a2f1d");
       setLoading(false);
     }
 
@@ -78,7 +78,7 @@ export function useAuth(): AuthState {
         setFullName("Mustapha Dauda Adamu (Super Admin)");
         setRoles(["super_admin", "school_admin"]);
         const selected = localStorage.getItem(ACTIVE_SCHOOL_KEY);
-        setSchoolId(selected || "22222222-2222-2222-2222-222222222222");
+        setSchoolId(selected || "af91ff67-95eb-4b62-93a0-5617d23a2f1d");
         setLoading(false);
       } else {
         checkRemoteSession();

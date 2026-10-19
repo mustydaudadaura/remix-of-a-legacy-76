@@ -15,6 +15,7 @@ import {
   RadialBarChart, RadialBar,
 } from "recharts";
 import { StudentPerformanceAnalytics } from "@/components/StudentPerformanceAnalytics";
+import { AdminAIAssistantWidget } from "@/components/AdminAIAssistantWidget";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({ meta: [{ title: "Dashboard — Alegacy" }, { name: "description", content: "Dashboard for authorized school accounts and families in Alegacy." }, { property: "og:title", content: "Dashboard — Alegacy" }, { property: "og:description", content: "Dashboard for authorized school accounts and families in Alegacy." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
@@ -201,6 +202,7 @@ function SuperAdminView({ stats, schoolId }: { stats: any; schoolId?: string | n
         <DonutStat label="Attendance Avg" value={57} color={ROSE} />
       </div>
 
+      <AdminAIAssistantWidget schoolId={schoolId} />
       <StudentPerformanceAnalytics schoolId={schoolId} />
       <ChartsRow seed={3} title="Platform Growth" subtitle="Schools onboarded vs active users" />
     </>
@@ -306,6 +308,7 @@ function SchoolAdminView({ stats, schoolId }: { stats: any; schoolId?: string | 
         <DonutStat label="Reports Published" value={58} color={ROSE} />
       </div>
 
+      <AdminAIAssistantWidget schoolId={schoolId} />
       <StudentPerformanceAnalytics schoolId={schoolId} />
       <ChartsRow seed={5} title="School Performance" subtitle="Enrolment trend vs assessment volume" />
       <ProgressCard />
@@ -322,6 +325,7 @@ function TeacherView({ schoolId }: { schoolId?: string | null }) {
         <GradientStat icon={ClipboardList} label="Pending Results" value={12} delta={-3} gradient="var(--gradient-analytic-3)" />
         <GradientStat icon={Award} label="Avg Class Score" value="74%" delta={4} gradient="var(--gradient-analytic-1)" />
       </div>
+      <AdminAIAssistantWidget schoolId={schoolId} />
       <div className="grid gap-3 grid-cols-2 sm:gap-4 sm:grid-cols-4">
         <DonutStat label="Submissions" value={78} color={PINK} />
         <DonutStat label="Attendance" value={89} color={PURPLE} />

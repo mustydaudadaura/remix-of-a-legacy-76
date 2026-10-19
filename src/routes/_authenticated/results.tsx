@@ -73,11 +73,22 @@ function ResultsPage() {
     : academicConfig.secondaryScale;
 
   const { data: subjects } = useQuery({
-    queryKey: ["res-subjects", filters.class_id],
+    queryKey: ["res-subjects", filters.class_id, schoolId],
     queryFn: async () => {
-      let q = supabase.from("subjects").select("id, name");
-      if (filters.class_id) q = q.or(`class_id.eq.${filters.class_id},class_id.is.null`);
-      return (await q.order("name")).data ?? [];
+      let q = supabase.from("subjects").select("id, name, class_id, school_id");
+      if (schoolId) {
+        q = q.eq("school_id", schoolId);
+      }
+      if (filters.class_id) {
+        q = q.or(`class_id.eq.${filters.class_id},class_id.is.null`);
+      }
+      const { data, error } = await q.order("name");
+      if (error) {
+        console.warn("Could not fetch filtered subjects, falling back to all school subjects:", error);
+        const fallback = await supabase.from("subjects").select("id, name").order("name");
+        return fallback.data ?? [];
+      }
+      return data ?? [];
     },
   });
 
@@ -244,16 +255,32 @@ function ResultsPage() {
         <CardContent className="grid grid-cols-1 gap-3 sm:grid-cols-4">
           <div>
             <Label>Class</Label>
-            <Select value={filters.class_id} onValueChange={(v) => setFilters({ ...filters, class_id: v })}>
-              <SelectTrigger><SelectValue placeholder="Choose" /></SelectTrigger>
-              <SelectContent>{classes?.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}</SelectContent>
+            <Select
+              value={filters.class_id}
+              onValueChange={(v) => {
+                setFilters({ ...filters, class_id: v });
+              }}
+            >
+              <SelectTrigger><SelectValue placeholder="Choose Class" /></SelectTrigger>
+              <SelectContent>
+                {classes?.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
+              </SelectContent>
             </Select>
           </div>
           <div>
             <Label>Subject</Label>
-            <Select value={filters.subject_id} onValueChange={(v) => setFilters({ ...filters, subject_id: v })}>
-              <SelectTrigger><SelectValue placeholder="Choose" /></SelectTrigger>
-              <SelectContent>{subjects?.map((s) => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}</SelectContent>
+            <Select
+              value={filters.subject_id}
+              onValueChange={(v) => setFilters({ ...filters, subject_id: v })}
+            >
+              <SelectTrigger><SelectValue placeholder={subjects?.length ? "Choose Subject" : "No subjects available"} /></SelectTrigger>
+              <SelectContent>
+                {subjects?.length ? (
+                  subjects.map((s) => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)
+                ) : (
+                  <SelectItem value="__none" disabled>No subjects registered</SelectItem>
+                )}
+              </SelectContent>
             </Select>
           </div>
           <div><Label>Session</Label><Input value={filters.session} onChange={(e) => setFilters({ ...filters, session: e.target.value })} /></div>

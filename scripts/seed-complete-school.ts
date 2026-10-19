@@ -395,7 +395,7 @@ async function seedCompleteSchool() {
       .select("id")
       .eq("school_id", SCHOOL_ID)
       .eq("name", fi.name)
-      .eq("session", SESSION)
+      .eq("session", "2025/2026")
       .eq("term", fi.term)
       .maybeSingle();
 
@@ -408,7 +408,7 @@ async function seedCompleteSchool() {
           school_id: SCHOOL_ID,
           name: fi.name,
           amount: fi.amount,
-          session: SESSION,
+          session: "2025/2026",
           term: fi.term,
           active: true,
         })
@@ -425,7 +425,7 @@ async function seedCompleteSchool() {
         .eq("school_id", SCHOOL_ID)
         .eq("student_id", st.id)
         .eq("title", fi.name)
-        .eq("session", SESSION)
+        .eq("session", "2025/2026")
         .eq("term", fi.term)
         .maybeSingle();
 
@@ -437,7 +437,7 @@ async function seedCompleteSchool() {
           student_id: st.id,
           fee_item_id: feeItemId,
           title: fi.name,
-          session: SESSION,
+          session: "2025/2026",
           term: fi.term,
           amount_due: fi.amount,
           amount_paid: paidAmount,
@@ -461,7 +461,7 @@ async function seedCompleteSchool() {
         title: "Third Term Terminal Report Cards Published",
         body: "Dear Parent, the third term academic results and cumulative broadsheets for 2025/2026 session have been verified and officially published. You can view and download the official report card under the Reports tab.",
         type: "news",
-        meta: { session: SESSION, term: "third" },
+        meta: { session: "2025/2026", term: "third" },
         visible_from: new Date().toISOString(),
       },
       {
