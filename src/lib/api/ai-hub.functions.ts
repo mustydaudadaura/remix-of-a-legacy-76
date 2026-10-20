@@ -61,7 +61,7 @@ export const autoGenerateLessonPlanFn = createServerFn({ method: "POST" })
         subject_id: data.subject_id,
         topic: data.topic,
         week: data.week,
-        term: data.term,
+        term: data.term as any,
         status: "draft",
         created_by: userId,
         content: result.data?.board_summary || "",
@@ -91,7 +91,7 @@ export const autoGenerateStudentReportSummaryFn = createServerFn({ method: "POST
         .select("ca1, ca2, exam, subjects(name)")
         .eq("student_id", data.student_id)
         .eq("session", data.session)
-        .eq("term", data.term),
+        .eq("term", data.term as any),
       supabase
         .from("students")
         .select("id", { count: "exact", head: true }),

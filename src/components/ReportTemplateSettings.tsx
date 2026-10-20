@@ -10,7 +10,6 @@ import { Save, RotateCcw, Check, Upload, Trash2, ShieldCheck, Building2, Sparkle
 import { toast } from 'sonner';
 import { REPORT_COLOURS, REPORT_PARTS, resolveReportTemplate, REPORT_LAYOUTS, type ReportTemplate, type ReportPart, type ReportLayoutId } from '@/lib/report-template';
 import { ReportCardView } from '@/components/ReportCardView';
-import { Badge } from '@/components/ui/badge';
 
 export function ReportTemplateSettings({ school }: { school: { id: string; name: string; report_template: unknown; logo_url?: string | null; stamp_url?: string | null; principal_signature_url?: string | null; motto?: string | null; address?: string | null; phone?: string | null; email?: string | null; principal_name?: string | null; [key: string]: unknown } }) {
   const qc = useQueryClient();
