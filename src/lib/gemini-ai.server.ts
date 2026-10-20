@@ -290,3 +290,72 @@ Provide constructive, dignified, and encouraging remarks suitable for an officia
     return { success: false, error: mapAIError(err) };
   }
 }
+
+export interface PassportQualityAssessment {
+  face_detected: boolean;
+  face_centered: boolean;
+  standard_lighting: boolean;
+  plain_background: boolean;
+  face_coverage_percent: number; // target 70-80% of frame
+  sharpness_score: number; // 0-100
+  crop_recommendations: {
+    suggested_zoom: number; // 1.0 to 2.5
+    offset_y_percent: number; // -20 to +20
+  };
+  filter_enhancements: {
+    brightness: number; // e.g. 102%
+    contrast: number; // e.g. 105%
+    saturate: number; // e.g. 102%
+  };
+  summary: string;
+}
+
+export async function analyzePassportPhotoQuality(imageBase64: string): Promise<AIServiceResponse<PassportQualityAssessment>> {
+  try {
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) throw new Error("GEMINI_API_KEY is not configured");
+
+    const { GoogleGenAI } = await import("@google/genai");
+    const ai = new GoogleGenAI({ apiKey });
+
+    // Strip header if data URL
+    const cleanBase64 = imageBase64.replace(/^data:image\/\w+;base64,/, "");
+
+    const system = `You are a biometric passport photo compliance inspector according to international ICAO standard 9303.
+Analyze this pupil/teacher photograph. The face must be 100% visible, centered, upright, with neutral expression, clear eyes, and appropriate contrast.
+Return ONLY valid JSON matching this schema:
+{
+  "face_detected": boolean,
+  "face_centered": boolean,
+  "standard_lighting": boolean,
+  "plain_background": boolean,
+  "face_coverage_percent": number,
+  "sharpness_score": number,
+  "crop_recommendations": {
+    "suggested_zoom": number,
+    "offset_y_percent": number
+  },
+  "filter_enhancements": {
+    "brightness": number,
+    "contrast": number,
+    "saturate": number
+  },
+  "summary": string
+}`;
+
+    const res = await ai.models.generateContent({
+      model: "gemini-3.5-flash-lite",
+      contents: [
+        { text: `${system}\n\nAssess this photo for school ID and report card passport standard.` },
+        { inlineData: { mimeType: "image/jpeg", data: cleanBase64 } }
+      ]
+    });
+
+    const raw = res.text?.trim() || "{}";
+    const data = cleanAndParseJSON<PassportQualityAssessment>(raw);
+    return { success: true, data };
+  } catch (err: any) {
+    return { success: false, error: mapAIError(err) };
+  }
+}
+

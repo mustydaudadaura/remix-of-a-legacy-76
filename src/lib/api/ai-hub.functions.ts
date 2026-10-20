@@ -155,3 +155,19 @@ export const autoGenerateStudentReportSummaryFn = createServerFn({ method: "POST
 
     return result.data;
   });
+
+const PassportEnhanceSchema = z.object({
+  image_base64: z.string().min(20),
+});
+
+export const enhancePassportPhotoFn = createServerFn({ method: "POST" })
+  .validator((d: unknown) => PassportEnhanceSchema.parse(d))
+  .handler(async ({ data }) => {
+    const { analyzePassportPhotoQuality } = await import("@/lib/gemini-ai.server");
+    const result = await analyzePassportPhotoQuality(data.image_base64);
+    if (!result.success) {
+      throw new Error(result.error?.message || "Failed to analyze passport quality");
+    }
+    return result.data;
+  });
+

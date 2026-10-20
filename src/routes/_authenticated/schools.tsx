@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Plus, Settings2, RefreshCw, Copy, Wand2, ExternalLink, Globe } from "lucide-react";
+import { Plus, Settings2, RefreshCw, Copy, Wand2, ExternalLink, Globe, Download } from "lucide-react";
 import { toast } from "sonner";
 
 // Build a school code like "HGA-001" from the school name.
@@ -110,15 +110,52 @@ function SchoolsPage() {
     toast.success(`Copied ${code}`);
   };
 
+  const exportSchoolsCSV = () => {
+    if (!schools?.length) {
+      toast.error("No schools to export");
+      return;
+    }
+    const headers = ["School Name", "School Code", "Current Session", "Phone", "Email", "Address", "Motto"];
+    const rows = schools.map((s) => [
+      `"${(s.name || "").replace(/"/g, '""')}"`,
+      `"${(s.code || "").replace(/"/g, '""')}"`,
+      `"${(s.current_session || "").replace(/"/g, '""')}"`,
+      `"${(s.phone || "").replace(/"/g, '""')}"`,
+      `"${(s.email || "").replace(/"/g, '""')}"`,
+      `"${(s.address || "").replace(/"/g, '""')}"`,
+      `"${(s.motto || "").replace(/"/g, '""')}"`,
+    ]);
+    const csvContent = "data:text/csv;charset=utf-8," + [headers.join(","), ...rows.map((r) => r.join(","))].join("\n");
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `registered_schools_export_${new Date().toISOString().slice(0, 10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    toast.success(`Exported ${schools.length} schools to CSV!`);
+  };
+
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Schools</h1>
-          <p className="text-sm text-muted-foreground">Manage schools, branding, and report card identity.</p>
+          <h1 className="text-2xl font-bold tracking-tight">Schools & Academic Branding</h1>
+          <p className="text-sm text-muted-foreground">Register schools, upload official logos, stamps, and principal signatures.</p>
         </div>
-        <Dialog open={open} onOpenChange={setOpen}>
-          <DialogTrigger asChild><Button><Plus className="mr-2 h-4 w-4" /> New school</Button></DialogTrigger>
+        <div className="flex items-center gap-2 flex-wrap">
+          <Button
+            type="button"
+            variant="outline"
+            className="text-xs font-semibold gap-1.5 shadow-2xs border-primary/40 hover:bg-primary/10"
+            onClick={exportSchoolsCSV}
+          >
+            <Download className="h-3.5 w-3.5 text-primary" />
+            Export Bulk (CSV)
+          </Button>
+
+          <Dialog open={open} onOpenChange={setOpen}>
+            <DialogTrigger asChild><Button><Plus className="mr-2 h-4 w-4" /> Register New School</Button></DialogTrigger>
           <DialogContent>
             <DialogHeader><DialogTitle>Create school</DialogTitle></DialogHeader>
             <form onSubmit={create} className="space-y-3">
@@ -154,6 +191,13 @@ function SchoolsPage() {
             </form>
           </DialogContent>
         </Dialog>
+        </div>
+      </div>
+
+      {/* Record Retention Policy Banner */}
+      <div className="flex items-center gap-2 p-3 rounded-xl bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-900 text-xs text-blue-900 dark:text-blue-200">
+        <span className="font-semibold">Permanent School Registry: </span>
+        Registered schools, codes, and institutional branding are permanently protected from deletion to guarantee lifelong student credential verification and transcript authenticity.
       </div>
 
       <Card>

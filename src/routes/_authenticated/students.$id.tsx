@@ -9,9 +9,9 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { ArrowLeft, Camera, Sparkles, ShieldCheck, Lock } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
-import { PassportPhotoStudio } from "@/components/PassportPhotoStudio";
+import { PassportPhotoStudioModal } from "@/components/admissions/PassportPhotoStudioModal";
 
 export const Route = createFileRoute("/_authenticated/students/$id")({
   head: () => ({ meta: [{ title: "Student Profile — Alegacy" }, { name: "description", content: "Complete student profile: biodata, guardians, academics and fees." }, { property: "og:title", content: "Student Profile — Alegacy" }, { property: "og:description", content: "Complete student profile: biodata, guardians, academics and fees." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
@@ -30,8 +30,8 @@ function StudentProfile() {
   const { can } = useSchoolAccess();
   const qc = useQueryClient();
   const [editing, setEditing] = useState(false);
+  const [passportOpen, setPassportOpen] = useState(false);
   const [form, setForm] = useState<Record<string, string>>({});
-  const [photoStudioOpen, setPhotoStudioOpen] = useState(false);
 
   const { data, isPending, error } = useQuery({
     queryKey: ["student-360", id],
@@ -65,82 +65,50 @@ function StudentProfile() {
     qc.invalidateQueries({ queryKey: ["student-360", id] });
   };
 
-  const fullName = [s.first_name, s.middle_name, s.last_name].filter(Boolean).join(" ");
-
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <Link to="/students" className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground">
-          <ArrowLeft className="mr-1 h-4 w-4" /> All students
-        </Link>
-        <div className="flex items-center gap-2">
-          <Badge variant="outline" className="bg-emerald-50 text-emerald-800 border-emerald-300 text-[11px] font-medium py-1">
-            <Lock className="mr-1 h-3 w-3 text-emerald-700" />
-            Permanent Academic Record (Protected from Deletion)
-          </Badge>
-        </div>
-      </div>
-
+      <Link to="/students" className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground"><ArrowLeft className="mr-1 h-4 w-4" /> All students</Link>
       <Card>
-        <CardContent className="flex flex-wrap items-center gap-5 p-5">
+        <CardContent className="flex flex-wrap items-center gap-4 p-5">
           <div className="relative group">
-            <div className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-xl bg-primary/10 text-xl font-bold text-primary border-2 border-border shadow-xs">
-              {s.photo_url ? (
-                <img src={s.photo_url} alt={fullName} className="h-full w-full object-cover" />
-              ) : (
-                `${s.first_name[0]}${s.last_name[0]}`
-              )}
+            <div className="flex h-16 w-16 items-center justify-center overflow-hidden rounded-full bg-primary/10 text-xl font-bold text-primary border-2 border-primary/20">
+              {s.photo_url ? <img src={s.photo_url} alt="" className="h-full w-full object-cover" /> : `${s.first_name[0]}${s.last_name[0]}`}
             </div>
             {can("students.edit") && (
               <Button
-                size="icon"
+                type="button"
+                size="sm"
                 variant="secondary"
-                className="absolute -bottom-2 -right-2 h-7 w-7 rounded-full shadow-md border border-border"
-                onClick={() => setPhotoStudioOpen(true)}
-                title="Capture / Enhance Passport Photo"
-                aria-label="Capture / Enhance Passport Photo"
+                onClick={() => setPassportOpen(true)}
+                className="mt-2 text-xs h-7 px-2"
               >
-                <Camera className="h-3.5 w-3.5" />
+                Passport Photo (Gemini)
               </Button>
             )}
           </div>
-
           <div className="min-w-0 flex-1">
-            <div className="flex flex-wrap items-center gap-2">
-              <h1 className="truncate text-2xl font-bold">{fullName}</h1>
-              <Badge variant={s.status === "active" ? "default" : "secondary"} className="capitalize">{s.status}</Badge>
-            </div>
-            <p className="text-sm text-muted-foreground mt-0.5">
-              Adm No: <strong className="font-mono text-foreground">{s.admission_no}</strong> · {s.classes?.name ?? "No class"}{s.campuses?.name ? ` · ${s.campuses.name}` : ""}
-            </p>
+            <h1 className="truncate text-2xl font-bold">{s.first_name} {s.middle_name ?? ""} {s.last_name}</h1>
+            <p className="text-sm text-muted-foreground">{s.admission_no} · {s.classes?.name ?? "No class"}{s.campuses?.name ? ` · ${s.campuses.name}` : ""}</p>
           </div>
-
-          {can("students.edit") && (
-            <Button
-              variant="outline"
-              size="sm"
-              className="text-xs font-semibold"
-              onClick={() => setPhotoStudioOpen(true)}
-            >
-              <Sparkles className="mr-1.5 h-3.5 w-3.5 text-primary" />
-              Passport Photo (Gemini Enhance)
-            </Button>
-          )}
+          <Badge variant={s.status === "active" ? "default" : "secondary"} className="capitalize">{s.status}</Badge>
         </CardContent>
       </Card>
 
-      {/* Passport Photo Studio Modal */}
-      <PassportPhotoStudio
-        open={photoStudioOpen}
-        onOpenChange={setPhotoStudioOpen}
-        targetName={fullName}
-        targetType="student"
-        targetId={id}
-        schoolId={s.school_id}
-        initialPhotoUrl={s.photo_url}
-        onPhotoSaved={(newPhoto) => {
-          qc.invalidateQueries({ queryKey: ["student-360", id] });
-          qc.invalidateQueries({ queryKey: ["students"] });
+      <PassportPhotoStudioModal
+        open={passportOpen}
+        onOpenChange={setPassportOpen}
+        personName={`${s.first_name} ${s.last_name}`}
+        personIdentifier={s.admission_no}
+        currentPhotoUrl={s.photo_url}
+        role="student"
+        onSavePhoto={async (dataUrl) => {
+          const { error } = await supabase.from("students").update({ photo_url: dataUrl }).eq("id", id);
+          if (error) {
+            toast.error(error.message);
+          } else {
+            toast.success("Passport photo updated with Gemini standard enhancement!");
+            qc.invalidateQueries({ queryKey: ["student-360", id] });
+          }
         }}
       />
 

@@ -1,5 +1,5 @@
-// Complete Demo School Data with 2 Sessions and 3 Terms per Session
-// Fully aligned with Nigerian NERDC, Federal Ministry of Education, and Al-Qalam Kaduna standard formats
+// Complete School Data with Sessions and Terms per Session
+// Fully aligned with Nigerian NERDC, Federal Ministry of Education, and National single-page A4 standard formats
 
 export interface DemoSubjectScore {
   id: string;
@@ -57,20 +57,23 @@ export interface DemoReportCard {
 
 export const DEMO_SCHOOL_PROFILE = {
   id: "af91ff67-95eb-4b62-93a0-5617d23a2f1d",
-  name: "AL-QALAM ACADEMY KADUNA",
-  code: "ALQALAM",
-  motto: "SUCCESS THROUGH HARDWORK",
-  address: "No. 2, Al-Qalam Street by Garba Rabah Road, Makarfi Road, Rigasa, Kaduna.",
-  phone: "0803-512-0756, 0818-461-0450, 0814-607-0775",
-  email: "aakaduna@gmail.com",
-  website: "https://alqalam.sch.ng",
-  branch_name: "Rigasa Main Campus",
-  principal_name: "MR OWOLABI BADMOS",
+  name: "EduERP National Academy",
+  code: "EDUERAP",
+  motto: "EXCELLENCE AND INTEGRITY",
+  address: "",
+  phone: "",
+  email: "",
+  website: "",
+  branch_name: "",
+  principal_name: "Head Teacher / Principal",
+  logo_url: "",
+  stamp_url: "",
+  principal_signature_url: "",
   current_session: "2025/2026",
   current_term: "third",
   theme_color: "#1e3a8a",
   report_template: {
-    template_type: "alqalam_kaduna",
+    template_type: "eduerp_national",
     border: "navy",
     heading: "navy",
     table: "navy",
@@ -198,7 +201,7 @@ export function generateDemoSessionsData(): DemoReportCard[] {
           let total = 0;
 
           if (isKiriku && isLatest) {
-            // Exact sample matches from the uploaded Kiriku Victory Al-Qalam report card
+            // Exact sample matches from the national pupil performance report card sample
             const sampleExactScores: Record<string, { ca: number; exam: number; t3: number; t2: number; t1: number; pos: number }> = {
               "AGRICULTURAL SCIENCE": { ca: 26, exam: 21, t3: 47, t2: 47, t1: 48, pos: 9 },
               "BASIC SCIENCE": { ca: 30.5, exam: 34, t3: 64.5, t2: 61, t1: 59, pos: 8 },
@@ -419,6 +422,6 @@ export const ALL_DEMO_REPORT_CARDS = generateDemoSessionsData();
 export function findDemoReportCard(id: string): DemoReportCard | undefined {
   const exact = ALL_DEMO_REPORT_CARDS.find((r) => r.id === id);
   if (exact) return exact;
-  // If id is random UUID or unknown, return the third-term 2025/2026 Kiriku Al-Qalam report card as realistic default
+  // If id is random UUID or unknown, return the third-term 2025/2026 Kiriku performance report card as realistic default
   return ALL_DEMO_REPORT_CARDS[0];
 }

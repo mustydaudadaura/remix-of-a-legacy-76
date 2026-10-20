@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Eye, Search, Filter, Calendar, Award } from "lucide-react";
+import { Eye, Search, Filter, Calendar, Award, Download } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/report-cards")({
   head: () => ({
@@ -66,7 +66,7 @@ function ReportCardsListPage() {
           </p>
         </div>
 
-        {/* Quick summary badges */}
+        {/* Quick summary badges & Bulk Export */}
         <div className="flex flex-wrap items-center gap-2">
           <Badge variant="outline" className="border-primary/30 text-primary py-1 px-3 flex items-center gap-1.5 text-xs">
             <Calendar className="h-3.5 w-3.5" />
@@ -76,6 +76,37 @@ function ReportCardsListPage() {
             <Award className="h-3.5 w-3.5" />
             3 Terms Published
           </Badge>
+          <Button
+            size="sm"
+            variant="outline"
+            className="h-8 text-xs font-semibold gap-1.5 shadow-2xs border-primary/40 hover:bg-primary/10"
+            onClick={() => {
+              if (!filteredCards.length) return;
+              const headers = ["Admission No", "Student Name", "Class", "Session", "Term", "Average %", "Position", "Class Size", "Status", "Verification Code"];
+              const rows = filteredCards.map((c: any) => [
+                `"${c.students?.admission_no || ""}"`,
+                `"${(c.students?.first_name || "") + " " + (c.students?.last_name || "")}"`,
+                `"${c.classes?.name || ""}"`,
+                `"${c.session || ""}"`,
+                `"${c.term || ""}"`,
+                c.average || 0,
+                c.position || 0,
+                c.class_size || 0,
+                c.published ? "Published" : "Draft",
+                `"${c.verification_code || ""}"`
+              ]);
+              const csvContent = "data:text/csv;charset=utf-8," + [headers.join(","), ...rows.map(e => e.join(","))].join("\n");
+              const encodedUri = encodeURI(csvContent);
+              const link = document.createElement("a");
+              link.setAttribute("href", encodedUri);
+              link.setAttribute("download", `report_cards_bulk_export_${new Date().toISOString().slice(0,10)}.csv`);
+              document.body.appendChild(link);
+              link.click();
+              document.body.removeChild(link);
+            }}
+          >
+            <Download className="h-3.5 w-3.5 text-primary" /> Export Bulk (CSV)
+          </Button>
         </div>
       </div>
 
@@ -146,7 +177,7 @@ function ReportCardsListPage() {
             Published Report Cards ({filteredCards.length} of {cards?.length || 0})
           </CardTitle>
           <div className="text-xs text-muted-foreground">
-            Al-Qalam Kaduna & Standard Templates
+            EduERP National & Standard Single-Page A4 Templates
           </div>
         </CardHeader>
         <CardContent>
