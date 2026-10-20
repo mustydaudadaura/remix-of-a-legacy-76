@@ -78,7 +78,7 @@ export const getDatabaseSchemaDiagnostics = createServerFn({ method: "GET" })
   await Promise.all(
     criticalTables.map(async (tbl) => {
       try {
-        const { count, error } = await db.from(tbl).select("*", { count: "exact", head: true }).eq("school_id", data.school_id);
+        const { count, error } = await (db.from(tbl) as any).select("*", { count: "exact", head: true }).eq("school_id", data.school_id);
         const target: TableDefinition = { name: tbl, category: categorizeTable(tbl), columns: [], status: "empty" };
         tableDefs.push(target);
         if (target) {
