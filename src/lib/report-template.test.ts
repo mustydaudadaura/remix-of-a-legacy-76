@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test';
 import { strict as assert } from 'node:assert';
-import { REPORT_COLOURS, resolveReportTemplate, positionVisibility } from './report-template';
+import { REPORT_COLOURS, resolveReportTemplate, positionVisibility, REPORT_LAYOUTS } from './report-template';
 describe('school report configuration', () => {
   it('offers more than 20 distinct colours', () => { assert.ok(new Set(REPORT_COLOURS).size > 20); });
   it('independently resolves selected parts', () => { const c = resolveReportTemplate({ border: 'red', table: 'teal', comments: 'gold' }, 'primary'); assert.deepEqual([c.border,c.table,c.comments,c.heading],['red','teal','gold','blue']); });
@@ -10,7 +10,6 @@ describe('school report configuration', () => {
   it('supports class-only positions', () => { assert.deepEqual(positionVisibility('class'),{ class: true, subject: false }); });
   it('supports subject-only positions', () => { assert.deepEqual(positionVisibility('subject'),{ class: false, subject: true }); });
   it('provides at least 5 Nigerian report layouts including classic comprehensive reincluded', () => {
-    const { REPORT_LAYOUTS } = require('./report-template');
     assert.ok(REPORT_LAYOUTS.length >= 5);
     const ids = REPORT_LAYOUTS.map((l: any) => l.id);
     assert.ok(ids.includes('classic_comprehensive'));

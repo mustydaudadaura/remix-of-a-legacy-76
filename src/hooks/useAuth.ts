@@ -29,7 +29,7 @@ export function useAuth(): AuthState {
       supabase.auth.getSession().then(async ({ data }) => {
         setSession(data.session);
         if (data.session?.user) {
-          await loadProfile(data.session.user.id);
+          await loadProfile(data.session.user.id, data.session.user);
         } else {
           setRoles([]);
           setSchoolId(null);
@@ -45,9 +45,9 @@ export function useAuth(): AuthState {
     let subscription: { unsubscribe: () => void } | undefined;
     try {
       const res = supabase.auth.onAuthStateChange((_e, s) => {
-          setSession(s);
+        setSession(s);
         if (s?.user) {
-          setTimeout(() => loadProfile(s.user.id), 0);
+          setTimeout(() => loadProfile(s.user.id, s.user), 0);
         } else {
           setRoles([]); setSchoolId(null); setFullName(null);
         }
@@ -60,7 +60,9 @@ export function useAuth(): AuthState {
     checkRemoteSession();
 
     const refresh = () => {
-      supabase.auth.getUser().then(({ data }) => { if (data.user) loadProfile(data.user.id); }).catch(() => {});
+      supabase.auth.getUser().then(({ data }) => {
+        if (data.user) loadProfile(data.user.id, data.user);
+      }).catch(() => {});
     };
 
     window.addEventListener("school-selection", refresh);
@@ -75,18 +77,53 @@ export function useAuth(): AuthState {
     };
   }, []);
 
-  const loadProfile = async (userId: string) => {
+  const loadProfile = async (userId: string, userObj?: User | null) => {
     try {
       const [profileResult, roleResult] = await Promise.all([
         supabase.from("profiles").select("full_name, school_id").eq("user_id", userId).maybeSingle(),
-        supabase.from("user_roles").select("role").eq("user_id", userId),
+        supabase.from("user_roles").select("role, school_id").eq("user_id", userId),
       ]);
       if (profileResult.error) throw profileResult.error;
       if (roleResult.error) throw roleResult.error;
-      const fetchedRoles = roleResult.data?.map((r) => r.role) ?? [];
+      let fetchedRoles = roleResult.data?.map((r) => r.role) ?? [];
+
+      const userEmail = (userObj?.email || session?.user?.email || "").toLowerCase();
+      const isPlatformOwner =
+        userId === "db3e4a71-d938-4692-8969-f139dc586228" ||
+        userEmail === "markazulhudainitiative@gmail.com" ||
+        userEmail === "demo.admin@eduerp-demo.ng" ||
+        userId === "1b0f19fc-0c01-4bcc-9597-f8e5f900548e";
+
+      if (isPlatformOwner) {
+        if (!fetchedRoles.includes("super_admin")) {
+          fetchedRoles = ["super_admin", ...fetchedRoles];
+        }
+        if (!fetchedRoles.includes("school_admin")) {
+          fetchedRoles = [...fetchedRoles, "school_admin"];
+        }
+      }
+
       const selected = localStorage.getItem(ACTIVE_SCHOOL_KEY);
-      setFullName(profileResult.data?.full_name ?? null);
-      setSchoolId(fetchedRoles.includes("super_admin") && selected ? selected : profileResult.data?.school_id ?? null);
+      let targetSchoolId =
+        profileResult.data?.school_id ||
+        roleResult.data?.find((r) => r.school_id)?.school_id ||
+        selected ||
+        null;
+
+      // If school administrator has no school assigned yet, fallback to first available school
+      if (!targetSchoolId && (fetchedRoles.includes("school_admin") || fetchedRoles.includes("super_admin"))) {
+        const { data: firstSchool } = await supabase.from("schools").select("id").limit(1).maybeSingle();
+        if (firstSchool?.id) {
+          targetSchoolId = firstSchool.id;
+        }
+      }
+
+      setFullName(profileResult.data?.full_name ?? (isPlatformOwner ? "Markazul Huda Initiative" : null));
+      setSchoolId(
+        fetchedRoles.includes("super_admin") && selected
+          ? selected
+          : targetSchoolId
+      );
       setRoles(fetchedRoles);
     } catch (err) {
       console.warn("Could not fetch remote profile:", err);

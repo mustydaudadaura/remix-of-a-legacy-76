@@ -14,7 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { UserPlus, Download, Printer, Camera, ShieldCheck, User } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth, hasRole } from "@/hooks/useAuth";
-import { inviteStaff } from "@/lib/api/staff.functions";
+import { inviteStaff, assignStaffRole, removeStaffRole } from "@/lib/api/staff.functions";
 import { PassportPhotoStudioModal } from "@/components/admissions/PassportPhotoStudioModal";
 
 export const Route = createFileRoute("/_authenticated/users")({
@@ -25,21 +25,26 @@ export const Route = createFileRoute("/_authenticated/users")({
 const STAFF_ROLES = ["school_admin", "teacher", "accountant"] as const;
 type StaffRole = (typeof STAFF_ROLES)[number];
 
+const ROLE_LABELS: Record<StaffRole, string> = {
+  school_admin: "School Administrator",
+  teacher: "Teacher",
+  accountant: "Accountant",
+};
+
 function UsersPage() {
   const { roles: myRoles, schoolId: mySchoolId } = useAuth();
   const isSuper = hasRole(myRoles, "super_admin");
   const isSchoolAdmin = hasRole(myRoles, "school_admin");
   const canManage = isSuper || isSchoolAdmin;
 
-  const assignableRoles: StaffRole[] = isSuper
-    ? ["school_admin", "teacher", "accountant"]
-    : isSchoolAdmin
-      ? ["teacher", "accountant"]
-      : [];
-  const defaultRole: StaffRole = assignableRoles[0] ?? "teacher";
+  // Super Admins and School Admins can assign all administrative and staff roles
+  const assignableRoles: StaffRole[] = ["school_admin", "teacher", "accountant"];
+  const defaultRole: StaffRole = "teacher";
 
   const qc = useQueryClient();
   const invite = useServerFn(inviteStaff);
+  const assignRole = useServerFn(assignStaffRole);
+  const removeRole = useServerFn(removeStaffRole);
 
   const { data: profiles, isLoading } = useQuery({
     queryKey: ["all-profiles"],
@@ -59,22 +64,54 @@ function UsersPage() {
 
   const [open, setOpen] = useState(false);
   const [passportTarget, setPassportTarget] = useState<any | null>(null);
+  const [roleModalTarget, setRoleModalTarget] = useState<any | null>(null);
+  const [selectedNewRole, setSelectedNewRole] = useState<StaffRole>("teacher");
 
   const [form, setForm] = useState({
     email: "",
     full_name: "",
     role: defaultRole,
     school_id: mySchoolId ?? "",
-    password: "",
+    initial_password: "StaffWelcome#2026",
   });
 
   const inviteMut = useMutation({
-    mutationFn: () => invite({ data: { email: form.email, full_name: form.full_name, role: form.role, school_id: form.school_id, password: form.password.trim() || undefined } }),
-    onSuccess: () => {
-      toast.success(form.password ? "Staff saved. They can now sign in with the email and temporary password." : "Staff role assigned.");
+    mutationFn: () => invite({ data: form }),
+    onSuccess: (res) => {
+      toast.success(
+        `Staff account registered as ${ROLE_LABELS[form.role]}! Initial password: ${form.initial_password}`
+      );
       setOpen(false);
-      setForm({ email: "", full_name: "", role: defaultRole, school_id: mySchoolId ?? "", password: "" });
+      setForm({
+        email: "",
+        full_name: "",
+        role: defaultRole,
+        school_id: mySchoolId ?? "",
+        initial_password: "StaffWelcome#2026",
+      });
       qc.invalidateQueries({ queryKey: ["all-profiles"] });
+      qc.invalidateQueries({ queryKey: ["all-roles"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const addRoleMut = useMutation({
+    mutationFn: async ({ userId, role, schoolId }: { userId: string; role: StaffRole; schoolId: string }) => {
+      return await assignRole({ data: { user_id: userId, role, school_id: schoolId } });
+    },
+    onSuccess: (_, variables) => {
+      toast.success(`Role '${ROLE_LABELS[variables.role]}' assigned successfully!`);
+      qc.invalidateQueries({ queryKey: ["all-roles"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const removeRoleMut = useMutation({
+    mutationFn: async ({ userId, role, schoolId }: { userId: string; role: StaffRole; schoolId: string }) => {
+      return await removeRole({ data: { user_id: userId, role, school_id: schoolId } });
+    },
+    onSuccess: () => {
+      toast.success("Role removed.");
       qc.invalidateQueries({ queryKey: ["all-roles"] });
     },
     onError: (e: Error) => toast.error(e.message),
@@ -107,6 +144,7 @@ function UsersPage() {
     document.body.removeChild(link);
     toast.success(`Exported ${profiles.length} staff records to CSV!`);
   };
+
 
   return (
     <div className="space-y-6">
@@ -141,7 +179,7 @@ function UsersPage() {
           </Button>
 
           {canManage && (
-            <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (o) setForm((f) => ({ ...f, school_id: f.school_id || mySchoolId || "", role: assignableRoles.includes(f.role) ? f.role : defaultRole })); }}>
+            <Dialog open={open} onOpenChange={setOpen}>
               <DialogTrigger asChild>
                 <Button className="text-xs font-semibold">
                   <UserPlus className="mr-2 h-4 w-4" />
@@ -182,20 +220,21 @@ function UsersPage() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="temp_password">Temporary password (for new accounts)</Label>
+                    <Label htmlFor="initial_pwd">Initial login password</Label>
                     <Input
-                      id="temp_password"
+                      id="initial_pwd"
                       type="text"
-                      minLength={8}
-                      placeholder="At least 8 characters — share it with the staff member"
-                      value={form.password}
-                      onChange={(e) => setForm({ ...form, password: e.target.value })}
+                      required
+                      value={form.initial_password}
+                      onChange={(e) => setForm({ ...form, initial_password: e.target.value })}
                     />
-                    <p className="text-xs text-muted-foreground">Leave empty if the person already has an account.</p>
+                    <p className="text-[11px] text-muted-foreground">
+                      The staff member will use their email and this password to sign in immediately.
+                    </p>
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-2">
-                      <Label>Role</Label>
+                      <Label>Role to assign</Label>
                       <Select
                         value={form.role}
                         onValueChange={(v) => setForm({ ...form, role: v as StaffRole })}
@@ -206,11 +245,7 @@ function UsersPage() {
                         <SelectContent>
                           {assignableRoles.map((r) => (
                             <SelectItem key={r} value={r}>
-                              {r === "school_admin"
-                                ? "School Admin"
-                                : r === "teacher"
-                                ? "Teacher"
-                                : "Accountant"}
+                              {ROLE_LABELS[r]}
                             </SelectItem>
                           ))}
                         </SelectContent>
@@ -238,7 +273,7 @@ function UsersPage() {
                   </div>
                   <DialogFooter>
                     <Button type="submit" disabled={inviteMut.isPending || !form.school_id}>
-                      {inviteMut.isPending ? "Saving…" : "Save Staff"}
+                      {inviteMut.isPending ? "Registering & Assigning Role…" : "Register & Assign Role"}
                     </Button>
                   </DialogFooter>
                 </form>
@@ -283,7 +318,7 @@ function UsersPage() {
                 <TableHead>School</TableHead>
                 <TableHead>Phone</TableHead>
                 <TableHead>Roles</TableHead>
-                <TableHead className="text-right">Photograph Studio</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -321,7 +356,7 @@ function UsersPage() {
                       <TableCell className="text-sm text-muted-foreground">{schoolName(p.school_id)}</TableCell>
                       <TableCell className="text-sm">{p.phone ?? "—"}</TableCell>
                       <TableCell>
-                        <div className="flex flex-wrap gap-1">
+                        <div className="flex flex-wrap items-center gap-1.5">
                           {userRoles.length ? (
                             userRoles.map((r) => (
                               <Badge key={r.id} variant="secondary" className="capitalize">
@@ -329,21 +364,38 @@ function UsersPage() {
                               </Badge>
                             ))
                           ) : (
-                            <span className="text-muted-foreground text-xs italic">Staff</span>
+                            <span className="text-muted-foreground text-xs italic">Staff (No role)</span>
                           )}
                         </div>
                       </TableCell>
                       <TableCell className="text-right">
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={() => setPassportTarget(p)}
-                          className="text-xs h-7 gap-1"
-                        >
-                          <Camera className="h-3 w-3 text-primary" />
-                          <span>Passport (Gemini)</span>
-                        </Button>
+                        <div className="flex items-center justify-end gap-1.5 flex-wrap">
+                          {canManage && (
+                            <Button
+                              type="button"
+                              variant="secondary"
+                              size="sm"
+                              onClick={() => {
+                                setRoleModalTarget(p);
+                                setSelectedNewRole("teacher");
+                              }}
+                              className="text-xs h-7 gap-1 font-medium shadow-2xs border"
+                            >
+                              <ShieldCheck className="h-3 w-3 text-primary" />
+                              <span>Assign / Manage Roles</span>
+                            </Button>
+                          )}
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setPassportTarget(p)}
+                            className="text-xs h-7 gap-1"
+                          >
+                            <Camera className="h-3 w-3 text-primary" />
+                            <span>Passport (Gemini)</span>
+                          </Button>
+                        </div>
                       </TableCell>
                     </TableRow>
                   );
@@ -359,6 +411,120 @@ function UsersPage() {
           </Table>
         </CardContent>
       </Card>
+
+      {/* Interactive Role Assignment & Management Dialog */}
+      {roleModalTarget && (
+        <Dialog open={!!roleModalTarget} onOpenChange={(open) => !open && setRoleModalTarget(null)}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <ShieldCheck className="h-5 w-5 text-primary" />
+                Manage Staff Roles
+              </DialogTitle>
+            </DialogHeader>
+
+            <div className="space-y-4 py-2">
+              <div className="rounded-lg border bg-muted/40 p-3 space-y-1 text-sm">
+                <div className="font-semibold text-foreground">{roleModalTarget.full_name || "Staff Member"}</div>
+                <div className="text-xs text-muted-foreground">
+                  School: <span className="font-medium text-foreground">{schoolName(roleModalTarget.school_id)}</span>
+                </div>
+                <div className="text-[11px] font-mono text-muted-foreground">
+                  User ID: {roleModalTarget.user_id}
+                </div>
+              </div>
+
+              {/* Current Roles */}
+              <div className="space-y-2">
+                <Label className="text-xs font-semibold">Current Assigned Roles</Label>
+                {rowRoles(roleModalTarget.user_id).length === 0 ? (
+                  <p className="text-xs text-muted-foreground italic">No roles assigned yet.</p>
+                ) : (
+                  <div className="flex flex-wrap gap-2">
+                    {rowRoles(roleModalTarget.user_id).map((r) => (
+                      <Badge
+                        key={r.id}
+                        variant="secondary"
+                        className="py-1 px-2.5 text-xs flex items-center gap-1.5"
+                      >
+                        <span className="capitalize">{r.role.replace("_", " ")}</span>
+                        <button
+                          type="button"
+                          onClick={() =>
+                            removeRoleMut.mutate({
+                              userId: roleModalTarget.user_id,
+                              role: r.role as StaffRole,
+                              schoolId: r.school_id || roleModalTarget.school_id || mySchoolId || "",
+                            })
+                          }
+                          disabled={removeRoleMut.isPending}
+                          className="text-muted-foreground hover:text-destructive font-bold text-xs ml-1"
+                          title="Remove role"
+                        >
+                          ✕
+                        </button>
+                      </Badge>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Add New Role */}
+              <div className="rounded-lg border p-3.5 space-y-3 bg-card">
+                <Label className="text-xs font-semibold">Assign Role to {roleModalTarget.full_name}</Label>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                  <div className="sm:col-span-2">
+                    <Select
+                      value={selectedNewRole}
+                      onValueChange={(v) => setSelectedNewRole(v as StaffRole)}
+                    >
+                      <SelectTrigger className="h-9 text-xs">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {assignableRoles.map((r) => (
+                          <SelectItem key={r} value={r} className="text-xs">
+                            {ROLE_LABELS[r]}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <Button
+                    type="button"
+                    size="sm"
+                    className="h-9 text-xs font-semibold"
+                    disabled={addRoleMut.isPending}
+                    onClick={() => {
+                      const targetSchoolId = roleModalTarget.school_id || mySchoolId;
+                      if (!targetSchoolId) {
+                        toast.error("Staff member has no school assigned.");
+                        return;
+                      }
+                      addRoleMut.mutate({
+                        userId: roleModalTarget.user_id,
+                        role: selectedNewRole,
+                        schoolId: targetSchoolId,
+                      });
+                    }}
+                  >
+                    {addRoleMut.isPending ? "Assigning…" : "Assign Role"}
+                  </Button>
+                </div>
+                <p className="text-[11px] text-muted-foreground leading-relaxed">
+                  Roles take effect immediately. Assigned teachers get access to Academics and Results Entry; Accountants get access to Fees; Administrators get full school control.
+                </p>
+              </div>
+            </div>
+
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setRoleModalTarget(null)}>
+                Close
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
 
       {/* Staff Passport Photo Modal */}
       {passportTarget && (
@@ -387,3 +553,4 @@ function UsersPage() {
     </div>
   );
 }
+

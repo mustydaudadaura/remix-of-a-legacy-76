@@ -196,12 +196,78 @@ function AuthPage() {
                 </Button>
               </div>
             </div>
-            <Tabs defaultValue="parent">
+            <Tabs defaultValue="signin">
               <TabsList className="grid w-full grid-cols-3">
-                <TabsTrigger value="parent"><Phone className="mr-1 h-3.5 w-3.5" />Parent</TabsTrigger>
-                <TabsTrigger value="signin">Staff</TabsTrigger>
+                <TabsTrigger value="signin">
+                  <School className="mr-1 h-3.5 w-3.5" />
+                  Staff & Admin
+                </TabsTrigger>
+                <TabsTrigger value="parent">
+                  <Phone className="mr-1 h-3.5 w-3.5" />
+                  Parent
+                </TabsTrigger>
                 <TabsTrigger value="signup">Sign up</TabsTrigger>
               </TabsList>
+              <TabsContent value="signin">
+                <form onSubmit={signIn} className="space-y-4 pt-4">
+                  <div className="space-y-1">
+                    <p className="text-xs font-medium text-foreground">
+                      School Administrator & Staff Sign In
+                    </p>
+                    <p className="text-[11px] text-muted-foreground">
+                      Enter your school email and password to access the administrative portal.
+                    </p>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="email">Email address</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      required
+                      placeholder="admin@school.ng"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor="password">Password</Label>
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          if (!email.trim()) {
+                            toast.error("Please enter your email address first.");
+                            return;
+                          }
+                          try {
+                            const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+                              redirectTo: `${window.location.origin}/auth`,
+                            });
+                            if (error) throw error;
+                            toast.success("Password reset instructions sent to your email!");
+                          } catch (err: any) {
+                            toast.error(err?.message || "Failed to send reset email.");
+                          }
+                        }}
+                        className="text-[11px] text-primary hover:underline font-medium"
+                      >
+                        Forgot password?
+                      </button>
+                    </div>
+                    <Input
+                      id="password"
+                      type="password"
+                      required
+                      placeholder="••••••••"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                    />
+                  </div>
+                  <Button type="submit" className="w-full font-semibold" disabled={loading}>
+                    {loading ? "Signing in…" : "Sign In to Portal"}
+                  </Button>
+                </form>
+              </TabsContent>
               <TabsContent value="parent">
                 <form onSubmit={parentLogin} className="space-y-4 pt-4">
                   <div className="space-y-2">
@@ -214,21 +280,6 @@ function AuthPage() {
                   </div>
                   <Button type="submit" className="w-full" disabled={loading}>
                     {loading ? "Checking…" : "Enter portal"}
-                  </Button>
-                </form>
-              </TabsContent>
-              <TabsContent value="signin">
-                <form onSubmit={signIn} className="space-y-4 pt-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="email">Email</Label>
-                    <Input id="email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="password">Password</Label>
-                    <Input id="password" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} />
-                  </div>
-                  <Button type="submit" className="w-full" disabled={loading}>
-                    {loading ? "Signing in…" : "Sign in"}
                   </Button>
                 </form>
               </TabsContent>

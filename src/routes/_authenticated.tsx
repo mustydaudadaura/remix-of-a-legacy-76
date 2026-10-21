@@ -49,11 +49,17 @@ const NAV = [
 function AuthedLayout() {
   const { user, loading, roles, fullName } = useAuth();
   const access = useSchoolAccess();
-  const schools = useQuery({ queryKey: ["layout-schools"], enabled: hasRole(roles, "super_admin"), queryFn: async () => (await supabase.from("schools").select("id,name").order("name")).data ?? [] });
+  const canSwitchSchools = hasRole(roles, "super_admin", "school_admin");
+  const schools = useQuery({
+    queryKey: ["layout-schools"],
+    enabled: canSwitchSchools,
+    queryFn: async () => (await supabase.from("schools").select("id,name").order("name")).data ?? [],
+  });
   const navigate = useNavigate();
   const { location } = useRouterState();
   const [open, setOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+
 
   useEffect(() => {
     if (!loading && !user) navigate({ to: "/auth", replace: true });
@@ -81,12 +87,15 @@ function AuthedLayout() {
     if (n.to === "/dashboard") return true;
     if (n.to === "/schools") return hasRole(roles, "super_admin");
     if (n.to === "/report-cards" && hasRole(roles, "parent", "student")) return true;
+    const roleAllowed = (n.roles as readonly string[]).some((r) => roles.includes(r as any));
+    if (!roleAllowed) return false;
     const permission = PAGE_ACCESS[n.to];
-    return permission ? access.can(permission) : false;
+    return permission ? access.can(permission) : true;
   });
   const permission = PAGE_ACCESS[location.pathname];
   const ownReports = location.pathname === "/report-cards" && hasRole(roles, "parent", "student");
   const denied = permission && !ownReports && !access.can(permission);
+
 
   return (
     <div className="flex min-h-screen bg-background">
@@ -153,13 +162,13 @@ function AuthedLayout() {
             <Button variant="ghost" size="icon" className="lg:hidden" aria-label="Open menu" onClick={() => setOpen(true)}>
               <Menu className="h-5 w-5" />
             </Button>
-            {hasRole(roles, "super_admin") && (
+            {canSwitchSchools && schools.data && schools.data.length > 0 && (
               <Select value={access.schoolId ?? undefined} onValueChange={selectSchool}>
                 <SelectTrigger className="w-48 sm:w-60 max-w-[50vw]" aria-label="Active school">
                   <SelectValue placeholder="Select a school" />
                 </SelectTrigger>
                 <SelectContent>
-                  {schools.data?.map((s) => (
+                  {schools.data.map((s) => (
                     <SelectItem key={s.id} value={s.id}>
                       {s.name}
                     </SelectItem>
