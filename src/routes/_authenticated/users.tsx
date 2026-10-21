@@ -65,14 +65,15 @@ function UsersPage() {
     full_name: "",
     role: defaultRole,
     school_id: mySchoolId ?? "",
+    password: "",
   });
 
   const inviteMut = useMutation({
-    mutationFn: () => invite({ data: form }),
+    mutationFn: () => invite({ data: { email: form.email, full_name: form.full_name, role: form.role, school_id: form.school_id, password: form.password.trim() || undefined } }),
     onSuccess: () => {
-      toast.success("Staff registered and invitation prepared!");
+      toast.success(form.password ? "Staff saved. They can now sign in with the email and temporary password." : "Staff role assigned.");
       setOpen(false);
-      setForm({ email: "", full_name: "", role: defaultRole, school_id: mySchoolId ?? "" });
+      setForm({ email: "", full_name: "", role: defaultRole, school_id: mySchoolId ?? "", password: "" });
       qc.invalidateQueries({ queryKey: ["all-profiles"] });
       qc.invalidateQueries({ queryKey: ["all-roles"] });
     },
@@ -140,7 +141,7 @@ function UsersPage() {
           </Button>
 
           {canManage && (
-            <Dialog open={open} onOpenChange={setOpen}>
+            <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (o) setForm((f) => ({ ...f, school_id: f.school_id || mySchoolId || "", role: assignableRoles.includes(f.role) ? f.role : defaultRole })); }}>
               <DialogTrigger asChild>
                 <Button className="text-xs font-semibold">
                   <UserPlus className="mr-2 h-4 w-4" />
@@ -179,6 +180,18 @@ function UsersPage() {
                       value={form.email}
                       onChange={(e) => setForm({ ...form, email: e.target.value })}
                     />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="temp_password">Temporary password (for new accounts)</Label>
+                    <Input
+                      id="temp_password"
+                      type="text"
+                      minLength={8}
+                      placeholder="At least 8 characters — share it with the staff member"
+                      value={form.password}
+                      onChange={(e) => setForm({ ...form, password: e.target.value })}
+                    />
+                    <p className="text-xs text-muted-foreground">Leave empty if the person already has an account.</p>
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-2">

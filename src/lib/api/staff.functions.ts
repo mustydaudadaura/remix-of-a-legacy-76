@@ -11,7 +11,8 @@ export const inviteStaff = createServerFn({ method: "POST" })
       email: z.string().email().max(255),
       full_name: z.string().min(1).max(120),
       role: z.enum(ALLOWED_ROLES),
-      school_id: z.string().uuid(),
+      school_id: z.string().uuid({ message: "Please choose a school" }),
+      password: z.string().min(8, "Temporary password must be at least 8 characters").max(72).optional(),
     }),
   )
   .handler(async ({ data, context }) => {
@@ -45,24 +46,27 @@ export const inviteStaff = createServerFn({ method: "POST" })
     }
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    // Invite (or fetch existing) user
+    const email = data.email.trim().toLowerCase();
     let invitedUserId: string | null = null;
-    const inviteRes = await supabaseAdmin.auth.admin.inviteUserByEmail(
-      data.email,
-      { data: { full_name: data.full_name } },
-    );
-
-    if (inviteRes.error) {
-      // If user already exists, look them up
-      const list = await supabaseAdmin.auth.admin.listUsers({ page: 1, perPage: 200 });
-      const existing = list.data?.users?.find(
-        (u) => u.email?.toLowerCase() === data.email.toLowerCase(),
-      );
-      if (!existing) {
-        throw new Error(inviteRes.error.message);
-      }
-      invitedUserId = existing.id;
-    } else {
+    // 1) Existing account? Reuse it.
+    for (let page = 1; page <= 10 && !invitedUserId; page++) {
+      const list = await supabaseAdmin.auth.admin.listUsers({ page, perPage: 200 });
+      if (list.error) throw new Error(list.error.message);
+      const found = list.data.users.find((u) => u.email?.toLowerCase() === email);
+      if (found) invitedUserId = found.id;
+      if (list.data.users.length < 200) break;
+    }
+    // 2) New account: create with a temporary password (confirmed) so they can sign in immediately.
+    if (!invitedUserId && data.password) {
+      const created = await supabaseAdmin.auth.admin.createUser({
+        email, password: data.password, email_confirm: true,
+        user_metadata: { full_name: data.full_name },
+      });
+      if (created.error) throw new Error(created.error.message);
+      invitedUserId = created.data.user?.id ?? null;
+    } else if (!invitedUserId) {
+      const inviteRes = await supabaseAdmin.auth.admin.inviteUserByEmail(email, { data: { full_name: data.full_name } });
+      if (inviteRes.error) throw new Error(`Could not send invitation email (${inviteRes.error.message}). Enter a temporary password instead.`);
       invitedUserId = inviteRes.data.user?.id ?? null;
     }
 
