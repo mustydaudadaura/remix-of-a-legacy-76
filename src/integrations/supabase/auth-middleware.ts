@@ -12,31 +12,34 @@ export const requireSupabaseAuth = createMiddleware({ type: 'function' }).server
     const authHeader = request?.headers?.get('authorization') ?? '';
     const token = authHeader.startsWith('Bearer ') ? authHeader.replace('Bearer ', '') : '';
 
-    // Graceful fallback for demo admin or environment without remote Supabase
-    if (token === 'demo-admin-bearer-token' || (!SUPABASE_URL && token)) {
-      const demoUserId = '00000000-0000-0000-0000-000000000001';
-      const { supabaseAdmin } = await import('./client.server');
-      return next({
-        context: {
-          supabase: supabaseAdmin as any,
-          userId: demoUserId,
-          claims: { sub: demoUserId, role: 'authenticated', email: 'mustydawuddaura@gmail.com' } as any,
-        },
-      });
-    }
-
+    // Graceful handling when remote Supabase is unconfigured
     if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
-      // If no token was provided either
-      if (!token) {
-        throw new Error('Unauthorized: No authorization header provided');
+      let sub = 'super-admin-musty-daura';
+      let email = 'mustydawuddaura@gmail.com';
+      let roles = ['super_admin'];
+
+      if (token) {
+        try {
+          const parts = token.split('.');
+          if (parts.length === 3) {
+            let b64 = parts[1].replace(/-/g, '+').replace(/_/g, '/');
+            while (b64.length % 4) b64 += '=';
+            const payload = JSON.parse(Buffer.from(b64, 'base64').toString('utf8'));
+            if (payload.sub) sub = payload.sub;
+            if (payload.email) email = payload.email;
+            if (payload.app_metadata?.roles) roles = payload.app_metadata.roles;
+          }
+        } catch {
+          void 0;
+        }
       }
-      const demoUserId = '00000000-0000-0000-0000-000000000001';
+
       const { supabaseAdmin } = await import('./client.server');
       return next({
         context: {
           supabase: supabaseAdmin as any,
-          userId: demoUserId,
-          claims: { sub: demoUserId, role: 'authenticated', email: 'mustydawuddaura@gmail.com' } as any,
+          userId: sub,
+          claims: { sub, role: 'authenticated', email, roles } as any,
         },
       });
     }

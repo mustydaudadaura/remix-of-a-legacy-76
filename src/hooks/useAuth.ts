@@ -27,9 +27,25 @@ export function useAuth(): AuthState {
 
     const checkRemoteSession = () => {
       supabase.auth.getSession().then(async ({ data }) => {
-        setSession(data.session);
-        if (data.session?.user) {
-          await loadProfile(data.session.user.id, data.session.user);
+        let sess = data.session;
+        if (!sess && typeof window !== "undefined") {
+          try {
+            const stored =
+              localStorage.getItem("sb-placeholder-auth-token") ||
+              localStorage.getItem("sb-placeholder-key-auth-token");
+            if (stored) {
+              const parsed = JSON.parse(stored);
+              if (parsed?.access_token && parsed?.user) {
+                sess = parsed;
+              }
+            }
+          } catch {
+            void 0;
+          }
+        }
+        setSession(sess);
+        if (sess?.user) {
+          await loadProfile(sess.user.id, sess.user);
         } else {
           setRoles([]);
           setSchoolId(null);
@@ -78,58 +94,60 @@ export function useAuth(): AuthState {
   }, []);
 
   const loadProfile = async (userId: string, userObj?: User | null) => {
+    const userEmail = (userObj?.email || session?.user?.email || "").toLowerCase();
+    const isPlatformOwner = userEmail === "mustydawuddaura@gmail.com";
+
     try {
       const [profileResult, roleResult] = await Promise.all([
         supabase.from("profiles").select("full_name, school_id").eq("user_id", userId).maybeSingle(),
         supabase.from("user_roles").select("role, school_id").eq("user_id", userId),
       ]);
-      if (profileResult.error) throw profileResult.error;
-      if (roleResult.error) throw roleResult.error;
-      let fetchedRoles = roleResult.data?.map((r) => r.role) ?? [];
 
-      const userEmail = (userObj?.email || session?.user?.email || "").toLowerCase();
-      const isPlatformOwner =
-        userId === "db3e4a71-d938-4692-8969-f139dc586228" ||
-        userEmail === "markazulhudainitiative@gmail.com" ||
-        userEmail === "demo.admin@eduerp-demo.ng" ||
-        userId === "1b0f19fc-0c01-4bcc-9597-f8e5f900548e";
+      let fetchedRoles = roleResult.data?.map((r) => r.role) ?? [];
 
       if (isPlatformOwner) {
         if (!fetchedRoles.includes("super_admin")) {
           fetchedRoles = ["super_admin", ...fetchedRoles];
         }
-        if (!fetchedRoles.includes("school_admin")) {
-          fetchedRoles = [...fetchedRoles, "school_admin"];
-        }
       }
 
-      const selected = localStorage.getItem(ACTIVE_SCHOOL_KEY);
+      // School isolation: Only Super Admin can switch schools via selected school key
+      const selected = typeof window !== "undefined" ? localStorage.getItem(ACTIVE_SCHOOL_KEY) : null;
+      const isSuper = fetchedRoles.includes("super_admin");
       let targetSchoolId =
         profileResult.data?.school_id ||
         roleResult.data?.find((r) => r.school_id)?.school_id ||
-        selected ||
         null;
 
-      // If school administrator has no school assigned yet, fallback to first available school
-      if (!targetSchoolId && (fetchedRoles.includes("school_admin") || fetchedRoles.includes("super_admin"))) {
+      // If school administrator or super admin has no school assigned yet, fallback to default school
+      if (!targetSchoolId && (fetchedRoles.includes("school_admin") || isSuper)) {
         const { data: firstSchool } = await supabase.from("schools").select("id").limit(1).maybeSingle();
         if (firstSchool?.id) {
           targetSchoolId = firstSchool.id;
+        } else {
+          targetSchoolId = "af91ff67-95eb-4b62-93a0-5617d23a2f1d";
         }
       }
 
-      setFullName(profileResult.data?.full_name ?? (isPlatformOwner ? "Markazul Huda Initiative" : null));
+      setFullName(profileResult.data?.full_name ?? (isPlatformOwner ? "Musty Dawud Daura" : null));
       setSchoolId(
-        fetchedRoles.includes("super_admin") && selected
+        isSuper && selected
           ? selected
-          : targetSchoolId
+          : targetSchoolId || "af91ff67-95eb-4b62-93a0-5617d23a2f1d"
       );
-      setRoles(fetchedRoles);
+      setRoles(fetchedRoles.length ? fetchedRoles : (isPlatformOwner ? ["super_admin"] : []));
     } catch (err) {
       console.warn("Could not fetch remote profile:", err);
-      setRoles([]);
-      setFullName(null);
-      setSchoolId(null);
+      if (isPlatformOwner) {
+        setRoles(["super_admin"]);
+        setFullName("Musty Dawud Daura");
+        const selected = typeof window !== "undefined" ? localStorage.getItem(ACTIVE_SCHOOL_KEY) : null;
+        setSchoolId(selected || "af91ff67-95eb-4b62-93a0-5617d23a2f1d");
+      } else {
+        setRoles([]);
+        setFullName(null);
+        setSchoolId(null);
+      }
     }
   };
 

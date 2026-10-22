@@ -24,35 +24,36 @@ export const Route = createFileRoute("/_authenticated")({
 const PAGE_ACCESS: Record<string, SchoolPermission> = { "/staff-attendance": "staffatt.view", "/kiosk": "staffatt.kiosk", "/students": "students.view", "/admissions": "students.view", "/classes": "academics.view", "/academics": "academics.view", "/islamic": "academics.view", "/promotion": "promotion.edit", "/results": "results.edit", "/attendance": "attendance.view", "/fees": "fees.view", "/announcements": "communication.view", "/report-cards": "results.view", "/documents": "students.view", "/users": "users.edit", "/settings": "settings.edit" };
 
 const NAV = [
-  { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard, roles: ["super_admin","school_admin","teacher","accountant","student","parent"] },
-  { to: "/schools", label: "Schools", icon: Building2, roles: ["super_admin"] },
-  { to: "/admissions", label: "Admissions", icon: UserCog, roles: ["super_admin","school_admin"] },
-  { to: "/students", label: "Students", icon: Users, roles: ["super_admin","school_admin","teacher"] },
-  { to: "/classes", label: "Classes & Subjects", icon: BookOpen, roles: ["super_admin","school_admin","teacher"] },
-  { to: "/academics", label: "Teaching & Timetable", icon: CalendarCheck, roles: ["super_admin","school_admin","teacher"] },
-  { to: "/islamic", label: "Islamic Programmes", icon: MoonStar, roles: ["super_admin","school_admin","teacher"] },
-  { to: "/promotion", label: "Promotion", icon: GraduationCap, roles: ["super_admin","school_admin"] },
-  { to: "/results", label: "Results Entry", icon: FileText, roles: ["super_admin","school_admin","teacher"] },
-  { to: "/attendance", label: "Attendance", icon: CalendarCheck, roles: ["super_admin","school_admin","teacher"] },
-  { to: "/staff-attendance", label: "Staff Attendance Portal", icon: UserCheck, roles: ["super_admin","school_admin","teacher","accountant"] },
-  { to: "/kiosk", label: "Attendance Kiosk", icon: Tablet, roles: ["super_admin","school_admin"] },
-  { to: "/fees", label: "Fees", icon: Wallet, roles: ["super_admin","school_admin","accountant"] },
-  { to: "/announcements", label: "Announcements", icon: Megaphone, roles: ["super_admin","school_admin"] },
-  { to: "/report-cards", label: "Report Cards", icon: Award, roles: ["super_admin","school_admin","teacher","student","parent"] },
-  { to: "/documents", label: "Certificates & Reports", icon: ScrollText, roles: ["super_admin","school_admin"] },
-  { to: "/users", label: "Users & Roles", icon: UserCog, roles: ["super_admin","school_admin"] },
-  { to: "/settings", search: { tab: "reports" }, label: "Report Card Design", icon: Award, roles: ["super_admin","school_admin"] },
-  { to: "/settings", label: "School Settings", icon: Settings2, roles: ["super_admin","school_admin"] },
-  { to: "/diagnostics", label: "Database & AI Diagnostics", icon: Activity, roles: ["super_admin","school_admin"] },
+  { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard, roles: ["super_admin", "school_admin", "teacher", "accountant", "student", "parent"] },
+  { to: "/schools", label: "Schools Directory", icon: Building2, roles: ["super_admin"] },
+  { to: "/admissions", label: "Admissions", icon: UserCog, roles: ["super_admin", "school_admin"] },
+  { to: "/students", label: "Students", icon: Users, roles: ["super_admin", "school_admin", "teacher"] },
+  { to: "/classes", label: "Classes & Subjects", icon: BookOpen, roles: ["super_admin", "school_admin", "teacher"] },
+  { to: "/academics", label: "Teaching & Timetable", icon: CalendarCheck, roles: ["super_admin", "school_admin", "teacher"] },
+  { to: "/islamic", label: "Islamic Programmes", icon: MoonStar, roles: ["super_admin", "school_admin", "teacher"] },
+  { to: "/promotion", label: "Promotion", icon: GraduationCap, roles: ["super_admin", "school_admin"] },
+  { to: "/results", label: "Results Entry", icon: FileText, roles: ["super_admin", "school_admin", "teacher"] },
+  { to: "/attendance", label: "Attendance", icon: CalendarCheck, roles: ["super_admin", "school_admin", "teacher"] },
+  { to: "/staff-attendance", label: "Staff Attendance Portal", icon: UserCheck, roles: ["super_admin", "school_admin", "teacher", "accountant"] },
+  { to: "/kiosk", label: "Attendance Kiosk", icon: Tablet, roles: ["super_admin", "school_admin"] },
+  { to: "/fees", label: "Fees & Finances", icon: Wallet, roles: ["super_admin", "school_admin", "accountant"] },
+  { to: "/announcements", label: "Announcements", icon: Megaphone, roles: ["super_admin", "school_admin"] },
+  { to: "/report-cards", label: "Report Cards", icon: Award, roles: ["super_admin", "school_admin", "teacher", "student", "parent"] },
+  { to: "/documents", label: "Certificates & Reports", icon: ScrollText, roles: ["super_admin", "school_admin"] },
+  { to: "/users", label: "Users & Roles", icon: UserCog, roles: ["super_admin", "school_admin"] },
+  { to: "/settings", search: { tab: "reports" }, label: "Report Card Design", icon: Award, roles: ["super_admin", "school_admin"] },
+  { to: "/settings", label: "School Settings", icon: Settings2, roles: ["super_admin", "school_admin"] },
+  { to: "/diagnostics", label: "System Diagnostics", icon: Activity, roles: ["super_admin"] },
 ] as const;
 
 function AuthedLayout() {
   const { user, loading, roles, fullName } = useAuth();
   const access = useSchoolAccess();
-  const canSwitchSchools = hasRole(roles, "super_admin", "school_admin");
+  // Strictly Super Admin only: School Administrators NEVER see the school switcher
+  const canSwitchSchools = hasRole(roles, "super_admin");
   const schools = useQuery({
     queryKey: ["layout-schools"],
-    enabled: canSwitchSchools,
+    enabled: canSwitchSchools || Boolean(access.schoolId),
     queryFn: async () => (await supabase.from("schools").select("id,name").order("name")).data ?? [],
   });
   const navigate = useNavigate();
@@ -75,7 +76,16 @@ function AuthedLayout() {
   }, [schools.data, access.schoolId]);
 
   const signOut = async () => {
-    await supabase.auth.signOut();
+    try {
+      await supabase.auth.signOut();
+    } catch {
+      void 0;
+    }
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("sb-placeholder-auth-token");
+      localStorage.removeItem("sb-placeholder-key-auth-token");
+      window.dispatchEvent(new Event("eduerp-auth-change"));
+    }
     navigate({ to: "/auth", replace: true });
   };
 
@@ -83,10 +93,12 @@ function AuthedLayout() {
     return <div className="flex min-h-screen items-center justify-center text-muted-foreground">Loading…</div>;
   }
 
+  const isSuper = hasRole(roles, "super_admin");
   const visibleNav = NAV.filter((n) => {
     if (n.to === "/dashboard") return true;
-    if (n.to === "/schools") return hasRole(roles, "super_admin");
+    if (n.to === "/schools") return isSuper;
     if (n.to === "/report-cards" && hasRole(roles, "parent", "student")) return true;
+    if (isSuper) return true;
     const roleAllowed = (n.roles as readonly string[]).some((r) => roles.includes(r as any));
     if (!roleAllowed) return false;
     const permission = PAGE_ACCESS[n.to];
@@ -94,7 +106,7 @@ function AuthedLayout() {
   });
   const permission = PAGE_ACCESS[location.pathname];
   const ownReports = location.pathname === "/report-cards" && hasRole(roles, "parent", "student");
-  const denied = permission && !ownReports && !access.can(permission);
+  const denied = !isSuper && permission && !ownReports && !access.can(permission);
 
 
   return (
@@ -162,7 +174,7 @@ function AuthedLayout() {
             <Button variant="ghost" size="icon" className="lg:hidden" aria-label="Open menu" onClick={() => setOpen(true)}>
               <Menu className="h-5 w-5" />
             </Button>
-            {canSwitchSchools && schools.data && schools.data.length > 0 && (
+            {canSwitchSchools && schools.data && schools.data.length > 0 ? (
               <Select value={access.schoolId ?? undefined} onValueChange={selectSchool}>
                 <SelectTrigger className="w-48 sm:w-60 max-w-[50vw]" aria-label="Active school">
                   <SelectValue placeholder="Select a school" />
@@ -175,6 +187,13 @@ function AuthedLayout() {
                   ))}
                 </SelectContent>
               </Select>
+            ) : (
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-secondary/80 text-xs font-semibold text-secondary-foreground border border-border">
+                <Building2 className="h-3.5 w-3.5 text-primary" />
+                <span className="truncate max-w-[200px] sm:max-w-[320px]">
+                  {schools.data?.find((s) => s.id === access.schoolId)?.name ?? "Assigned School Workspace"}
+                </span>
+              </div>
             )}
           </div>
 

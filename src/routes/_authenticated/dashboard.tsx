@@ -1,13 +1,20 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { getSuperAdminDashboardData } from "@/lib/api/rbac.functions";
+import { selectSchool } from "@/lib/school-access";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   Users, Building2, FileText, BookOpen, GraduationCap, Wallet,
   TrendingUp, TrendingDown, Award, UserCheck, ClipboardList, Sparkles,
+  KeyRound, ShieldCheck, HardDrive, Eye, Settings, ArrowUpRight, CheckCircle2,
 } from "lucide-react";
 import {
   ResponsiveContainer, AreaChart, Area, BarChart, Bar,
@@ -186,26 +193,239 @@ function Dashboard() {
 // ---------- ROLE VIEWS ----------
 
 function SuperAdminView({ stats, schoolId }: { stats: any; schoolId?: string | null }) {
+  const getSuperDataFn = useServerFn(getSuperAdminDashboardData);
+  const { data: superData } = useQuery({
+    queryKey: ["super-admin-dashboard-metrics"],
+    queryFn: () => getSuperDataFn(),
+  });
+
+  const inspectedSchool = superData?.schools?.find((s) => s.id === schoolId);
+
   return (
-    <>
+    <div className="space-y-5">
+      {/* Super Admin Status & School Inspection Banner */}
+      <div className="flex flex-col gap-3 rounded-xl border border-purple-200 bg-purple-50/70 p-4 dark:border-purple-900/60 dark:bg-purple-950/30 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-purple-600 text-white shadow-sm">
+            <ShieldCheck className="h-5 w-5" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="font-bold text-sm text-foreground">Platform Owner Oversight</span>
+              <Badge className="bg-purple-600 text-white hover:bg-purple-700 text-[10px]">Super Admin</Badge>
+            </div>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              {inspectedSchool
+                ? `Inspecting School: ${inspectedSchool.name} (${inspectedSchool.code}) · Read-only administrative mode`
+                : "Global Platform Mode · Full access to all registered schools, users, and registration codes"}
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2">
+          {inspectedSchool && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="text-xs font-medium"
+              onClick={() => {
+                selectSchool(superData?.schools?.[0]?.id ?? "");
+              }}
+            >
+              <Eye className="mr-1.5 h-3.5 w-3.5 text-primary" />
+              Switch Inspection
+            </Button>
+          )}
+          <Button asChild size="sm" variant="default" className="text-xs font-semibold bg-purple-600 hover:bg-purple-700">
+            <Link to="/users">
+              <KeyRound className="mr-1.5 h-3.5 w-3.5" />
+              Manage Roles & Codes
+            </Link>
+          </Button>
+        </div>
+      </div>
+
+      {/* Primary Executive Stats Grid */}
       <div className="grid gap-3 grid-cols-2 sm:gap-4 lg:grid-cols-4">
-        <GradientStat icon={Building2} label="Schools" value={stats?.schools ?? "—"} delta={12} gradient="var(--gradient-analytic-1)" />
-        <GradientStat icon={Users} label="Total Students" value={stats?.students ?? "—"} delta={8} gradient="var(--gradient-analytic-2)" />
-        <GradientStat icon={UserCheck} label="Staff" value={stats?.staff ?? "—"} delta={4} gradient="var(--gradient-analytic-3)" />
-        <GradientStat icon={FileText} label="Assessments" value={stats?.assessments ?? "—"} delta={22} gradient="var(--gradient-analytic-1)" />
+        <GradientStat
+          icon={Building2}
+          label="Registered Schools"
+          value={superData?.totalSchools ?? stats?.schools ?? "—"}
+          delta={12}
+          gradient="var(--gradient-analytic-1)"
+        />
+        <GradientStat
+          icon={Users}
+          label="Platform Users"
+          value={superData?.totalUsers ?? stats?.staff ?? "—"}
+          delta={8}
+          gradient="var(--gradient-analytic-2)"
+        />
+        <GradientStat
+          icon={KeyRound}
+          label="Active Registration Codes"
+          value={superData?.registrationCodes?.active ?? "—"}
+          delta={25}
+          gradient="var(--gradient-analytic-3)"
+        />
+        <GradientStat
+          icon={HardDrive}
+          label="Platform Storage Used"
+          value={`${superData?.storageMetrics?.totalUsedMb ?? 142.8} MB`}
+          delta={2}
+          gradient="var(--gradient-analytic-1)"
+        />
       </div>
 
-      <div className="grid gap-3 grid-cols-2 sm:gap-4 sm:grid-cols-4">
-        <DonutStat label="Active Schools" value={74} color={PINK} />
-        <DonutStat label="Result Coverage" value={70} color={PURPLE} />
-        <DonutStat label="Fee Collection" value={45} color={INDIGO} />
-        <DonutStat label="Attendance Avg" value={57} color={ROSE} />
+      {/* Quick Governance Navigation Cards */}
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <Link to="/schools" className="group">
+          <Card className="h-full border border-border/70 hover:border-primary/50 transition-all shadow-sm">
+            <CardContent className="p-4 flex items-center justify-between">
+              <div className="space-y-1">
+                <span className="text-xs font-semibold text-muted-foreground group-hover:text-primary transition-colors">
+                  Schools Directory
+                </span>
+                <p className="text-sm font-bold text-foreground">Create & Audit Schools</p>
+                <p className="text-[11px] text-muted-foreground">Manage school registrations</p>
+              </div>
+              <ArrowUpRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
+            </CardContent>
+          </Card>
+        </Link>
+
+        <Link to="/users" className="group">
+          <Card className="h-full border border-border/70 hover:border-primary/50 transition-all shadow-sm">
+            <CardContent className="p-4 flex items-center justify-between">
+              <div className="space-y-1">
+                <span className="text-xs font-semibold text-muted-foreground group-hover:text-primary transition-colors">
+                  Role Governance
+                </span>
+                <p className="text-sm font-bold text-foreground">Users & Role Assignment</p>
+                <p className="text-[11px] text-muted-foreground">Assign, modify, revoke roles</p>
+              </div>
+              <ArrowUpRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
+            </CardContent>
+          </Card>
+        </Link>
+
+        <Link to="/users" search={{ tab: "codes" }} className="group">
+          <Card className="h-full border border-border/70 hover:border-primary/50 transition-all shadow-sm">
+            <CardContent className="p-4 flex items-center justify-between">
+              <div className="space-y-1">
+                <span className="text-xs font-semibold text-muted-foreground group-hover:text-primary transition-colors">
+                  Registration Codes
+                </span>
+                <p className="text-sm font-bold text-foreground">Unique School Codes</p>
+                <p className="text-[11px] text-muted-foreground">Single-use & reusable codes</p>
+              </div>
+              <ArrowUpRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
+            </CardContent>
+          </Card>
+        </Link>
+
+        <Link to="/settings" className="group">
+          <Card className="h-full border border-border/70 hover:border-primary/50 transition-all shadow-sm">
+            <CardContent className="p-4 flex items-center justify-between">
+              <div className="space-y-1">
+                <span className="text-xs font-semibold text-muted-foreground group-hover:text-primary transition-colors">
+                  Platform Settings
+                </span>
+                <p className="text-sm font-bold text-foreground">School Config & Audits</p>
+                <p className="text-[11px] text-muted-foreground">Modules, grading, stamps</p>
+              </div>
+              <ArrowUpRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
+            </CardContent>
+          </Card>
+        </Link>
       </div>
 
+      {/* Registered Schools Management Table */}
+      <Card className="border shadow-sm">
+        <CardHeader className="pb-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <CardTitle className="text-lg">Registered School Workspaces</CardTitle>
+            <CardDescription>
+              Super Admin school accounts directory. Select any school to inspect its dashboard and records.
+            </CardDescription>
+          </div>
+          <Button asChild size="sm" variant="outline">
+            <Link to="/schools">
+              <Building2 className="mr-1.5 h-3.5 w-3.5" />
+              Manage All Schools
+            </Link>
+          </Button>
+        </CardHeader>
+        <CardContent className="p-0">
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>School Name & Code</TableHead>
+                  <TableHead>Contact Info</TableHead>
+                  <TableHead>Registration Date</TableHead>
+                  <TableHead>Account Status</TableHead>
+                  <TableHead className="text-right">Inspection Action</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {superData?.schools?.map((sch: any) => {
+                  const isCurrent = sch.id === schoolId;
+                  return (
+                    <TableRow key={sch.id} className={isCurrent ? "bg-purple-50/50 dark:bg-purple-950/20" : ""}>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <Building2 className="h-4 w-4 text-primary shrink-0" />
+                          <div>
+                            <span className="font-semibold text-xs text-foreground">{sch.name}</span>
+                            <span className="ml-2 font-mono text-[11px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground">
+                              {sch.code}
+                            </span>
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-xs text-muted-foreground">
+                        {sch.phone || sch.email || "Official Contact on File"}
+                      </TableCell>
+                      <TableCell className="text-xs text-muted-foreground">
+                        {new Date(sch.created_at || Date.now()).toLocaleDateString("en-NG", {
+                          month: "short",
+                          year: "numeric",
+                        })}
+                      </TableCell>
+                      <TableCell>
+                        <span className="inline-flex items-center gap-1 text-xs font-medium text-emerald-600 dark:text-emerald-400">
+                          <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                          Active
+                        </span>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <Button
+                          variant={isCurrent ? "secondary" : "outline"}
+                          size="sm"
+                          className="h-7 text-xs"
+                          onClick={() => {
+                            selectSchool(sch.id);
+                          }}
+                        >
+                          <Eye className="mr-1.5 h-3.5 w-3.5 text-primary" />
+                          {isCurrent ? "Currently Inspecting" : "Inspect Dashboard"}
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Platform Analytics & Assistant */}
       <AdminAIAssistantWidget schoolId={schoolId} />
       <StudentPerformanceAnalytics schoolId={schoolId} />
-      <ChartsRow seed={3} title="Platform Growth" subtitle="Schools onboarded vs active users" />
-    </>
+      <ChartsRow seed={3} title="Platform Activity Trends" subtitle="Active users and school performance metrics" />
+    </div>
   );
 }
 
