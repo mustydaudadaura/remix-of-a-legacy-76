@@ -181,7 +181,7 @@ function UsersPage() {
           </Button>
 
           {canManage && (
-            <Dialog open={open} onOpenChange={setOpen}>
+            <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (o && !form.school_id && mySchoolId) setForm((f) => ({ ...f, school_id: mySchoolId })); }}>
               <DialogTrigger asChild>
                 <Button className="text-xs font-semibold">
                   <UserPlus className="mr-2 h-4 w-4" />
