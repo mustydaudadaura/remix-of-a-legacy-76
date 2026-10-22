@@ -39,7 +39,7 @@ function UsersPage() {
 
   // Super Admins and School Admins can assign all administrative and staff roles
   const assignableRoles: StaffRole[] = ["school_admin", "teacher", "accountant"];
-  const defaultRole: StaffRole = "teacher";
+  const defaultRole = "teacher" as StaffRole;
 
   const qc = useQueryClient();
   const invite = useServerFn(inviteStaff);
