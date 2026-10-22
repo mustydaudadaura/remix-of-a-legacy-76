@@ -39,7 +39,7 @@ function UsersPage() {
 
   // Super Admins and School Admins can assign all administrative and staff roles
   const assignableRoles: StaffRole[] = ["school_admin", "teacher", "accountant"];
-  const defaultRole: StaffRole = "teacher";
+  const defaultRole = "teacher" as StaffRole;
 
   const qc = useQueryClient();
   const invite = useServerFn(inviteStaff);
@@ -76,10 +76,12 @@ function UsersPage() {
   });
 
   const inviteMut = useMutation({
-    mutationFn: () => invite({ data: form }),
+    mutationFn: () => invite({ data: { ...form, initial_password: form.initial_password.trim() || undefined } }),
     onSuccess: (res) => {
       toast.success(
-        `Staff account registered as ${ROLE_LABELS[form.role]}! Initial password: ${form.initial_password}`
+        res.created
+          ? `${form.full_name} registered as ${ROLE_LABELS[form.role]}. They can sign in with ${form.email} and the password you set.`
+          : `${form.full_name} already had an account — ${ROLE_LABELS[form.role]} role added. Their password was not changed.`
       );
       setOpen(false);
       setForm({
@@ -179,7 +181,7 @@ function UsersPage() {
           </Button>
 
           {canManage && (
-            <Dialog open={open} onOpenChange={setOpen}>
+            <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (o && !form.school_id && mySchoolId) setForm((f) => ({ ...f, school_id: mySchoolId })); }}>
               <DialogTrigger asChild>
                 <Button className="text-xs font-semibold">
                   <UserPlus className="mr-2 h-4 w-4" />
