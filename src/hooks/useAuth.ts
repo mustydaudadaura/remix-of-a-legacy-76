@@ -104,6 +104,11 @@ export function useAuth(): AuthState {
       ]);
 
       let fetchedRoles = roleResult.data?.map((r) => r.role) ?? [];
+      if (!fetchedRoles.length && userObj?.app_metadata?.roles) {
+        fetchedRoles = Array.isArray(userObj.app_metadata.roles)
+          ? (userObj.app_metadata.roles as AppRole[])
+          : [userObj.app_metadata.roles as AppRole];
+      }
 
       if (isPlatformOwner) {
         if (!fetchedRoles.includes("super_admin")) {
@@ -117,6 +122,8 @@ export function useAuth(): AuthState {
       let targetSchoolId =
         profileResult.data?.school_id ||
         roleResult.data?.find((r) => r.school_id)?.school_id ||
+        userObj?.user_metadata?.school_id ||
+        (userObj as any)?.school_id ||
         null;
 
       // If school administrator or super admin has no school assigned yet, fallback to default school
@@ -129,7 +136,11 @@ export function useAuth(): AuthState {
         }
       }
 
-      setFullName(profileResult.data?.full_name ?? (isPlatformOwner ? "Musty Dawud Daura" : null));
+      setFullName(
+        profileResult.data?.full_name ??
+        userObj?.user_metadata?.full_name ??
+        (isPlatformOwner ? "Musty Dawud Daura" : null)
+      );
       setSchoolId(
         isSuper && selected
           ? selected
@@ -144,9 +155,16 @@ export function useAuth(): AuthState {
         const selected = typeof window !== "undefined" ? localStorage.getItem(ACTIVE_SCHOOL_KEY) : null;
         setSchoolId(selected || "af91ff67-95eb-4b62-93a0-5617d23a2f1d");
       } else {
-        setRoles([]);
-        setFullName(null);
-        setSchoolId(null);
+        const fallbackRoles: AppRole[] = Array.isArray(userObj?.app_metadata?.roles)
+          ? userObj.app_metadata.roles
+          : userObj?.app_metadata?.roles
+          ? [userObj.app_metadata.roles]
+          : [];
+        const fallbackSchool = userObj?.user_metadata?.school_id || (userObj as any)?.school_id || null;
+        const fallbackName = userObj?.user_metadata?.full_name || null;
+        setRoles(fallbackRoles);
+        setFullName(fallbackName);
+        setSchoolId(fallbackSchool);
       }
     }
   };

@@ -21,6 +21,7 @@ import { toast } from "sonner";
 import { useAuth, hasRole } from "@/hooks/useAuth";
 import {
   listPlatformUsers,
+  createPlatformUser,
   assignUserRole,
   revokeUserRole,
   setUserAccountStatus,
@@ -97,6 +98,7 @@ function UsersPage() {
 
   // Server functions
   const listUsersFn = useServerFn(listPlatformUsers);
+  const createUserFn = useServerFn(createPlatformUser);
   const assignRoleFn = useServerFn(assignUserRole);
   const revokeRoleFn = useServerFn(revokeUserRole);
   const setStatusFn = useServerFn(setUserAccountStatus);
@@ -111,6 +113,16 @@ function UsersPage() {
   const [schoolFilter, setSchoolFilter] = useState<string>("all");
 
   // Modals state
+  const [createUserOpen, setCreateUserOpen] = useState(false);
+  const [newUserForm, setNewUserForm] = useState({
+    fullName: "",
+    email: "",
+    role: "school_admin" as AppRole,
+    schoolId: "",
+    password: "StaffPass#2026",
+  });
+  const [codeSuccessDialog, setCodeSuccessDialog] = useState<RegistrationCode | null>(null);
+
   const [roleModalUser, setRoleModalUser] = useState<PlatformUserRecord | null>(null);
   const [selectedRole, setSelectedRole] = useState<AppRole>("teacher");
   const [selectedSchoolId, setSelectedSchoolId] = useState<string>("");
@@ -208,6 +220,35 @@ function UsersPage() {
     onError: (err: Error) => toast.error(err.message),
   });
 
+  const createUserMut = useMutation({
+    mutationFn: async () => {
+      const schoolObj = schools?.find((s) => s.id === newUserForm.schoolId);
+      return createUserFn({
+        data: {
+          fullName: newUserForm.fullName.trim(),
+          email: newUserForm.email.trim().toLowerCase(),
+          role: newUserForm.role,
+          schoolId: newUserForm.role === "super_admin" ? null : newUserForm.schoolId || null,
+          schoolName: newUserForm.role === "super_admin" ? "All Schools (Platform Owner)" : (schoolObj?.name ?? "Assigned School"),
+          password: newUserForm.password || "StaffPass#2026",
+        },
+      });
+    },
+    onSuccess: (res) => {
+      toast.success(res.message);
+      setCreateUserOpen(false);
+      setNewUserForm({
+        fullName: "",
+        email: "",
+        role: "school_admin",
+        schoolId: "",
+        password: "StaffPass#2026",
+      });
+      refetchUsers();
+    },
+    onError: (err: Error) => toast.error(err.message),
+  });
+
   const createCodeMut = useMutation({
     mutationFn: async () => {
       const schoolObj = schools?.find((s) => s.id === newCodeForm.schoolId);
@@ -227,6 +268,7 @@ function UsersPage() {
     onSuccess: (res) => {
       toast.success(`Registration code created: ${res.code.code}`);
       setCreateCodeOpen(false);
+      setCodeSuccessDialog(res.code);
       setNewCodeForm({
         schoolId: "",
         targetRole: "school_admin",
@@ -305,6 +347,20 @@ function UsersPage() {
             >
               <RefreshCw className="mr-1.5 h-3.5 w-3.5" />
               Refresh
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              className="font-semibold shadow-sm border-primary/30 text-primary hover:bg-primary/5"
+              onClick={() => {
+                if (schools?.length && !newUserForm.schoolId) {
+                  setNewUserForm((prev) => ({ ...prev, schoolId: schools[0].id }));
+                }
+                setCreateUserOpen(true);
+              }}
+            >
+              <UserPlus className="mr-1.5 h-4 w-4" />
+              Add User Directly
             </Button>
             <Button
               size="sm"
@@ -1049,6 +1105,187 @@ function UsersPage() {
               onClick={() => createCodeMut.mutate()}
             >
               {createCodeMut.isPending ? "Generating…" : "Generate & Authorize Code"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* MODAL 4: Add New Platform User Directly (Super Admin Only) */}
+      <Dialog open={createUserOpen} onOpenChange={setCreateUserOpen}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <div className="flex items-center gap-2">
+              <UserPlus className="h-5 w-5 text-primary" />
+              <DialogTitle>Add New Platform User</DialogTitle>
+            </div>
+            <DialogDescription>
+              Directly provision an authenticated account with a specific role and school assignment.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-2 text-xs">
+            <div className="space-y-1.5">
+              <Label htmlFor="usr_fullname">Full Name</Label>
+              <Input
+                id="usr_fullname"
+                placeholder="e.g. Mujittaba Salisu"
+                value={newUserForm.fullName}
+                onChange={(e) => setNewUserForm((p) => ({ ...p, fullName: e.target.value }))}
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <Label htmlFor="usr_email">Email Address (Login Username)</Label>
+              <Input
+                id="usr_email"
+                type="email"
+                placeholder="e.g. salisu@atqacademy.edu.ng"
+                value={newUserForm.email}
+                onChange={(e) => setNewUserForm((p) => ({ ...p, email: e.target.value }))}
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <Label htmlFor="usr_role">Assigned Platform Role</Label>
+              <Select
+                value={newUserForm.role}
+                onValueChange={(val: any) => setNewUserForm((p) => ({ ...p, role: val }))}
+              >
+                <SelectTrigger id="usr_role">
+                  <SelectValue placeholder="Select Role" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="school_admin">School Administrator (Head/Principal)</SelectItem>
+                  <SelectItem value="teacher">Teacher (Class & Grade Records)</SelectItem>
+                  <SelectItem value="accountant">Accountant / Bursar (Fees & Payments)</SelectItem>
+                  <SelectItem value="student">Student (Academic Portal)</SelectItem>
+                  <SelectItem value="parent">Parent / Guardian</SelectItem>
+                  <SelectItem value="super_admin">Super Admin (Platform Owner)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {newUserForm.role !== "super_admin" && (
+              <div className="space-y-1.5">
+                <Label htmlFor="usr_school">Assigned School Workspace</Label>
+                <Select
+                  value={newUserForm.schoolId}
+                  onValueChange={(val) => setNewUserForm((p) => ({ ...p, schoolId: val }))}
+                >
+                  <SelectTrigger id="usr_school">
+                    <SelectValue placeholder="Choose school workspace" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {schools?.map((s) => (
+                      <SelectItem key={s.id} value={s.id}>
+                        {s.name} ({s.code})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+
+            <div className="space-y-1.5">
+              <Label htmlFor="usr_pass">Initial Password</Label>
+              <Input
+                id="usr_pass"
+                type="password"
+                placeholder="StaffPass#2026"
+                value={newUserForm.password}
+                onChange={(e) => setNewUserForm((p) => ({ ...p, password: e.target.value }))}
+              />
+              <p className="text-[11px] text-muted-foreground">
+                The user can change their password after first signing in.
+              </p>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setCreateUserOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              disabled={
+                createUserMut.isPending ||
+                !newUserForm.fullName.trim() ||
+                !newUserForm.email.trim() ||
+                (newUserForm.role !== "super_admin" && !newUserForm.schoolId)
+              }
+              onClick={() => createUserMut.mutate()}
+            >
+              {createUserMut.isPending ? "Creating Account…" : "Create & Provision User"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* MODAL 5: Registration Code Created Success Dialog */}
+      <Dialog
+        open={Boolean(codeSuccessDialog)}
+        onOpenChange={(open) => !open && setCodeSuccessDialog(null)}
+      >
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400">
+              <CheckCircle2 className="h-6 w-6" />
+              <DialogTitle className="text-lg">Registration Code Ready</DialogTitle>
+            </div>
+            <DialogDescription>
+              Share this unique code with the authorized school administrator or staff member.
+            </DialogDescription>
+          </DialogHeader>
+
+          {codeSuccessDialog && (
+            <div className="space-y-4 py-2">
+              <div className="rounded-lg bg-muted p-4 text-center border border-border">
+                <span className="text-xs uppercase font-medium tracking-wider text-muted-foreground block mb-1">
+                  School Registration Code
+                </span>
+                <div className="text-2xl font-mono font-extrabold tracking-wider text-primary select-all">
+                  {codeSuccessDialog.code}
+                </div>
+                <div className="mt-2 text-xs text-muted-foreground">
+                  Linked to: <strong>{codeSuccessDialog.schoolName}</strong>
+                </div>
+              </div>
+
+              <div className="space-y-1 text-xs text-muted-foreground">
+                <div className="flex justify-between py-1 border-b border-border/50">
+                  <span>Role Assigned:</span>
+                  <span className="font-semibold text-foreground capitalize">
+                    {codeSuccessDialog.targetRole.replace("_", " ")}
+                  </span>
+                </div>
+                <div className="flex justify-between py-1 border-b border-border/50">
+                  <span>Usage:</span>
+                  <span className="font-semibold text-foreground">
+                    {codeSuccessDialog.isSingleUse ? "Single-use only" : `Reusable (up to ${codeSuccessDialog.maxUses} users)`}
+                  </span>
+                </div>
+                <div className="flex justify-between py-1">
+                  <span>Expires:</span>
+                  <span className="font-semibold text-foreground">
+                    {new Date(codeSuccessDialog.expiresAt).toLocaleDateString()}
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
+
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button
+              className="w-full sm:w-auto"
+              onClick={() => {
+                if (codeSuccessDialog?.code) {
+                  navigator.clipboard.writeText(codeSuccessDialog.code);
+                  toast.success("Code copied to clipboard!");
+                }
+                setCodeSuccessDialog(null);
+              }}
+            >
+              <Copy className="mr-1.5 h-4 w-4" />
+              Copy Code & Close
             </Button>
           </DialogFooter>
         </DialogContent>

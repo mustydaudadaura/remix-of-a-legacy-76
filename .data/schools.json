@@ -1,0 +1,24 @@
+[
+  {
+    "id": "af91ff67-95eb-4b62-93a0-5617d23a2f1d",
+    "name": "Al-Huda International Academy",
+    "code": "HGA-001",
+    "address": "Plot 12, Education Zone, Katsina",
+    "phone": "08031234567",
+    "email": "admin@alhuda.edu.ng",
+    "motto": "Excellence in Knowledge & Character",
+    "current_session": "2025/2026",
+    "created_at": "2025-01-10T00:00:00Z"
+  },
+  {
+    "id": "school-assalam-tahfizul-001",
+    "name": "Assalam Tahfizul Qur'an Academy Limited",
+    "code": "ATQ-756",
+    "address": "Kano Road, Daura, Katsina State",
+    "phone": "08039876543",
+    "email": "admin@assalam.edu.ng",
+    "motto": "Preserving the Divine Quran & Noble Character",
+    "current_session": "2025/2026",
+    "created_at": "2025-02-01T00:00:00Z"
+  }
+]
