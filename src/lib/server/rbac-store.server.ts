@@ -28,7 +28,7 @@ export interface PlatformUserRecord {
   fullName: string;
   schoolId: string | null;
   schoolName: string;
-  role: "super_admin" | "school_admin" | "teacher" | "accountant" | "student" | "parent";
+  role: "super_admin" | "school_admin" | "teacher" | "form_master" | "accountant" | "student" | "parent";
   status: "active" | "deactivated" | "suspended";
   createdAt: string;
   lastActiveAt?: string;

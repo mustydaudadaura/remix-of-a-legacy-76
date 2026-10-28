@@ -28,17 +28,18 @@ export function useSchoolAccess() {
   const { user, schoolId, roles } = useAuth();
   const isAdmin = hasRole(roles, 'super_admin', 'school_admin');
   const isTeacher = hasRole(roles, 'teacher');
+  const isFormMaster = hasRole(roles, 'form_master');
   const isAccountant = hasRole(roles, 'accountant');
 
   const query = useQuery({
-    queryKey: ['school-access', user?.id, schoolId, isAdmin, isTeacher, isAccountant],
+    queryKey: ['school-access', user?.id, schoolId, isAdmin, isTeacher, isFormMaster, isAccountant],
     enabled: Boolean(user && schoolId),
     queryFn: async () => {
       if (!user || !schoolId) return [];
       if (isAdmin) return [...SCHOOL_PERMISSIONS];
 
       const baseline = new Set<SchoolPermission>();
-      if (isTeacher) {
+      if (isTeacher || isFormMaster) {
         TEACHER_DEFAULT_PERMISSIONS.forEach((p) => baseline.add(p));
       }
       if (isAccountant) {
@@ -70,7 +71,7 @@ export function useSchoolAccess() {
 
   const canCheck = (permission: SchoolPermission) => {
     if (isAdmin) return true;
-    if (isTeacher && TEACHER_DEFAULT_PERMISSIONS.includes(permission)) return true;
+    if ((isTeacher || isFormMaster) && TEACHER_DEFAULT_PERMISSIONS.includes(permission)) return true;
     if (isAccountant && ACCOUNTANT_DEFAULT_PERMISSIONS.includes(permission)) return true;
     return query.data?.includes(permission) ?? false;
   };

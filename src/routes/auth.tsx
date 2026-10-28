@@ -12,7 +12,7 @@ import { GraduationCap, Phone, School, Users } from "lucide-react";
 import { startDemo } from "@/lib/api/demo.functions";
 
 import { useServerFn } from "@tanstack/react-start";
-import { validateAndRegisterWithCode, loginStaffUser } from "@/lib/api/rbac.functions";
+import { loginStaffUser } from "@/lib/api/rbac.functions";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({ meta: [{ title: "Sign in — Alegacy" }, { name: "description", content: "Sign in for authorized school accounts and families in Alegacy." }, { property: "og:title", content: "Sign in — Alegacy" }, { property: "og:description", content: "Sign in for authorized school accounts and families in Alegacy." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
@@ -21,13 +21,10 @@ export const Route = createFileRoute("/auth")({
 
 function AuthPage() {
   const navigate = useNavigate();
-  const registerWithCode = useServerFn(validateAndRegisterWithCode);
   const loginStaff = useServerFn(loginStaffUser);
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [fullName, setFullName] = useState("");
-  const [schoolCode, setSchoolCode] = useState("");
   const [parentPhone, setParentPhone] = useState("");
 
   useEffect(() => {
@@ -74,45 +71,6 @@ function AuthPage() {
       }
     } catch (err: any) {
       toast.error(err?.message || "Sign in failed");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const signUp = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-
-    const code = schoolCode.trim().toUpperCase();
-    if (!code) {
-      toast.error("A valid school registration code is required.");
-      setLoading(false);
-      return;
-    }
-
-    try {
-      const res = await registerWithCode({
-        data: {
-          code,
-          fullName: fullName.trim(),
-          email: email.trim().toLowerCase(),
-          password,
-        },
-      });
-
-      toast.success(res.message);
-      if (res.session) {
-        const sessionJson = JSON.stringify(res.session);
-        localStorage.setItem("sb-placeholder-auth-token", sessionJson);
-        localStorage.setItem("sb-placeholder-key-auth-token", sessionJson);
-        if (res.schoolId) {
-          localStorage.setItem("eduerp_active_school_id", res.schoolId);
-        }
-        window.dispatchEvent(new Event("eduerp-auth-change"));
-      }
-      navigate({ to: "/dashboard", replace: true });
-    } catch (err: any) {
-      toast.error(err?.message || "Registration failed");
     } finally {
       setLoading(false);
     }
@@ -230,16 +188,15 @@ function AuthPage() {
               </div>
             </div>
             <Tabs defaultValue="signin">
-              <TabsList className="grid w-full grid-cols-3">
+              <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger value="signin">
-                  <School className="mr-1 h-3.5 w-3.5" />
+                  <School className="mr-1.5 h-3.5 w-3.5" />
                   Staff & Admin
                 </TabsTrigger>
                 <TabsTrigger value="parent">
-                  <Phone className="mr-1 h-3.5 w-3.5" />
-                  Parent
+                  <Phone className="mr-1.5 h-3.5 w-3.5" />
+                  Parent Portal
                 </TabsTrigger>
-                <TabsTrigger value="signup">Sign up</TabsTrigger>
               </TabsList>
               <TabsContent value="signin">
                 <form onSubmit={signIn} className="space-y-4 pt-4">
@@ -248,7 +205,7 @@ function AuthPage() {
                       School Administrator & Staff Sign In
                     </p>
                     <p className="text-[11px] text-muted-foreground">
-                      Enter your school email and password to access the administrative portal.
+                      Sign in with your email and password to access your school dashboard.
                     </p>
                   </div>
                   <div className="space-y-2">
@@ -299,52 +256,33 @@ function AuthPage() {
                   <Button type="submit" className="w-full font-semibold" disabled={loading}>
                     {loading ? "Signing in…" : "Sign In to Portal"}
                   </Button>
+                  <div className="rounded-md border border-border/60 bg-muted/40 p-2.5 text-center text-xs text-muted-foreground">
+                    <p className="text-[11px] leading-relaxed">
+                      Need credentials? Accounts are provisioned exclusively by the Platform Super Admin or your School Administrator.
+                    </p>
+                  </div>
                 </form>
               </TabsContent>
               <TabsContent value="parent">
                 <form onSubmit={parentLogin} className="space-y-4 pt-4">
+                  <div className="space-y-1">
+                    <p className="text-xs font-medium text-foreground">
+                      Parent & Guardian Sign In
+                    </p>
+                    <p className="text-[11px] text-muted-foreground">
+                      Enter the phone number registered with the school to view your child's academic reports.
+                    </p>
+                  </div>
                   <div className="space-y-2">
                     <Label htmlFor="parent_phone">Phone number</Label>
                     <Input id="parent_phone" type="tel" inputMode="tel" required placeholder="e.g. 08012345678"
                       value={parentPhone} onChange={(e) => setParentPhone(e.target.value)} />
                     <p className="text-xs text-muted-foreground">
-                      Use the phone number you gave the school when registering your child. No password needed.
+                      No password required. Enter your registered phone number.
                     </p>
                   </div>
-                  <Button type="submit" className="w-full" disabled={loading}>
-                    {loading ? "Checking…" : "Enter portal"}
-                  </Button>
-                </form>
-              </TabsContent>
-              <TabsContent value="signup">
-                <form onSubmit={signUp} className="space-y-4 pt-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="name">Full name</Label>
-                    <Input id="name" required value={fullName} onChange={(e) => setFullName(e.target.value)} />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="school_code">School registration code</Label>
-                    <Input
-                      id="school_code"
-                      required
-                      placeholder="e.g. SCH-REG-84920"
-                      value={schoolCode}
-                      onChange={(e) => setSchoolCode(e.target.value)}
-                    />
-                    <p className="text-xs text-muted-foreground">
-                      Enter the unique registration code issued by the platform Super Admin.
-                    </p>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="email2">Email</Label>
-                    <Input id="email2" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="password2">Password</Label>
-                    <Input id="password2" type="password" required minLength={6} value={password} onChange={(e) => setPassword(e.target.value)} />
-                  </div>
-                  <Button type="submit" className="w-full" disabled={loading}>
-                    {loading ? "Creating account…" : "Create account"}
+                  <Button type="submit" className="w-full font-semibold" disabled={loading}>
+                    {loading ? "Checking…" : "Enter Parent Portal"}
                   </Button>
                 </form>
               </TabsContent>

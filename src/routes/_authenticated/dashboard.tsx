@@ -15,6 +15,7 @@ import {
   Users, Building2, FileText, BookOpen, GraduationCap, Wallet,
   TrendingUp, TrendingDown, Award, UserCheck, ClipboardList, Sparkles,
   KeyRound, ShieldCheck, HardDrive, Eye, Settings, ArrowUpRight, CheckCircle2,
+  UserPlus,
 } from "lucide-react";
 import {
   ResponsiveContainer, AreaChart, Area, BarChart, Bar,
@@ -488,7 +489,14 @@ function SchoolAdminView({ stats, schoolId }: { stats: any; schoolId?: string | 
           <CardHeader className="p-4 pb-2">
             <CardTitle className="text-sm font-semibold">Quick Actions</CardTitle>
           </CardHeader>
-          <CardContent className="p-4 pt-1 grid grid-cols-2 gap-2">
+          <CardContent className="p-4 pt-1 grid grid-cols-2 sm:grid-cols-3 gap-2">
+            <a
+              href="/users"
+              className="flex flex-col items-center justify-center p-2.5 rounded-lg border border-primary/40 bg-primary/5 hover:bg-primary/10 transition text-center text-xs font-semibold text-primary"
+            >
+              <UserPlus className="h-4 w-4 text-primary mb-1.5" />
+              <span>Staff Logins</span>
+            </a>
             <a
               href="/results"
               className="flex flex-col items-center justify-center p-2.5 rounded-lg border border-border/60 bg-muted/20 hover:bg-muted/60 transition text-center text-xs font-medium text-foreground"
@@ -516,6 +524,13 @@ function SchoolAdminView({ stats, schoolId }: { stats: any; schoolId?: string | 
             >
               <UserCheck className="h-4 w-4 text-primary mb-1.5" />
               <span>Noticeboard</span>
+            </a>
+            <a
+              href="/settings"
+              className="flex flex-col items-center justify-center p-2.5 rounded-lg border border-border/60 bg-muted/20 hover:bg-muted/60 transition text-center text-xs font-medium text-foreground"
+            >
+              <Settings className="h-4 w-4 text-primary mb-1.5" />
+              <span>Settings</span>
             </a>
           </CardContent>
         </Card>

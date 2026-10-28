@@ -15,7 +15,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import {
   ShieldCheck, ShieldAlert, UserCog, UserPlus, KeyRound, Copy,
   CheckCircle2, XCircle, AlertTriangle, Trash2, UserX, UserCheck2,
-  Building2, BookOpen, Wallet, Users, Search, Filter, RefreshCw, Check,
+  Building2, BookOpen, Wallet, Users, Search, Filter, RefreshCw, Check, GraduationCap,
+  Eye, EyeOff,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth, hasRole } from "@/hooks/useAuth";
@@ -46,7 +47,7 @@ export const Route = createFileRoute("/_authenticated/users")({
   component: UsersPage,
 });
 
-type AppRole = "super_admin" | "school_admin" | "teacher" | "accountant" | "student" | "parent";
+type AppRole = "super_admin" | "school_admin" | "teacher" | "form_master" | "accountant" | "student" | "parent";
 
 const ROLE_CONFIG: Record<
   AppRole,
@@ -63,6 +64,12 @@ const ROLE_CONFIG: Record<
     badgeClass: "bg-blue-100 text-blue-900 border-blue-300 dark:bg-blue-950 dark:text-blue-300 dark:border-blue-800",
     icon: Building2,
     description: "Manages all administrative, academic, and operational records strictly within their assigned school.",
+  },
+  form_master: {
+    label: "Form Master",
+    badgeClass: "bg-teal-100 text-teal-900 border-teal-300 dark:bg-teal-950 dark:text-teal-300 dark:border-teal-800",
+    icon: GraduationCap,
+    description: "Class & Arm Manager: Student attendance, conduct remarks, broadsheet analysis, and report cards.",
   },
   teacher: {
     label: "Teacher",
@@ -117,10 +124,15 @@ function UsersPage() {
   const [newUserForm, setNewUserForm] = useState({
     fullName: "",
     email: "",
-    role: "school_admin" as AppRole,
+    role: "teacher" as AppRole,
     schoolId: "",
     password: "StaffPass#2026",
   });
+  const [createdCreds, setCreatedCreds] = useState<{
+    user: PlatformUserRecord;
+    password?: string;
+  } | null>(null);
+  const [showCreatedPassword, setShowCreatedPassword] = useState(false);
   const [codeSuccessDialog, setCodeSuccessDialog] = useState<RegistrationCode | null>(null);
 
   const [roleModalUser, setRoleModalUser] = useState<PlatformUserRecord | null>(null);
@@ -222,26 +234,39 @@ function UsersPage() {
 
   const createUserMut = useMutation({
     mutationFn: async () => {
-      const schoolObj = schools?.find((s) => s.id === newUserForm.schoolId);
+      const activeSchoolId =
+        newUserForm.schoolId ||
+        mySchoolId ||
+        schools?.[0]?.id ||
+        "af91ff67-95eb-4b62-93a0-5617d23a2f1d";
+      const targetSchoolId = newUserForm.role === "super_admin" ? null : activeSchoolId;
+      const schoolObj = schools?.find((s) => s.id === targetSchoolId);
+
       return createUserFn({
         data: {
           fullName: newUserForm.fullName.trim(),
           email: newUserForm.email.trim().toLowerCase(),
           role: newUserForm.role,
-          schoolId: newUserForm.role === "super_admin" ? null : newUserForm.schoolId || null,
-          schoolName: newUserForm.role === "super_admin" ? "All Schools (Platform Owner)" : (schoolObj?.name ?? "Assigned School"),
+          schoolId: targetSchoolId,
+          schoolName: newUserForm.role === "super_admin" ? "All Schools (Platform Owner)" : (schoolObj?.name ?? "Assigned School Workspace"),
           password: newUserForm.password || "StaffPass#2026",
         },
       });
     },
-    onSuccess: (res) => {
+    onSuccess: (res: any) => {
       toast.success(res.message);
       setCreateUserOpen(false);
+      if (res.user) {
+        setCreatedCreds({
+          user: res.user,
+          password: res.initialPassword || newUserForm.password || "StaffPass#2026",
+        });
+      }
       setNewUserForm({
         fullName: "",
         email: "",
-        role: "school_admin",
-        schoolId: "",
+        role: isSuper ? "school_admin" : "teacher",
+        schoolId: isSuper ? "" : (mySchoolId || ""),
         password: "StaffPass#2026",
       });
       refetchUsers();
@@ -334,52 +359,69 @@ function UsersPage() {
           </p>
         </div>
 
-        {isSuper && (
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                refetchUsers();
-                refetchCodes();
-                toast.success("Registry refreshed.");
-              }}
-            >
-              <RefreshCw className="mr-1.5 h-3.5 w-3.5" />
-              Refresh
-            </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              refetchUsers();
+              if (isSuper) refetchCodes();
+              toast.success("Registry refreshed.");
+            }}
+          >
+            <RefreshCw className="mr-1.5 h-3.5 w-3.5" />
+            Refresh
+          </Button>
+
+          {/* Both Super Admin and School Admin can provision credentials */}
+          <Button
+            size="sm"
+            className="font-semibold shadow-sm"
+            onClick={() => {
+              const defaultSchool = mySchoolId || schools?.[0]?.id || "af91ff67-95eb-4b62-93a0-5617d23a2f1d";
+              if (isSuper) {
+                setNewUserForm((prev) => ({
+                  ...prev,
+                  schoolId: prev.schoolId || defaultSchool,
+                  role: "school_admin",
+                }));
+              } else {
+                setNewUserForm((prev) => ({
+                  ...prev,
+                  schoolId: defaultSchool,
+                  role: "teacher",
+                }));
+              }
+              setCreateUserOpen(true);
+            }}
+          >
+            <UserPlus className="mr-1.5 h-4 w-4" />
+            {isSuper ? "Add User Credentials" : "Create Staff / Student Login"}
+          </Button>
+
+          {isSuper && (
             <Button
               size="sm"
               variant="outline"
               className="font-semibold shadow-sm border-primary/30 text-primary hover:bg-primary/5"
-              onClick={() => {
-                if (schools?.length && !newUserForm.schoolId) {
-                  setNewUserForm((prev) => ({ ...prev, schoolId: schools[0].id }));
-                }
-                setCreateUserOpen(true);
-              }}
-            >
-              <UserPlus className="mr-1.5 h-4 w-4" />
-              Add User Directly
-            </Button>
-            <Button
-              size="sm"
-              className="font-semibold shadow-sm"
               onClick={() => {
                 if (schools?.length) setNewCodeForm((prev) => ({ ...prev, schoolId: schools[0].id }));
                 setCreateCodeOpen(true);
               }}
             >
               <KeyRound className="mr-1.5 h-4 w-4" />
-              New Registration Code
+              School Codes
             </Button>
-          </div>
-        )}
+          )}
+        </div>
       </div>
 
       {/* Role Overview Summary Banner */}
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        {(["super_admin", "school_admin", "teacher", "accountant"] as AppRole[]).map((rKey) => {
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+        {((isSuper
+          ? ["super_admin", "school_admin", "form_master", "teacher", "accountant"]
+          : ["school_admin", "form_master", "teacher", "accountant", "student"]
+        ) as AppRole[]).map((rKey) => {
           const cfg = ROLE_CONFIG[rKey];
           const Icon = cfg.icon;
           const count = (usersData?.users ?? []).filter((u) => u.role === rKey).length;
@@ -452,10 +494,13 @@ function UsersPage() {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">All Roles</SelectItem>
-                      <SelectItem value="super_admin">Super Admin</SelectItem>
+                      {isSuper && <SelectItem value="super_admin">Super Admin</SelectItem>}
                       <SelectItem value="school_admin">School Admin</SelectItem>
+                      <SelectItem value="form_master">Form Master (Class Teacher)</SelectItem>
                       <SelectItem value="teacher">Teacher</SelectItem>
                       <SelectItem value="accountant">Accountant</SelectItem>
+                      <SelectItem value="student">Student</SelectItem>
+                      <SelectItem value="parent">Parent</SelectItem>
                     </SelectContent>
                   </Select>
 
@@ -487,7 +532,7 @@ function UsersPage() {
                       <TableHead>School Affiliation</TableHead>
                       <TableHead>Account Status</TableHead>
                       <TableHead>Registered</TableHead>
-                      {isSuper && <TableHead className="text-right">Admin Actions</TableHead>}
+                      {(isSuper || isSchoolAdmin) && <TableHead className="text-right">Actions</TableHead>}
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -569,51 +614,58 @@ function UsersPage() {
                               })}
                             </TableCell>
 
-                            {isSuper && (
+                            {(isSuper || isSchoolAdmin) && (
                               <TableCell className="text-right">
                                 <div className="flex items-center justify-end gap-1.5">
-                                  {/* Change Role Button */}
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    className="h-8 text-xs font-medium"
-                                    onClick={() => {
-                                      setRoleModalUser(u);
-                                      setSelectedRole(u.role);
-                                      setSelectedSchoolId(u.schoolId ?? "");
-                                    }}
-                                  >
-                                    <UserCog className="mr-1 h-3.5 w-3.5" />
-                                    Assign Role
-                                  </Button>
-
-                                  {/* Deactivate / Reactivate Toggle */}
-                                  {!isPermanent && (
+                                  {/* Change Role Button (Super Admin only) */}
+                                  {isSuper && (
                                     <Button
-                                      variant="ghost"
+                                      variant="outline"
                                       size="sm"
-                                      className={`h-8 text-xs ${u.status === "active" ? "text-amber-600 hover:text-amber-700" : "text-emerald-600 hover:text-emerald-700"}`}
+                                      className="h-8 text-xs font-medium"
                                       onClick={() => {
-                                        const newStatus = u.status === "active" ? "deactivated" : "active";
-                                        toggleStatusMut.mutate({ userId: u.userId, newStatus });
+                                        setRoleModalUser(u);
+                                        setSelectedRole(u.role);
+                                        setSelectedSchoolId(u.schoolId ?? "");
                                       }}
                                     >
-                                      {u.status === "active" ? (
-                                        <>
-                                          <UserX className="mr-1 h-3.5 w-3.5" />
-                                          Deactivate
-                                        </>
-                                      ) : (
-                                        <>
-                                          <UserCheck2 className="mr-1 h-3.5 w-3.5" />
-                                          Reactivate
-                                        </>
-                                      )}
+                                      <UserCog className="mr-1 h-3.5 w-3.5" />
+                                      Assign Role
                                     </Button>
                                   )}
 
-                                  {/* Delete User Button (with safety modal) */}
-                                  {!isPermanent && (
+                                  {/* Deactivate / Reactivate Toggle */}
+                                  {!isPermanent &&
+                                    (isSuper ||
+                                      (isSchoolAdmin &&
+                                        u.schoolId === mySchoolId &&
+                                        u.role !== "super_admin" &&
+                                        u.role !== "school_admin")) && (
+                                      <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        className={`h-8 text-xs ${u.status === "active" ? "text-amber-600 hover:text-amber-700" : "text-emerald-600 hover:text-emerald-700"}`}
+                                        onClick={() => {
+                                          const newStatus = u.status === "active" ? "deactivated" : "active";
+                                          toggleStatusMut.mutate({ userId: u.userId, newStatus });
+                                        }}
+                                      >
+                                        {u.status === "active" ? (
+                                          <>
+                                            <UserX className="mr-1 h-3.5 w-3.5" />
+                                            Deactivate
+                                          </>
+                                        ) : (
+                                          <>
+                                            <UserCheck2 className="mr-1 h-3.5 w-3.5" />
+                                            Reactivate
+                                          </>
+                                        )}
+                                      </Button>
+                                    )}
+
+                                  {/* Delete User Button (Super Admin only) */}
+                                  {isSuper && !isPermanent && (
                                     <Button
                                       variant="ghost"
                                       size="sm"
@@ -903,6 +955,7 @@ function UsersPage() {
                 <SelectContent>
                   <SelectItem value="super_admin">Super Admin (Platform Owner)</SelectItem>
                   <SelectItem value="school_admin">School Administrator</SelectItem>
+                  <SelectItem value="form_master">Form Master (Class Teacher)</SelectItem>
                   <SelectItem value="teacher">Teacher</SelectItem>
                   <SelectItem value="accountant">Accountant</SelectItem>
                   <SelectItem value="student">Student</SelectItem>
@@ -1110,16 +1163,22 @@ function UsersPage() {
         </DialogContent>
       </Dialog>
 
-      {/* MODAL 4: Add New Platform User Directly (Super Admin Only) */}
+      {/* MODAL 4: Create Login Credentials (Super Admin or School Admin) */}
       <Dialog open={createUserOpen} onOpenChange={setCreateUserOpen}>
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
             <div className="flex items-center gap-2">
               <UserPlus className="h-5 w-5 text-primary" />
-              <DialogTitle>Add New Platform User</DialogTitle>
+              <DialogTitle>
+                {isSuper
+                  ? "Create School Administrator / User Credentials"
+                  : "Create Staff or Student Login Credentials"}
+              </DialogTitle>
             </div>
             <DialogDescription>
-              Directly provision an authenticated account with a specific role and school assignment.
+              {isSuper
+                ? "Provision login credentials for School Administrators or authorized platform users."
+                : "Create login credentials for teachers, form masters, accountants, and registered students in your school."}
             </DialogDescription>
           </DialogHeader>
 
@@ -1128,7 +1187,7 @@ function UsersPage() {
               <Label htmlFor="usr_fullname">Full Name</Label>
               <Input
                 id="usr_fullname"
-                placeholder="e.g. Mujittaba Salisu"
+                placeholder={isSuper ? "e.g. Mujittaba Salisu (Principal)" : "e.g. Ustaz Aliyu Bello"}
                 value={newUserForm.fullName}
                 onChange={(e) => setNewUserForm((p) => ({ ...p, fullName: e.target.value }))}
               />
@@ -1139,7 +1198,7 @@ function UsersPage() {
               <Input
                 id="usr_email"
                 type="email"
-                placeholder="e.g. salisu@atqacademy.edu.ng"
+                placeholder="e.g. staff@school.edu.ng"
                 value={newUserForm.email}
                 onChange={(e) => setNewUserForm((p) => ({ ...p, email: e.target.value }))}
               />
@@ -1155,34 +1214,74 @@ function UsersPage() {
                   <SelectValue placeholder="Select Role" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="school_admin">School Administrator (Head/Principal)</SelectItem>
-                  <SelectItem value="teacher">Teacher (Class & Grade Records)</SelectItem>
-                  <SelectItem value="accountant">Accountant / Bursar (Fees & Payments)</SelectItem>
-                  <SelectItem value="student">Student (Academic Portal)</SelectItem>
-                  <SelectItem value="parent">Parent / Guardian</SelectItem>
-                  <SelectItem value="super_admin">Super Admin (Platform Owner)</SelectItem>
+                  {isSuper && (
+                    <SelectItem value="school_admin">
+                      School Administrator (Principal / Head of School)
+                    </SelectItem>
+                  )}
+                  <SelectItem value="form_master">
+                    Form Master (Class Teacher / Broadsheet)
+                  </SelectItem>
+                  <SelectItem value="teacher">
+                    Teacher (Subject Teacher / Exam Records)
+                  </SelectItem>
+                  <SelectItem value="accountant">
+                    Accountant / Bursar (Fees & Accounts)
+                  </SelectItem>
+                  <SelectItem value="student">
+                    Student (Academic Registration & Portal)
+                  </SelectItem>
+                  <SelectItem value="parent">
+                    Parent / Guardian
+                  </SelectItem>
+                  {isSuper && (
+                    <SelectItem value="super_admin">
+                      Super Admin (Platform Owner)
+                    </SelectItem>
+                  )}
                 </SelectContent>
               </Select>
             </div>
 
-            {newUserForm.role !== "super_admin" && (
+            {/* School Workspace Selection or School Lock */}
+            {isSuper ? (
+              newUserForm.role !== "super_admin" && (
+                <div className="space-y-1.5">
+                  <Label htmlFor="usr_school">Assigned School Workspace</Label>
+                  <Select
+                    value={newUserForm.schoolId}
+                    onValueChange={(val) => setNewUserForm((p) => ({ ...p, schoolId: val }))}
+                  >
+                    <SelectTrigger id="usr_school">
+                      <SelectValue placeholder="Choose school workspace" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {schools?.map((s) => (
+                        <SelectItem key={s.id} value={s.id}>
+                          {s.name} ({s.code})
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )
+            ) : (
               <div className="space-y-1.5">
-                <Label htmlFor="usr_school">Assigned School Workspace</Label>
-                <Select
-                  value={newUserForm.schoolId}
-                  onValueChange={(val) => setNewUserForm((p) => ({ ...p, schoolId: val }))}
-                >
-                  <SelectTrigger id="usr_school">
-                    <SelectValue placeholder="Choose school workspace" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {schools?.map((s) => (
-                      <SelectItem key={s.id} value={s.id}>
-                        {s.name} ({s.code})
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <Label>Assigned School Workspace</Label>
+                <div className="rounded-md border border-border/80 bg-muted/60 p-2.5 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Building2 className="h-4 w-4 text-primary" />
+                    <span className="font-semibold text-xs text-foreground">
+                      {schools?.find((s) => s.id === (newUserForm.schoolId || mySchoolId || schools?.[0]?.id))?.name || schools?.[0]?.name || "Assigned School Workspace"}
+                    </span>
+                  </div>
+                  <Badge variant="secondary" className="text-[10px] uppercase font-semibold tracking-wider">
+                    Locked to Your School
+                  </Badge>
+                </div>
+                <p className="text-[11px] text-muted-foreground">
+                  Credentials are strictly bound to this school workspace.
+                </p>
               </div>
             )}
 
@@ -1196,7 +1295,7 @@ function UsersPage() {
                 onChange={(e) => setNewUserForm((p) => ({ ...p, password: e.target.value }))}
               />
               <p className="text-[11px] text-muted-foreground">
-                The user can change their password after first signing in.
+                The user can sign in immediately using this email and password on the Staff & Admin sign in tab.
               </p>
             </div>
           </div>
@@ -1210,11 +1309,11 @@ function UsersPage() {
                 createUserMut.isPending ||
                 !newUserForm.fullName.trim() ||
                 !newUserForm.email.trim() ||
-                (newUserForm.role !== "super_admin" && !newUserForm.schoolId)
+                (isSuper && newUserForm.role !== "super_admin" && !newUserForm.schoolId)
               }
               onClick={() => createUserMut.mutate()}
             >
-              {createUserMut.isPending ? "Creating Account…" : "Create & Provision User"}
+              {createUserMut.isPending ? "Creating Credentials…" : "Create Login Credentials"}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -1286,6 +1385,160 @@ function UsersPage() {
             >
               <Copy className="mr-1.5 h-4 w-4" />
               Copy Code & Close
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* MODAL 6: Staff Login Credentials Slip Dialog */}
+      <Dialog
+        open={Boolean(createdCreds)}
+        onOpenChange={(open) => {
+          if (!open) {
+            setCreatedCreds(null);
+            setShowCreatedPassword(false);
+          }
+        }}
+      >
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400">
+              <CheckCircle2 className="h-6 w-6" />
+              <DialogTitle className="text-lg">Staff Login Credentials Created</DialogTitle>
+            </div>
+            <DialogDescription>
+              The user account is active and ready for immediate login on the school portal.
+            </DialogDescription>
+          </DialogHeader>
+
+          {createdCreds && (
+            <div className="space-y-4 py-2">
+              {/* Slip Card */}
+              <div className="rounded-xl border border-primary/20 bg-muted/40 p-4 space-y-3.5 shadow-sm">
+                <div className="flex items-center justify-between border-b border-border/70 pb-2.5">
+                  <div className="flex items-center gap-2">
+                    <Building2 className="h-4 w-4 text-primary shrink-0" />
+                    <span className="font-bold text-xs text-foreground truncate max-w-[240px]">
+                      {createdCreds.user.schoolName || "Assigned School Workspace"}
+                    </span>
+                  </div>
+                  <Badge variant="outline" className={`text-[10px] font-semibold border ${ROLE_CONFIG[createdCreds.user.role]?.badgeClass || ""}`}>
+                    {ROLE_CONFIG[createdCreds.user.role]?.label || createdCreds.user.role}
+                  </Badge>
+                </div>
+
+                <div className="space-y-2 text-xs">
+                  <div>
+                    <span className="text-[11px] text-muted-foreground block font-medium">Full Name</span>
+                    <span className="text-sm font-bold text-foreground">{createdCreds.user.fullName}</span>
+                  </div>
+
+                  <div className="rounded-lg border border-border/80 bg-background/80 p-2.5 flex items-center justify-between">
+                    <div>
+                      <span className="text-[10px] uppercase font-semibold text-muted-foreground block">
+                        Login Email / Username
+                      </span>
+                      <span className="font-mono text-xs font-semibold text-foreground select-all">
+                        {createdCreds.user.email}
+                      </span>
+                    </div>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="h-7 px-2 text-xs"
+                      onClick={() => {
+                        navigator.clipboard.writeText(createdCreds.user.email);
+                        toast.success("Email copied to clipboard!");
+                      }}
+                    >
+                      <Copy className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
+
+                  <div className="rounded-lg border border-border/80 bg-background/80 p-2.5 flex items-center justify-between">
+                    <div className="min-w-0 pr-2">
+                      <span className="text-[10px] uppercase font-semibold text-muted-foreground block">
+                        Initial Password
+                      </span>
+                      <span className="font-mono text-xs font-semibold text-foreground select-all">
+                        {showCreatedPassword ? createdCreds.password : "••••••••••••"}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-1 shrink-0">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 px-2 text-xs"
+                        onClick={() => setShowCreatedPassword(!showCreatedPassword)}
+                      >
+                        {showCreatedPassword ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 px-2 text-xs"
+                        onClick={() => {
+                          navigator.clipboard.writeText(createdCreds.password || "");
+                          toast.success("Password copied to clipboard!");
+                        }}
+                      >
+                        <Copy className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="rounded-lg bg-primary/5 border border-primary/15 p-2.5 text-[11px] text-muted-foreground">
+                  <div className="flex items-center gap-1.5 font-semibold text-primary mb-0.5">
+                    <Check className="h-3.5 w-3.5" />
+                    Sign-in Instructions
+                  </div>
+                  Direct this staff member to sign in on the school portal via the <strong>Staff & Admin</strong> tab.
+                </div>
+              </div>
+
+              {/* Copy Full Slip Button */}
+              <Button
+                variant="outline"
+                className="w-full text-xs font-semibold border-primary/30 text-primary hover:bg-primary/5"
+                onClick={() => {
+                  const roleLabel = ROLE_CONFIG[createdCreds.user.role]?.label || createdCreds.user.role;
+                  const loginUrl = `${window.location.origin}/auth`;
+                  const slipText = `🏫 ${createdCreds.user.schoolName || "Alegacy School Platform"}\n👤 Staff Name: ${createdCreds.user.fullName}\n🏷️ Assigned Role: ${roleLabel}\n📧 Login Email: ${createdCreds.user.email}\n🔑 Initial Password: ${createdCreds.password}\n🌐 Portal Sign In: ${loginUrl}\n👉 Note: Sign in using the "Staff & Admin" tab.`;
+                  navigator.clipboard.writeText(slipText);
+                  toast.success("Full credentials slip copied for WhatsApp or SMS!");
+                }}
+              >
+                <Copy className="mr-1.5 h-3.5 w-3.5" />
+                Copy Full Credentials Slip (WhatsApp / SMS Format)
+              </Button>
+            </div>
+          )}
+
+          <DialogFooter className="flex-col sm:flex-row gap-2">
+            <Button
+              variant="outline"
+              className="w-full sm:w-auto"
+              onClick={() => {
+                setCreatedCreds(null);
+                setShowCreatedPassword(false);
+                setCreateUserOpen(true);
+              }}
+            >
+              <UserPlus className="mr-1.5 h-3.5 w-3.5" />
+              Add Another User
+            </Button>
+            <Button
+              className="w-full sm:w-auto"
+              onClick={() => {
+                setCreatedCreds(null);
+                setShowCreatedPassword(false);
+              }}
+            >
+              Done
             </Button>
           </DialogFooter>
         </DialogContent>

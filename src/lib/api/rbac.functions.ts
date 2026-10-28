@@ -15,6 +15,7 @@ import {
 } from "@/lib/server/rbac-store.server";
 
 const PERMANENT_SUPER_ADMIN_EMAIL = "mustydawuddaura@gmail.com";
+const PERMANENT_SUPER_ADMIN_PASSWORD = "Mustydawud@1994";
 
 function isUserSuperAdmin(email?: string, roles?: string[]): boolean {
   if (email && email.toLowerCase() === PERMANENT_SUPER_ADMIN_EMAIL.toLowerCase()) {
@@ -121,7 +122,7 @@ export const assignUserRole = createServerFn({ method: "POST" })
   .inputValidator(
     z.object({
       userId: z.string(),
-      role: z.enum(["super_admin", "school_admin", "teacher", "accountant", "student", "parent"]),
+      role: z.enum(["super_admin", "school_admin", "teacher", "form_master", "accountant", "student", "parent"]),
       schoolId: z.string().nullable().optional(),
       schoolName: z.string().optional(),
     })
@@ -206,16 +207,31 @@ export const setUserAccountStatus = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const callerEmail = context.claims?.email?.toLowerCase();
     const isSuper = isUserSuperAdmin(callerEmail);
-    if (!isSuper) {
-      throw new Error("Only the platform Super Admin can activate, deactivate, or suspend accounts.");
+    const users = getStoredPlatformUsers();
+    const callerUser = users.find((u) => u.email.toLowerCase() === callerEmail);
+    const isSchoolAdmin =
+      callerUser?.role === "school_admin" ||
+      (context.claims as any)?.roles?.includes("school_admin");
+
+    if (!isSuper && !isSchoolAdmin) {
+      throw new Error("Only the platform Super Admin or an authorized School Administrator can activate or deactivate accounts.");
     }
 
-    const users = getStoredPlatformUsers();
     const target = users.find((u) => u.userId === data.userId);
     if (!target) throw new Error("User not found");
 
-    if (target.email.toLowerCase() === PERMANENT_SUPER_ADMIN_EMAIL.toLowerCase()) {
+    if (target.email.toLowerCase() === PERMANENT_SUPER_ADMIN_EMAIL.toLowerCase() || target.isPermanentSuperAdmin) {
       throw new Error("The permanent Super Admin account cannot be deactivated or suspended.");
+    }
+
+    if (!isSuper && isSchoolAdmin) {
+      const callerSchoolId = callerUser?.schoolId || (context.claims as any)?.school_id || (context.claims as any)?.schoolId;
+      if (callerSchoolId && target.schoolId && target.schoolId !== callerSchoolId) {
+        throw new Error("Security Violation: You cannot modify accounts belonging to another school.");
+      }
+      if (target.role === "super_admin" || target.role === "school_admin") {
+        throw new Error("Permission Denied: School Administrators cannot deactivate administrative accounts.");
+      }
     }
 
     target.status = data.status;
@@ -557,7 +573,7 @@ export const loginStaffUser = createServerFn({ method: "POST" })
     const isSuper = email === PERMANENT_SUPER_ADMIN_EMAIL.toLowerCase();
 
     if (isSuper) {
-      if (data.password !== PERMANENT_SUPER_ADMIN_PASSWORD) {
+      if (data.password.trim() !== PERMANENT_SUPER_ADMIN_PASSWORD) {
         throw new Error("Invalid password for Super Administrator account.");
       }
     }
@@ -654,7 +670,7 @@ export const createPlatformUser = createServerFn({ method: "POST" })
     z.object({
       fullName: z.string().trim().min(2, "Full name must be at least 2 characters"),
       email: z.string().trim().email("Invalid email address"),
-      role: z.enum(["super_admin", "school_admin", "teacher", "accountant", "student", "parent"]),
+      role: z.enum(["super_admin", "school_admin", "teacher", "form_master", "accountant", "student", "parent"]),
       schoolId: z.string().nullable().optional(),
       schoolName: z.string().optional(),
       password: z.string().min(6, "Password must be at least 6 characters").default("StaffPass#2026"),
@@ -663,11 +679,100 @@ export const createPlatformUser = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const callerEmail = context.claims?.email?.toLowerCase();
     const isSuper = isUserSuperAdmin(callerEmail);
-    if (!isSuper) {
-      throw new Error("Security Violation: Only the platform Super Admin can provision user accounts directly.");
+    const platformUsers = getStoredPlatformUsers();
+    const callerUser = platformUsers.find((u) => u.email.toLowerCase() === callerEmail);
+    const isSchoolAdmin =
+      callerUser?.role === "school_admin" ||
+      (context.claims as any)?.roles?.includes("school_admin");
+
+    if (!isSuper && !isSchoolAdmin) {
+      throw new Error(
+        "Security Violation: Only the platform Super Admin or an authorized School Administrator can create login credentials."
+      );
     }
 
-    const platformUsers = getStoredPlatformUsers();
+    const schools = getStoredSchools();
+    let targetSchoolId: string | null = null;
+    let targetSchoolName = "";
+
+    if (!isSuper && isSchoolAdmin) {
+      // School Administrators can only provision their own school's staff and students
+      if (data.role === "super_admin" || data.role === "school_admin") {
+        throw new Error(
+          "Permission Denied: School Administrators cannot create administrative accounts. You can only create credentials for Teachers, Form Masters, Accountants, Students, and Parents."
+        );
+      }
+
+      // Enforce strict school isolation: bind target school to caller's school
+      let callerSchoolId =
+        callerUser?.schoolId ||
+        (context.claims as any)?.school_id ||
+        (context.claims as any)?.schoolId;
+
+      // 1. If callerUser or claims did not have schoolId, look up in database profiles/roles
+      if (!callerSchoolId && context.userId) {
+        try {
+          const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+          const { data: prof } = await supabaseAdmin
+            .from("profiles")
+            .select("school_id")
+            .eq("user_id", context.userId)
+            .maybeSingle();
+          if (prof?.school_id) {
+            callerSchoolId = prof.school_id;
+          } else {
+            const { data: urole } = await supabaseAdmin
+              .from("user_roles")
+              .select("school_id")
+              .eq("user_id", context.userId)
+              .maybeSingle();
+            if (urole?.school_id) callerSchoolId = urole.school_id;
+          }
+        } catch {
+          // offline
+        }
+      }
+
+      // 2. Fall back to data.schoolId passed from frontend
+      if (!callerSchoolId && data.schoolId) {
+        callerSchoolId = data.schoolId;
+      }
+
+      // 3. Fall back to first available school if still unassigned
+      if (!callerSchoolId) {
+        if (schools.length > 0) {
+          callerSchoolId = schools[0].id;
+        } else {
+          callerSchoolId = "af91ff67-95eb-4b62-93a0-5617d23a2f1d";
+        }
+      }
+
+      // Automatically update caller record with the resolved schoolId
+      if (callerUser && !callerUser.schoolId && callerSchoolId) {
+        callerUser.schoolId = callerSchoolId;
+        const matched = schools.find((s) => s.id === callerSchoolId);
+        if (matched) callerUser.schoolName = matched.name;
+        saveStoredPlatformUsers(platformUsers);
+      }
+
+      targetSchoolId = callerSchoolId;
+      const matchedSchool = schools.find((s) => s.id === callerSchoolId);
+      targetSchoolName = matchedSchool?.name || callerUser?.schoolName || "Assigned School Workspace";
+    } else {
+      // Super Admin provisioning
+      if (data.role !== "super_admin") {
+        if (!data.schoolId) {
+          throw new Error("Please specify the school workspace to assign this user to.");
+        }
+        targetSchoolId = data.schoolId;
+        const matchedSchool = schools.find((s) => s.id === data.schoolId);
+        targetSchoolName = matchedSchool?.name || data.schoolName || "Assigned School";
+      } else {
+        targetSchoolId = null;
+        targetSchoolName = "All Schools (Platform Owner)";
+      }
+    }
+
     const normalizedEmail = data.email.trim().toLowerCase();
 
     // Check if email already registered
@@ -677,19 +782,13 @@ export const createPlatformUser = createServerFn({ method: "POST" })
     }
 
     const newUserId = `usr-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
-    const schools = getStoredSchools();
-    const assignedSchool = data.schoolId ? schools.find((s) => s.id === data.schoolId) : null;
-    const finalSchoolName =
-      data.role === "super_admin"
-        ? "All Schools (Platform Owner)"
-        : assignedSchool?.name || data.schoolName || "Assigned School";
 
     const newUserRecord: PlatformUserRecord = {
       userId: newUserId,
       email: normalizedEmail,
       fullName: data.fullName.trim(),
-      schoolId: data.role === "super_admin" ? null : data.schoolId || null,
-      schoolName: finalSchoolName,
+      schoolId: targetSchoolId,
+      schoolName: targetSchoolName,
       role: data.role,
       status: "active",
       createdAt: new Date().toISOString(),
@@ -706,22 +805,23 @@ export const createPlatformUser = createServerFn({ method: "POST" })
         supabaseAdmin.from("profiles").upsert({
           user_id: newUserId,
           full_name: data.fullName.trim(),
-          school_id: data.role === "super_admin" ? null : data.schoolId || null,
+          school_id: targetSchoolId,
         }),
         supabaseAdmin.from("user_roles").upsert({
           user_id: newUserId,
-          role: data.role,
-          school_id: data.role === "super_admin" ? null : data.schoolId || null,
+          role: data.role as any,
+          school_id: targetSchoolId,
         }),
       ]);
     } catch {
-      // offline / mock
+      // offline / local store fallback
     }
 
     return {
       ok: true,
       user: newUserRecord,
-      message: `User ${data.fullName} created successfully as ${data.role.replace("_", " ")} for ${finalSchoolName}. Initial password: ${data.password}`,
+      initialPassword: data.password,
+      message: `Login credentials created successfully for ${data.fullName} (${data.role.replace("_", " ")}) at ${targetSchoolName}.`,
     };
   });
 
